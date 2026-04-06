@@ -1,0 +1,304 @@
+<!-- Homepage (Public) - Redesigned -->
+
+<!-- Hero Section -->
+<section class="home-hero">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="home-hero-content">
+      <h1>Temukan Karir Impianmu</h1>
+      <p>Platform #1 yang menghubungkan talenta terbaik dengan perusahaan impian di seluruh Indonesia.</p>
+
+      <% if (typeof user === 'undefined' || !user) { %>
+      <div class="role-buttons">
+        <a href="/register?role=job_seeker" class="role-btn primary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+          </svg>
+          Saya Mencari Kerja
+        </a>
+        <a href="/register?role=hr" class="role-btn secondary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781z"/>
+          </svg>
+          Saya Merekrut
+        </a>
+      </div>
+      <% } %>
+
+      <div class="action-buttons">
+        <a href="/jobs" class="action-btn primary">Mulai Cari Kerja</a>
+        <a href="#features" class="action-btn outline">Pelajari Lebih Lanjut</a>
+      </div>
+
+      <div class="hero-image">
+        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&h=450&fit=crop" alt="Tim Profesional Bekerja Sama">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <h3>10K+</h3>
+        <p>Lowongan Kerja</p>
+      </div>
+      <div class="stat-item">
+        <h3>500+</h3>
+        <p>Perusahaan Top</p>
+      </div>
+      <div class="stat-item">
+        <h3>50K+</h3>
+        <p>Kandidat Terdaftar</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="categories-header">
+      <h2>Jelajahi Berdasarkan Kategori</h2>
+      <p>Temukan pekerjaan sesuai bidang keahlianmu</p>
+    </div>
+
+    <div class="categories-grid">
+      <a href="/jobs?category=IT" class="category-card fade-in-up delay-50">
+        <div class="category-icon" style="background: #eff6ff; color: #3b82f6;">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275A1.5 1.5 0 0 1 6.936 9.28zM5 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+          </svg>
+        </div>
+        <h3>IT & Teknologi</h3>
+        <p>Developer, Designer, Data Scientist</p>
+      </a>
+
+      <a href="/jobs?category=Finance" class="category-card fade-in-up delay-100">
+        <div class="category-icon" style="background: #f0fdf4; color: #16a34a;">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781zM10 14.5H6v-2h4v2zm1-4.781c-.068.878-.787 1.532-2.006 1.651l-.494.05V6.15l.494.05c1.219.119 1.938.773 2.006 1.65v2.65z"/>
+          </svg>
+        </div>
+        <h3>Finance</h3>
+        <p>Accounting, Banking, Investment</p>
+      </a>
+
+      <a href="/jobs?category=Marketing" class="category-card fade-in-up delay-150">
+        <div class="category-icon" style="background: #fef3c7; color: #d97706;">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l1.528.965 10.304-5.697Z"/>
+          </svg>
+        </div>
+        <h3>Marketing</h3>
+        <p>Digital Marketing, SEO, Content</p>
+      </a>
+
+      <a href="/jobs?category=Design" class="category-card fade-in-up delay-200">
+        <div class="category-icon" style="background: #fce7f3; color: #db2777;">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z"/>
+          </svg>
+        </div>
+        <h3>Design</h3>
+        <p>UI/UX, Graphic, Motion Design</p>
+      </a>
+
+      <a href="/jobs?category=HR" class="category-card fade-in-up delay-250">
+        <div class="category-icon" style="background: #ede9fe; color: #7c3aed;">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+          </svg>
+        </div>
+        <h3>Human Resources</h3>
+        <p>Recruiter, HR Manager, Training</p>
+      </a>
+
+      <a href="/jobs?category=Sales" class="category-card fade-in-up delay-300">
+        <div class="category-icon" style="background: #fff7ed; color: #ea580c;">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M6.5 3.024a.5.5 0 0 1 .474.342l1.656 4.977L10.302 5.5a.5.5 0 0 1 .975.16l-1.5 6a.5.5 0 0 1-.966.015L7.139 7.06 5.395 11.72a.5.5 0 0 1-.94-.014l-2-6a.5.5 0 1 1 .948-.312l1.485 4.455 1.875-5.008a.5.5 0 0 1 .737-.277Z"/>
+          </svg>
+        </div>
+        <h3>Sales</h3>
+        <p>Sales Executive, Account Manager</p>
+      </a>
+    </div>
+
+    <div class="categories-cta">
+      <a href="/jobs" class="btn-view-all">
+        Lihat Semua Kategori
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2>Mengapa Memilih Kami?</h2>
+    <p>Solusi terbaik untuk kebutuhan karir Anda.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          </svg>
+        </div>
+        <h3>Pencarian Cerdas</h3>
+        <p>Temukan lowongan yang sesuai dengan skill dan lokasi Anda dalam hitungan detik.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+          </svg>
+        </div>
+        <h3>Aman & Terpercaya</h3>
+        <p>Semua perusahaan telah diverifikasi untuk memastikan keamanan data Anda.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l1.528.965 10.304-5.697Z"/>
+          </svg>
+        </div>
+        <h3>Lamar Mudah</h3>
+        <p>Kirim lamaran ke banyak perusahaan hanya dengan satu klik "Apply".</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Latest Jobs Section -->
+<% if (typeof jobs !== 'undefined' && jobs && jobs.length > 0) { %>
+<section class="jobs-section">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="jobs-section-header">
+      <h2>Lowongan Terbaru</h2>
+      <p>Peluang karir terbaik minggu ini</p>
+    </div>
+
+    <div class="jobs-grid">
+      <% jobs.slice(0, 6).forEach(function(job) { %>
+      <div class="job-card">
+        <div class="job-card-header">
+          <div class="job-card-company">
+            <div class="company-logo">
+              <%= job.company.charAt(0) %>
+            </div>
+            <div>
+              <div class="job-card-title"><%= job.title %></div>
+              <div class="job-card-company-name"><%= job.company %> · <%= job.location %></div>
+            </div>
+          </div>
+          <span class="job-type-badge"><%= job.type %></span>
+        </div>
+        <div class="job-card-footer">
+          <a href="/jobs" class="btn-apply">Lamar</a>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+
+    <a href="/jobs" class="view-all-btn">Lihat Semua Lowongan</a>
+  </div>
+</section>
+<% } %>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2>Siap Memulai?</h2>
+    <p>Bergabunglah dengan ribuan profesional yang telah menemukan karir impian mereka.</p>
+    <div class="cta-buttons">
+      <a href="/register" class="cta-btn white">Daftar Sekarang</a>
+      <a href="/login" class="cta-btn outline-white">Masuk</a>
+    </div>
+  </div>
+</section>
+
+<!-- Scroll Animation Script -->
+<script>
+  // Intersection Observer for scroll animations
+  document.addEventListener('DOMContentLoaded', function() {
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          // Unobserve after animation triggers (run once)
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Add animation classes to elements
+    const heroContent = document.querySelector('.home-hero-content');
+    if (heroContent) {
+      heroContent.classList.add('fade-in-up');
+    }
+
+    const statsGrid = document.querySelector('.stats-grid');
+    if (statsGrid) {
+      statsGrid.classList.add('fade-in-up');
+    }
+
+    const featuresSection = document.querySelector('.features-section');
+    if (featuresSection) {
+      featuresSection.classList.add('fade-in-up');
+    }
+
+    // Add staggered animations to feature cards
+    const featureCards = document.querySelectorAll('.feature-card');
+    featureCards.forEach((card, index) => {
+      card.classList.add('fade-in-up', `delay-${(index + 1) * 100}`);
+      observer.observe(card);
+    });
+
+    // Add animations to job cards
+    const jobCards = document.querySelectorAll('.job-card');
+    jobCards.forEach((card, index) => {
+      card.classList.add('fade-in-up', `delay-${(index % 3 + 1) * 100}`);
+      observer.observe(card);
+    });
+
+    // Add animation to CTA section
+    const ctaSection = document.querySelector('.cta-section');
+    if (ctaSection) {
+      ctaSection.classList.add('fade-in-up');
+      observer.observe(ctaSection);
+    }
+
+    // Observe all fade-in-up elements that aren't already observed
+    document.querySelectorAll('.fade-in-up').forEach(el => {
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.fade-in-left').forEach(el => {
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.fade-in-right').forEach(el => {
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.scale-in').forEach(el => {
+      observer.observe(el);
+    });
+  });
+</script>

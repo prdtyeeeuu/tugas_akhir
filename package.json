@@ -1,0 +1,42 @@
+{
+  "name": "lokerin",
+  "version": "1.0.0",
+  "description": "Platform pencarian kerja yang menghubungkan pencari kerja dan HR",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
+    "seed": "node database/seed.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prdtyeeeuu/tugas_akhir.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/prdtyeeeuu/tugas_akhir/issues"
+  },
+  "homepage": "https://github.com/prdtyeeeuu/tugas_akhir#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.0",
+    "ejs": "^5.0.1",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.19.0",
+    "jsonwebtoken": "^9.0.3",
+    "method-override": "^3.0.0",
+    "multer": "^2.1.1",
+    "mysql2": "^3.20.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2"
+  }
+}

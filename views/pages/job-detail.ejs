@@ -1,0 +1,113 @@
+<!-- Job Detail Page -->
+<link rel="stylesheet" href="/css/job-detail.css">
+
+<div class="job-detail-page">
+  <!-- Back Button -->
+  <div class="job-detail-back">
+    <a href="/applications" class="back-link">
+      <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+      </svg>
+      Kembali ke Lamaran Saya
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="job-detail-content">
+    <!-- Header Card -->
+    <div class="job-detail-header">
+      <div class="header-top">
+        <div class="company-logo">
+          <%= job.company.charAt(0) %>
+        </div>
+        <div class="header-info">
+          <h1><%= job.title %></h1>
+          <p class="company-name"><%= job.company %></p>
+        </div>
+      </div>
+
+      <div class="job-meta-tags">
+        <span class="job-tag">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+          </svg>
+          <%= job.location %>
+        </span>
+        <span class="job-tag">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781zM10 14.5H6v-2h4v2z"/>
+          </svg>
+          <%= job.type %>
+        </span>
+        <% if (job.category) { %>
+        <span class="job-tag">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781z"/>
+          </svg>
+          <%= job.category %>
+        </span>
+        <% } %>
+        <% if (job.salary_min || job.salary_max) { %>
+        <span class="job-tag salary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781zM10 14.5H6v-2h4v2z"/>
+          </svg>
+          <% if (job.salary_min && job.salary_max) { %>
+            Rp <%= Number(job.salary_min).toLocaleString('id-ID') %> - <%= Number(job.salary_max).toLocaleString('id-ID') %>
+          <% } else if (job.salary_min) { %>
+            Mulai Rp <%= Number(job.salary_min).toLocaleString('id-ID') %>
+          <% } else { %>
+            Hingga Rp <%= Number(job.salary_max).toLocaleString('id-ID') %>
+          <% } %>
+        </span>
+        <% } %>
+      </div>
+
+      <div class="job-actions">
+        <button type="button" onclick="startChat(<%= job.id %>)" class="btn-chat">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2zm5 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+          </svg>
+          Chat HR
+        </button>
+      </div>
+    </div>
+
+    <!-- Description Card -->
+    <div class="job-detail-description">
+      <h2>Deskripsi Pekerjaan</h2>
+      <div class="description-content"><%= job.description %></div>
+    </div>
+
+    <!-- Posted Date -->
+    <div class="job-detail-footer">
+      <p>Diposting pada <%= new Date(job.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Start chat with HR
+  async function startChat(jobId) {
+    try {
+      const response = await fetch(`/chat/start/${jobId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin'
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.redirect_url) {
+        window.location.href = data.redirect_url;
+      } else {
+        alert(data.error || 'Gagal memulai chat');
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      alert('Terjadi kesalahan saat memulai chat');
+    }
+  }
+</script>

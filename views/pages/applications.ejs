@@ -1,0 +1,217 @@
+<!-- My Applications Page -->
+<div class="my-apps-wrapper">
+  <div class="my-apps-container">
+    
+    <!-- Header -->
+    <div class="my-apps-header">
+      <h1>My Applications</h1>
+      <p>Pantau status lamaran pekerjaanmu di sini.</p>
+    </div>
+
+    <!-- Success Message -->
+    <% if (typeof req !== 'undefined' && req.query && req.query.success) { %>
+    <div style="background: #dcfce7; border: 1px solid #86efac; color: #16a34a; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+      ✓ Lamaran berhasil dikirim!
+    </div>
+    <% } %>
+
+    <!-- Cancelled Message -->
+    <% if (typeof req !== 'undefined' && req.query && req.query.cancelled) { %>
+    <div style="background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+      ✓ Lamaran berhasil ditarik.
+    </div>
+    <% } %>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <svg fill="currentColor" viewBox="0 0 16 16">
+            <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number"><%= typeof stats !== 'undefined' ? stats.total : 0 %></span>
+          <span class="stat-label">Total Lamaran</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon purple">
+          <svg fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 1.5A6.5 6.5 0 1 0 14.5 8 6.5 6.5 0 0 0 8 1.5ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Z"/>
+            <path d="M10.748 11.007a.5.5 0 0 1-.748.446l-2.5-1.5a.5.5 0 0 1 0-.854l2.5-1.5a.5.5 0 0 1 .748.446v2.962Z"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number"><%= typeof stats !== 'undefined' ? stats.interview : 0 %></span>
+          <span class="stat-label">Wawancara</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <svg fill="currentColor" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05Z"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number"><%= typeof stats !== 'undefined' ? stats.accepted : 0 %></span>
+          <span class="stat-label">Diterima (Offer)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Filters -->
+    <div class="tab-filters">
+      <button class="tab-btn active" onclick="filterApps('all')">Semua</button>
+      <button class="tab-btn" onclick="filterApps('pending')">Sedang Direview</button>
+      <button class="tab-btn" onclick="filterApps('interview')">Jadwal Wawancara</button>
+      <button class="tab-btn" onclick="filterApps('accepted')">Diterima</button>
+      <button class="tab-btn" onclick="filterApps('rejected')">Ditolak</button>
+    </div>
+
+    <!-- Applications List -->
+    <% if (typeof applications !== 'undefined' && applications && applications.length > 0) { %>
+      <div class="applications-list">
+        <% applications.forEach(function(app) { %>
+        <div class="app-card" data-status="<%= app.status %>">
+          
+          <!-- Logo -->
+          <div class="app-logo"></div>
+
+          <!-- Info -->
+          <div class="app-info">
+            <h3 class="app-title"><%= app.job_title %></h3>
+            
+            <div class="app-company">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M6.5 1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V2h2a.5.5 0 0 1 .5.5v2h1a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V5.5a.5.5 0 0 1 .5-.5h1V2h2v-.5z"/>
+              </svg>
+              <span><%= app.company %></span>
+            </div>
+
+            <div class="app-meta">
+              <div class="app-meta-item">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                </svg>
+                <span>Dilamar: <%= new Date(app.applied_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+              </div>
+              <div class="app-meta-item">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                </svg>
+                <span><%= app.location %></span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="app-actions">
+              <a href="/jobs/<%= app.job_id %>" class="action-link">Lihat Detail</a>
+              <button onclick="startChat(<%= app.job_id %>)" class="action-link chat-btn">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2zm5 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                </svg>
+                Chat HR
+              </button>
+              <% if (app.status === 'interview') { %>
+                <a href="#" class="action-link">Lihat Jadwal</a>
+              <% } %>
+              <% if (app.status === 'pending' || app.status === 'interview') { %>
+                <form action="/applications/cancel/<%= app.id %>" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menarik lamaran ini?');">
+                  <button type="submit" class="action-link danger" style="background: none; border: none; cursor: pointer; padding: 0; font: inherit; color: inherit;">Tarik Lamaran</button>
+                </form>
+              <% } %>
+              <% if (app.status === 'rejected') { %>
+                <a href="#" class="action-link">Lihat Alasan</a>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="app-status">
+            <%
+              let statusClass = 'pending';
+              let statusLabel = 'Sedang Direview';
+              let statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 1a6 6 0 1 1 0 12A6 6 0 0 1 8 2Z"/></svg>';
+
+              if (app.status === 'diterima') {
+                statusClass = 'accepted';
+                statusLabel = 'Diterima';
+                statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05Z"/></svg>';
+              } else if (app.status === 'ditolak') {
+                statusClass = 'rejected';
+                statusLabel = 'Ditolak';
+                statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0ZM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646Z"/></svg>';
+              } else if (app.status === 'interview') {
+                statusClass = 'interview';
+                statusLabel = 'Wawancara Tahap 2';
+                statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M10.748 11.007a.5.5 0 0 1-.748.446l-2.5-1.5a.5.5 0 0 1 0-.854l2.5-1.5a.5.5 0 0 1 .748.446v2.962Z"/></svg>';
+              }
+            %>
+            <span class="status-badge <%= statusClass %>">
+              <%- statusIcon %>
+              <%= statusLabel %>
+            </span>
+          </div>
+
+        </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <h3>Belum ada lamaran</h3>
+        <p>Anda belum melamar pekerjaan apapun. Mulai cari dan lamar pekerjaan sekarang!</p>
+        <a href="/jobs" class="btn-primary">Cari Pekerjaan</a>
+      </div>
+    <% } %>
+
+  </div>
+</div>
+
+<!-- JavaScript for Tab Filtering -->
+<script>
+  function filterApps(status) {
+    // Update active tab
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    // Filter applications
+    document.querySelectorAll('.app-card').forEach(card => {
+      if (status === 'all' || card.dataset.status === status) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  // Start chat with HR
+  async function startChat(jobId) {
+    try {
+      const response = await fetch(`/chat/start/${jobId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin'
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.redirect_url) {
+        window.location.href = data.redirect_url;
+      } else {
+        alert(data.error || 'Gagal memulai chat');
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      alert('Terjadi kesalahan saat memulai chat');
+    }
+  }
+</script>

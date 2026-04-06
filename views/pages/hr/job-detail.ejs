@@ -1,0 +1,459 @@
+<!-- HR Job Detail Page -->
+<style>
+  .hr-page {
+    background-color: #f5f7fa;
+    min-height: calc(100vh - 64px);
+  }
+  
+  .hr-nav {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .hr-nav-link {
+    padding: 1rem 1.5rem;
+    color: #6b7280;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+  
+  .hr-nav-link:hover {
+    color: #3b82f6;
+  }
+  
+  .hr-nav-link.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+  }
+  
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+  }
+  
+  .btn-back:hover {
+    color: #3b82f6;
+  }
+  
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  
+  @media (max-width: 1024px) {
+    .detail-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .detail-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .detail-card h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .job-header {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+  }
+  
+  .job-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+  }
+  
+  .job-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .job-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+  }
+  
+  .badge {
+    display: inline-block;
+    padding: 0.375rem 0.875rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-yellow { background: #fef3c7; color: #92400e; }
+  .badge-gray { background: #f3f4f6; color: #6b7280; }
+  
+  .applicant-card {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .applicant-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .applicant-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #6b7280;
+  }
+  
+  .applicant-name {
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .applicant-email {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .status-pending { background: #fef3c7; color: #92400e; }
+  .status-diterima { background: #d1fae5; color: #065f46; }
+  .status-ditolak { background: #fee2e2; color: #991b1b; }
+  
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .btn-accept {
+    background: #10b981;
+    color: white;
+  }
+  
+  .btn-accept:hover {
+    background: #059669;
+  }
+  
+  .btn-reject {
+    background: #ef4444;
+    color: white;
+  }
+  
+  .btn-reject:hover {
+    background: #dc2626;
+  }
+  
+  .btn-view {
+    background: #3b82f6;
+    color: white;
+  }
+  
+  .btn-view:hover {
+    background: #2563eb;
+  }
+  
+  .empty-applicants {
+    text-align: center;
+    padding: 3rem;
+    color: #6b7280;
+  }
+  
+  .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  
+  .user-name {
+    font-weight: 500;
+    color: #111827;
+    font-size: 0.875rem;
+  }
+  
+  .description-content {
+    white-space: pre-wrap;
+    color: #4b5563;
+    line-height: 1.75;
+  }
+  
+  .stats-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .stat-box {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .stat-box h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+  }
+  
+  .stat-box p {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+  }
+</style>
+
+<div class="hr-page">
+  <!-- HR Navigation -->
+  <nav class="hr-nav">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo -->
+        <div class="flex items-center">
+          <a href="/hr/dashboard" class="flex items-center space-x-2">
+            <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+              <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-xl font-bold text-gray-800">Lokerin</span>
+          </a>
+        </div>
+
+        <!-- HR Navigation Links -->
+        <div class="hidden md:flex items-center space-x-1">
+          <a href="/hr/dashboard" class="hr-nav-link">
+            Dashboard
+          </a>
+          <a href="/hr/jobs" class="hr-nav-link active">
+            Kelola Lowongan
+          </a>
+          <a href="/hr/jobs" class="hr-nav-link">
+            Kandidat
+          </a>
+          <a href="/chat" class="hr-nav-link flex items-center gap-2">
+            Pesan
+            <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+            <span class="unread-badge-nav"><%= unreadCount %></span>
+            <% } %>
+          </a>
+        </div>
+
+        <!-- Right Side -->
+        <div class="flex items-center space-x-4">
+          <a href="/hr/jobs/create" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 flex items-center gap-2">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            </svg>
+            Pasang Lowongan
+          </a>
+          
+          <div class="user-menu">
+            <div class="user-avatar">
+              <%= user.name.charAt(0).toUpperCase() %>
+            </div>
+            <span class="user-name"><%= user.name %></span>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="text-gray-500">
+              <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <a href="/hr/jobs" class="btn-back">
+      <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+      </svg>
+      Kembali ke Kelola Lowongan
+    </a>
+
+    <!-- Job Header -->
+    <div class="job-header">
+      <div class="flex justify-between items-start">
+        <div>
+          <h1><%= job.title %></h1>
+          <p class="text-gray-600 text-lg"><%= job.company %></p>
+        </div>
+        <span class="badge badge-blue"><%= job.type %></span>
+      </div>
+      
+      <div class="job-meta">
+        <div class="job-meta-item">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+          </svg>
+          <%= job.location %>
+        </div>
+        <% if (job.category) { %>
+        <div class="job-meta-item">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781z"/>
+          </svg>
+          <%= job.category %>
+        </div>
+        <% } %>
+        <% if (job.salary_min && job.salary_max) { %>
+        <div class="job-meta-item">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781zM10 14.5H6v-2h4v2zm1-4.781c-.068.878-.787 1.532-2.006 1.651l-.494.05V6.15l.494.05c1.219.119 1.938.773 2.006 1.65v2.65z"/>
+          </svg>
+          Rp <%= Number(job.salary_min).toLocaleString('id-ID') %> - Rp <%= Number(job.salary_max).toLocaleString('id-ID') %>
+        </div>
+        <% } %>
+        <div class="job-meta-item">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5z"/>
+          </svg>
+          Dibuat <%= new Date(job.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="detail-grid">
+      <!-- Left Column - Job Description -->
+      <div>
+        <div class="detail-card">
+          <h2>📄 Deskripsi Lowongan</h2>
+          <div class="description-content"><%= job.description %></div>
+        </div>
+      </div>
+
+      <!-- Right Column - Applicants -->
+      <div>
+        <div class="detail-card">
+          <h2>👥 Daftar Pelamar (<%= applicants.length %>)</h2>
+          
+          <!-- Stats Summary -->
+          <div class="stats-summary">
+            <div class="stat-box">
+              <h4 class="text-yellow-600"><%= applicants.filter(a => a.status === 'pending').length %></h4>
+              <p>Pending</p>
+            </div>
+            <div class="stat-box">
+              <h4 class="text-green-600"><%= applicants.filter(a => a.status === 'diterima').length %></h4>
+              <p>Diterima</p>
+            </div>
+            <div class="stat-box">
+              <h4 class="text-red-600"><%= applicants.filter(a => a.status === 'ditolak').length %></h4>
+              <p>Ditolak</p>
+            </div>
+          </div>
+
+          <!-- Applicants List -->
+          <% if (applicants && applicants.length > 0) { %>
+            <% applicants.forEach(app => { %>
+              <div class="applicant-card">
+                <div class="applicant-info">
+                  <div class="applicant-avatar">
+                    <%= app.applicant ? app.applicant.name.charAt(0) : '?' %>
+                  </div>
+                  <div>
+                    <div class="applicant-name"><%= app.applicant ? app.applicant.name : 'Unknown' %></div>
+                    <div class="applicant-email"><%= app.applicant ? app.applicant.email : '-' %></div>
+                    <span class="status-badge status-<%= app.status %>">
+                      <%= app.status.charAt(0).toUpperCase() + app.status.slice(1) %>
+                    </span>
+                  </div>
+                </div>
+                <div class="action-buttons">
+                  <% if (app.status === 'pending') { %>
+                    <form action="/hr/applications/<%= app.id %>" method="POST" style="display: inline;">
+                      <input type="hidden" name="_method" value="PUT">
+                      <input type="hidden" name="status" value="diterima">
+                      <input type="hidden" name="returnUrl" value="/hr/jobs/<%= job.id %>">
+                      <button type="submit" class="btn-sm btn-accept">Terima</button>
+                    </form>
+                    <form action="/hr/applications/<%= app.id %>" method="POST" style="display: inline;">
+                      <input type="hidden" name="_method" value="PUT">
+                      <input type="hidden" name="status" value="ditolak">
+                      <input type="hidden" name="returnUrl" value="/hr/jobs/<%= job.id %>">
+                      <button type="submit" class="btn-sm btn-reject">Tolak</button>
+                    </form>
+                  <% } %>
+                  <a href="/profile/<%= app.user_id %>" class="btn-sm btn-view">Lihat Profil</a>
+                </div>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div class="empty-applicants">
+              <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+              </svg>
+              <p>Belum ada pelamar untuk lowongan ini</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

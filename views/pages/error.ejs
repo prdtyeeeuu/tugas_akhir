@@ -1,0 +1,18 @@
+<!-- Error Page -->
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full text-center">
+    <div class="text-6xl mb-4">⚠️</div>
+    <h1 class="text-3xl font-bold text-gray-900 mb-4">
+      Terjadi Kesalahan
+    </h1>
+    <p class="text-gray-600 mb-8">
+      <%= typeof error !== 'undefined' ? error : 'Terjadi kesalahan pada server' %>
+    </p>
+    <a 
+      href="/" 
+      class="px-8 py-3 bg-secondary hover:bg-opacity-80 text-gray-800 rounded-xl font-medium transition inline-block"
+    >
+      Kembali ke Dashboard
+    </a>
+  </div>
+</div>

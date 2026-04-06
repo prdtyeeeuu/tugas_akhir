@@ -1,0 +1,660 @@
+/* Homepage Styles */
+
+/* Scroll Animation */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.fade-in-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scale-in {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scale-in.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Stagger delays for grid items */
+.delay-100 { transition-delay: 0.1s; }
+.delay-200 { transition-delay: 0.2s; }
+.delay-300 { transition-delay: 0.3s; }
+.delay-400 { transition-delay: 0.4s; }
+.delay-500 { transition-delay: 0.5s; }
+
+/* Hero image floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Smooth scroll for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Categories Section */
+.categories-section {
+  padding: 4rem 0;
+  background: white;
+}
+
+.categories-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.categories-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.categories-header p {
+  color: #6b7280;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.category-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: block;
+}
+
+.category-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-color: transparent;
+}
+
+.category-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  transition: transform 0.3s ease;
+}
+
+.category-card:hover .category-icon {
+  transform: scale(1.1);
+}
+
+.category-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.category-card p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.categories-cta {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.btn-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  background: #3b82f6;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-view-all:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* Pulse animation for CTA buttons */
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+}
+
+/* Stats counter animation */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Gradient shift animation for CTA section */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.home-hero {
+  background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+  padding: 4rem 0 3rem;
+  min-height: calc(100vh - 200px);
+  display: flex;
+  align-items: center;
+}
+
+.home-hero-content {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.home-hero h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.home-hero p {
+  color: #6b7280;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.role-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.role-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.role-btn.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.role-btn.primary:hover {
+  background: #2563eb;
+}
+
+.role-btn.secondary {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.role-btn.secondary:hover {
+  background: #f3f4f6;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+}
+
+.action-btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.action-btn.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: #2563eb;
+}
+
+.action-btn.outline {
+  background: white;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+}
+
+.action-btn.outline:hover {
+  background: #eff6ff;
+}
+
+.hero-image {
+  max-width: 600px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.hero-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.stats-section {
+  padding: 3rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  text-align: center;
+}
+
+.stat-item h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #3b82f6;
+}
+
+.stat-item p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.features-section {
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.features-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.features-section > .max-w-7xl > p {
+  color: #6b7280;
+  margin-bottom: 3rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: left;
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  background: #eff6ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: #3b82f6;
+}
+
+.feature-card h3 {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.feature-card p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.jobs-section {
+  padding: 4rem 0;
+  background: #f9fafb;
+}
+
+.jobs-section-header {
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.jobs-section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.jobs-section-header p {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.job-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.job-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.job-card-company {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.company-logo {
+  width: 40px;
+  height: 40px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.job-card-title {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.job-card-company-name {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.job-type-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background: #eff6ff;
+  color: #3b82f6;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.job-card-location {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.job-card-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-apply {
+  padding: 0.5rem 1rem;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-apply:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+.view-all-btn {
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 0.75rem 2rem;
+  background: #3b82f6;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.view-all-btn:hover {
+  background: #2563eb;
+}
+
+.cta-section {
+  padding: 4rem 0;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  text-align: center;
+  color: white;
+}
+
+.cta-section h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.cta-section p {
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 2rem;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.cta-btn {
+  padding: 0.875rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.cta-btn.white {
+  background: white;
+  color: #3b82f6;
+}
+
+.cta-btn.white:hover {
+  background: #f0f4ff;
+}
+
+.cta-btn.outline-white {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.cta-btn.outline-white:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+@media (max-width: 768px) {
+  .home-hero h1 {
+    font-size: 1.75rem;
+  }
+
+  .stats-grid,
+  .features-grid,
+  .jobs-grid,
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .role-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .category-card {
+    padding: 1.5rem;
+  }
+
+  .category-icon {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* Hero image floating animation */
+.hero-image {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Pulse animation for CTA buttons */
+.cta-btn.white {
+  animation: pulse 2s infinite;
+}
+
+/* Stats counter animation */
+.stat-item {
+  animation: countUp 0.8s ease-out forwards;
+}
+
+.stat-item:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.stat-item:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Feature card hover effect */
+.feature-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Job card hover effect */
+.job-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.job-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Button hover ripple effect */
+.role-btn,
+.action-btn,
+.cta-btn,
+.btn-apply {
+  position: relative;
+  overflow: hidden;
+}
+
+.role-btn::after,
+.action-btn::after,
+.cta-btn::after,
+.btn-apply::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.role-btn:active::after,
+.action-btn:active::after,
+.cta-btn:active::after,
+.btn-apply:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* Gradient shift animation for CTA section */
+.cta-section {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #3b82f6 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}

@@ -1,0 +1,661 @@
+<!-- HR Dashboard Page -->
+<style>
+  .hr-dashboard {
+    background-color: #f5f7fa;
+    min-height: calc(100vh - 64px);
+  }
+  
+  .hr-nav {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .hr-nav-link {
+    padding: 1rem 1.5rem;
+    color: #6b7280;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+  
+  .hr-nav-link:hover {
+    color: #3b82f6;
+  }
+  
+  .hr-nav-link.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+  }
+  
+  .stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .stat-icon.blue { background: #dbeafe; color: #3b82f6; }
+  .stat-icon.green { background: #d1fae5; color: #10b981; }
+  .stat-icon.yellow { background: #fef3c7; color: #f59e0b; }
+  .stat-icon.red { background: #fee2e2; color: #ef4444; }
+  
+  .stat-info h3 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #111827;
+  }
+  
+  .stat-info p {
+    color: #6b7280;
+    font-size: 0.875rem;
+  }
+  
+  .dashboard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-header h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .card-header a {
+    color: #3b82f6;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .applicant-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .applicant-item:last-child {
+    border-bottom: none;
+  }
+  
+  .applicant-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .applicant-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #e5e7eb;
+  }
+  
+  .applicant-name {
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .applicant-position {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+  
+  .btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  
+  .performance-item {
+    margin-bottom: 1rem;
+  }
+  
+  .performance-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  
+  .performance-title {
+    font-weight: 500;
+    color: #111827;
+    font-size: 0.875rem;
+  }
+  
+  .performance-count {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+  
+  .progress-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 9999px;
+    transition: width 0.3s;
+  }
+  
+  .schedule-item {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed #e5e7eb;
+  }
+  
+  .schedule-item:last-child {
+    border-bottom: none;
+  }
+  
+  .schedule-time {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #3b82f6;
+    min-width: 60px;
+  }
+  
+  .schedule-info h4 {
+    font-weight: 500;
+    color: #111827;
+    font-size: 0.875rem;
+  }
+  
+  .schedule-info p {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+  
+  .btn-post-job {
+    background: #3b82f6;
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: background 0.2s;
+  }
+  
+  .btn-post-job:hover {
+    background: #2563eb;
+  }
+  
+  .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  
+  .user-name {
+    font-weight: 500;
+    color: #111827;
+    font-size: 0.875rem;
+  }
+
+  /* Sidebar Styles */
+  .hr-layout {
+    display: flex;
+    min-height: calc(100vh - 64px);
+  }
+
+  .hr-sidebar {
+    width: 240px;
+    background: white;
+    border-right: 1px solid #e5e7eb;
+    padding: 1.5rem 0;
+    flex-shrink: 0;
+  }
+
+  .sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar-menu li {
+    margin: 0;
+  }
+
+  .sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    color: #6b7280;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+  }
+
+  .sidebar-menu a:hover {
+    background: #f3f4f6;
+    color: #3b82f6;
+  }
+
+  .sidebar-menu a.active {
+    background: #eff6ff;
+    color: #3b82f6;
+    border-right: 3px solid #3b82f6;
+  }
+
+  .sidebar-section-title {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 1rem;
+  }
+
+  .sidebar-cta {
+    margin: 1.5rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .sidebar-cta-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+  }
+
+  .sidebar-cta h4 {
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .sidebar-cta p {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .btn-sidebar-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    color: #3b82f6;
+    padding: 0.625rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .btn-sidebar-cta:hover {
+    background: #f0f4ff;
+    transform: translateY(-1px);
+  }
+
+  .hr-content {
+    flex: 1;
+    background-color: #f5f7fa;
+  }
+</style>
+
+<div class="hr-dashboard">
+  <!-- HR Navigation -->
+  <nav class="hr-nav">
+    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo -->
+        <div class="flex items-center">
+          <a href="/hr/dashboard" class="flex items-center space-x-2">
+            <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+              <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-xl font-bold text-gray-800">Lokerin</span>
+          </a>
+        </div>
+
+        <!-- HR Navigation Links -->
+        <div class="hidden md:flex items-center space-x-1">
+          <a href="/hr/dashboard" class="hr-nav-link active">
+            Dashboard
+          </a>
+          <a href="/hr/jobs" class="hr-nav-link">
+            Kelola Lowongan
+          </a>
+        </div>
+
+        <!-- Right Side -->
+        <div class="flex items-center space-x-4">
+          <div class="user-menu">
+            <div class="user-avatar">
+              <%= user.name.charAt(0).toUpperCase() %>
+            </div>
+            <span class="user-name"><%= user.name %></span>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="text-gray-500">
+              <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Layout with Sidebar -->
+  <div class="hr-layout">
+    <!-- Sidebar -->
+    <aside class="hr-sidebar">
+      <div class="sidebar-section-title">Menu Utama</div>
+      <ul class="sidebar-menu">
+        <li>
+          <a href="/hr/dashboard" class="active">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4H2.5z"/>
+            </svg>
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="/hr/jobs">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781zM10 14.5H6v-2h4v2zm1-4.781c-.068.878-.787 1.532-2.006 1.651l-.494.05V6.15l.494.05c1.219.119 1.938.773 2.006 1.65v2.65z"/>
+            </svg>
+            Kelola Lowongan
+          </a>
+        </li>
+        <li>
+          <a href="/chat">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2z"/>
+            </svg>
+            Pesan
+            <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+            <span class="unread-badge-nav ml-auto"><%= unreadCount %></span>
+            <% } %>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-section-title">Lowongan</div>
+      <ul class="sidebar-menu">
+        <li>
+          <a href="/hr/jobs">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+              <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+            </svg>
+            Kandidat
+          </a>
+        </li>
+      </ul>
+
+      <!-- CTA Button -->
+      <div class="sidebar-cta">
+        <div class="sidebar-cta-icon">
+          <svg width="24" height="24" fill="white" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+          </svg>
+        </div>
+        <h4>Pasang Lowongan Baru</h4>
+        <p>Cari kandidat terbaik untuk perusahaan Anda</p>
+        <a href="/hr/jobs/create" class="btn-sidebar-cta">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+          </svg>
+          Buat Lowongan
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="hr-content">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex justify-between items-start">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Halo, Tim HR! 👋</h1>
+          <p class="text-gray-600 mt-1">Berikut adalah ringkasan rekrutmen hari ini.</p>
+        </div>
+        <div class="text-sm text-gray-500 flex items-center gap-1">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM9.954 5.204a.5.5 0 0 0-.708-.708L7 6.742 5.254 4.996a.5.5 0 0 0-.708.708l2.5 2.5a.5.5 0 0 0 .708 0l2.2-2.2z"/>
+          </svg>
+          <%= today %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Total Pelamar -->
+      <div class="stat-card fade-in-up delay-100">
+        <div class="stat-icon blue">
+          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <h3><%= stats.totalApplicants %></h3>
+          <p>Total Pelamar</p>
+        </div>
+      </div>
+
+      <!-- Lowongan Aktif -->
+      <div class="stat-card fade-in-up delay-200">
+        <div class="stat-icon green">
+          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781zM10 14.5H6v-2h4v2zm1-4.781c-.068.878-.787 1.532-2.006 1.651l-.494.05V6.15l.494.05c1.219.119 1.938.773 2.006 1.65v2.65zM5 14.5V8.85l.494-.05c1.219-.119 1.938-.773 2.006-1.65V6.15l-.494-.05C5.787 7.281 5.068 7.935 5 8.85v5.65z"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <h3><%= stats.activeJobs %></h3>
+          <p>Lowongan Aktif</p>
+        </div>
+      </div>
+
+      <!-- Wawancara Hari Ini -->
+      <div class="stat-card fade-in-up delay-300">
+        <div class="stat-icon yellow">
+          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8l-4 4V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v7.337L0 15V2z"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <h3><%= stats.interviewsToday %></h3>
+          <p>Wawancara Hari Ini</p>
+        </div>
+      </div>
+
+      <!-- Pesan Baru -->
+      <div class="stat-card fade-in-up delay-400">
+        <div class="stat-icon red">
+          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V4zm2-1a1 1 0 0 0-1 1v10.566l3.566-3.567.193-.193A1 1 0 0 1 5.414 12H14a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2z"/>
+            <path d="M3 5.5a.5.5 0 1 1 1 0v1a.5.5 0 0 1-1 0v-1zm3 0a.5.5 0 1 1 1 0v1a.5.5 0 0 1-1 0v-1zm3 0a.5.5 0 1 1 1 0v1a.5.5 0 0 1-1 0v-1z"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <h3><%= stats.newMessages %></h3>
+          <p>Pesan Baru</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Pelamar Terbaru -->
+      <div class="lg:col-span-2 dashboard-card fade-in-up delay-100">
+        <div class="card-header">
+          <h2>Pelamar Terbaru</h2>
+          <a href="/hr/jobs">Lihat Semua</a>
+        </div>
+        
+        <% if (recentApplicants && recentApplicants.length > 0) { %>
+          <% recentApplicants.forEach(applicant => { %>
+            <div class="applicant-item">
+              <div class="applicant-info">
+                <img 
+                  src="<%= applicant.applicant_image || '/images/default-avatar.png' %>" 
+                  alt="<%= applicant.applicant_name %>"
+                  class="applicant-avatar"
+                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22 viewBox=%220 0 48 48%22%3E%3Crect fill=%22%23e5e7eb%22 width=%2248%22 height=%2248%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22%239ca3af%22%3E' + encodeURIComponent('<%= applicant.applicant_name.charAt(0) %>') + '%3C/text%3E%3C/svg%3E'"
+                >
+                <div>
+                  <div class="applicant-name"><%= applicant.applicant_name %></div>
+                  <div class="applicant-position">
+                    Melamar posisi 
+                    <span class="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                      <%= applicant.job_title %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <form action="/hr/applications/<%= applicant.id %>" method="POST" style="display: inline;">
+                  <input type="hidden" name="_method" value="PUT">
+                  <input type="hidden" name="status" value="diterima">
+                  <input type="hidden" name="returnUrl" value="/hr/dashboard">
+                  <button type="submit" class="btn-sm bg-blue-100 text-blue-700 hover:bg-blue-200">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display: inline; margin-right: 4px;">
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                    </svg>
+                    Panggil
+                  </button>
+                </form>
+                <form action="/hr/applications/<%= applicant.id %>" method="POST" style="display: inline;">
+                  <input type="hidden" name="_method" value="PUT">
+                  <input type="hidden" name="status" value="ditolak">
+                  <input type="hidden" name="returnUrl" value="/hr/dashboard">
+                  <button type="submit" class="btn-sm border border-gray-300 text-gray-600 hover:bg-gray-50">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display: inline;">
+                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="text-center py-8 text-gray-500">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+              <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+            </svg>
+            <p>Belum ada pelamar</p>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Right Column -->
+      <div class="space-y-6">
+        <!-- Performa Lowongan -->
+        <div class="dashboard-card fade-in-up delay-200">
+          <div class="card-header">
+            <h2>Performa Lowongan</h2>
+          </div>
+          
+          <% if (jobPerformance && jobPerformance.length > 0) { %>
+            <% const maxApplicants = Math.max(...jobPerformance.map(j => j.applicant_count)); %>
+            <% jobPerformance.slice(0, 5).forEach(job => { %>
+              <div class="performance-item">
+                <div class="performance-header">
+                  <span class="performance-title"><%= job.title %></span>
+                  <span class="performance-count"><%= job.applicant_count %> Pelamar</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: <%= maxApplicants > 0 ? (job.applicant_count / maxApplicants * 100) : 0 %>%"></div>
+                </div>
+              </div>
+            <% }); %>
+            <a href="/hr/jobs" class="text-blue-600 text-sm font-medium hover:underline mt-4 inline-block">
+              Lihat Analitik Lengkap →
+            </a>
+          <% } else { %>
+            <div class="text-center py-4 text-gray-500">
+              <p>Belum ada data</p>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Jadwal Hari Ini -->
+        <div class="dashboard-card fade-in-up delay-300">
+          <div class="card-header">
+            <h2>Jadwal Hari Ini</h2>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="text-blue-600">
+              <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM9.954 5.204a.5.5 0 0 0-.708-.708L7 6.742 5.254 4.996a.5.5 0 0 0-.708.708l2.5 2.5a.5.5 0 0 0 .708 0l2.2-2.2z"/>
+            </svg>
+          </div>
+          
+          <% if (todaySchedule && todaySchedule.length > 0) { %>
+            <% todaySchedule.slice(0, 5).forEach((item, index) => { %>
+              <div class="schedule-item">
+                <div class="schedule-time">
+                  <%= 10 + index %>:<%= index % 2 === 0 ? '00' : '30' %>
+                </div>
+                <div class="schedule-info">
+                  <h4>Wawancara Tahap <%= index + 1 %></h4>
+                  <p><%= item.applicant_name %> (<%= item.job_title %>)</p>
+                </div>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div class="text-center py-4 text-gray-500">
+              <p>Tidak ada jadwal hari ini</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

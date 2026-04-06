@@ -1,0 +1,155 @@
+<!-- New Dashboard Page (Protected) -->
+<link rel="stylesheet" href="/css/dashboard.css">
+
+<div class="dashboard-container">
+  
+  <!-- Header Greeting -->
+  <div class="dashboard-header">
+    <div class="greeting-section">
+      <h1>Halo, <%= typeof user !== 'undefined' ? user.name.split(' ')[0] : 'User' %>! 👋</h1>
+      <p>Berikut adalah ringkasan aktivitas karirmu hari ini.</p>
+    </div>
+    <a href="/profile" class="btn-update-cv">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px; display: inline-block;">
+        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5v.5a.5.5 0 0 1-.5.5H4a.5.5 0 0 1-.5-.5v-.5a.5.5 0 0 1 .146-.354z"/>
+      </svg>
+      Perbarui CV
+    </a>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <div class="stat-card fade-in-up delay-100">
+      <div class="stat-info">
+        <h3><%= typeof stats !== 'undefined' ? stats.applied : 0 %></h3>
+        <p>Lamaran Terkirim</p>
+      </div>
+      <div class="stat-icon blue">
+        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card fade-in-up delay-200">
+      <div class="stat-info">
+        <h3><%= typeof stats !== 'undefined' ? stats.views : 0 %></h3>
+        <p>Profil Dilihat HR</p>
+      </div>
+      <div class="stat-icon pink">
+        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+          <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card fade-in-up delay-300">
+      <div class="stat-info">
+        <h3><%= typeof stats !== 'undefined' ? stats.interviews : 0 %></h3>
+        <p>Jadwal Wawancara</p>
+      </div>
+      <div class="stat-icon green">
+        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+          <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="dashboard-grid">
+    
+    <!-- Left Column: Recommendations -->
+    <div class="recommendations-section">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <h2>Rekomendasi Untukmu</h2>
+          <a href="/jobs">Lihat Semua</a>
+        </div>
+        
+        <div class="jobs-list">
+          <% if (typeof jobs !== 'undefined' && jobs && jobs.length > 0) { %>
+            <% jobs.forEach(function(job) { %>
+            <div class="job-list-item">
+              <div class="job-mini-logo"></div>
+              <div class="job-mini-info">
+                <h4><%= job.title %></h4>
+                <p><%= job.company %> • <%= job.location %></p>
+              </div>
+              <form action="/jobs/apply/<%= job.id %>" method="POST">
+                <button type="submit" class="btn-apply-sm">Lamar</button>
+              </form>
+            </div>
+            <% }); %>
+          <% } else { %>
+            <p style="text-align: center; color: #6b7280;">Belum ada rekomendasi pekerjaan.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Sidebar -->
+    <div class="sidebar-section">
+      
+      <!-- Profile Completeness -->
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <h2>Kelengkapan Profil</h2>
+          <a href="/profile" style="color: #2563eb; text-decoration: none; font-size: 13px;">Sempurnakan</a>
+        </div>
+        
+        <% 
+          // Calculate simple profile completeness
+          let completeness = 20; // Base for registration
+          if (user.profile_image) completeness += 20;
+          if (user.banner_image || user.banner_color) completeness += 20;
+          if (user.bio) completeness += 20;
+          // Cap at 100
+          if (completeness > 100) completeness = 100;
+        %>
+        
+        <div class="progress-label">
+          <span style="font-weight: 600;"><%= completeness %>% Lengkap</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" style="width: <%= completeness %>%"></div>
+        </div>
+        <span class="progress-text">Tambahkan deskripsi diri dan foto untuk meningkatkan peluangmu.</span>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <h2>Aktivitas Terbaru</h2>
+        </div>
+        
+        <div class="activity-list">
+          <% if (typeof activity !== 'undefined' && activity && activity.length > 0) { %>
+            <% activity.forEach(function(act) { %>
+            <div class="activity-item">
+              <div class="activity-icon" style="<%= act.type === 'view' ? 'background: #dbeafe; color: #2563eb;' : (act.type === 'success' ? 'background: #d1fae5; color: #059669;' : 'background: #fef3c7; color: #d97706;') %>">
+                <% if (act.type === 'view') { %>
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"/></svg>
+                <% } else if (act.type === 'success') { %>
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                <% } else { %>
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+                <% } %>
+              </div>
+              <div class="activity-content">
+                <h4><%= act.message %></h4>
+                <p><%= act.time %></p>
+              </div>
+            </div>
+            <% }); %>
+          <% } else { %>
+            <p style="color: #6b7280; font-size: 14px;">Belum ada aktivitas terbaru.</p>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

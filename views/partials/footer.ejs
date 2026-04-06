@@ -1,0 +1,50 @@
+<!-- Footer Component -->
+<footer class="bg-gray-50 border-t border-gray-200 mt-auto">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Brand -->
+      <div>
+        <div class="flex items-center space-x-2 mb-3">
+          <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M6.5 14.5v-3a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5ZM6.5 8V6.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5ZM5 5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 5V5Zm.5-3a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-5ZM3 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12Z"/>
+            </svg>
+          </div>
+          <span class="text-lg font-bold text-gray-800">Lokerin</span>
+        </div>
+        <p class="text-gray-600 text-sm">
+          Platform pencarian kerja yang menghubungkan pencari kerja dan HR.
+        </p>
+      </div>
+      
+      <!-- Quick Links -->
+      <div>
+        <h3 class="font-semibold text-gray-800 mb-3">Quick Links</h3>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/" class="text-gray-600 hover:text-gray-900">Dashboard</a></li>
+          <li><a href="/jobs" class="text-gray-600 hover:text-gray-900">Find Jobs</a></li>
+          <% if (typeof user !== 'undefined' && user) { %>
+          <li><a href="/applications" class="text-gray-600 hover:text-gray-900">Lamaran Saya</a></li>
+          <li><a href="/profile" class="text-gray-600 hover:text-gray-900">Profile</a></li>
+          <% } %>
+        </ul>
+      </div>
+      
+      <!-- Contact -->
+      <div>
+        <h3 class="font-semibold text-gray-800 mb-3">Contact</h3>
+        <ul class="space-y-2 text-sm text-gray-600">
+          <li>Email: info@lokerin.com</li>
+          <li>Phone: +62 123 4567 890</li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Copyright -->
+    <div class="border-t border-gray-300 mt-8 pt-6 text-center">
+      <p class="text-gray-600 text-sm">
+        &copy; 2024 Lokerin. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>

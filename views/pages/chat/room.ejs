@@ -1,0 +1,176 @@
+<!-- Chat Room Page -->
+<div class="chat-room-wrapper">
+  
+  <!-- Chat Header -->
+  <div class="chat-room-header">
+    <div class="chat-header-left">
+      <a href="/chat" class="back-button">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+      </a>
+      
+      <div class="chat-header-info">
+        <div class="chat-avatar">
+          <span><%= otherParty.name.charAt(0).toUpperCase() %></span>
+        </div>
+        <div class="chat-user-details">
+          <h2><%= otherParty.name %></h2>
+          <span class="chat-role"><%= otherParty.role %></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-job-info">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M6.5 1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V2h2a.5.5 0 0 1 .5.5v2h1a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V5.5a.5.5 0 0 1 .5-.5h1V2h2v-.5z"/>
+      </svg>
+      <span><%= conversation.company %></span>
+      <span class="job-title">- <%= conversation.job_title %></span>
+    </div>
+  </div>
+
+  <!-- Messages Container -->
+  <div class="chat-messages" id="chat-messages">
+    <% if (messages && messages.length > 0) { %>
+      <% messages.forEach(function(msg) { %>
+      <div class="message-wrapper <%= msg.sender_id === currentUserId ? 'sent' : 'received' %>">
+        <div class="message-bubble">
+          <p><%= msg.message %></p>
+          <span class="message-time">
+            <%= new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %>
+          </span>
+        </div>
+      </div>
+      <% }); %>
+    <% } else { %>
+      <div class="no-messages">
+        <p>Belum ada pesan. Mulai percakapan!</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Message Input -->
+  <div class="chat-input-container">
+    <form id="chat-form" class="chat-input-form">
+      <input 
+        type="hidden" 
+        name="conversation_id" 
+        value="<%= conversation.id %>"
+      >
+      <textarea 
+        name="message" 
+        id="message-input"
+        placeholder="Ketik pesan..."
+        rows="1"
+        required
+      ></textarea>
+      <button type="submit" class="send-button">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+</div>
+
+<script>
+  const chatForm = document.getElementById('chat-form');
+  const messageInput = document.getElementById('message-input');
+  const messagesContainer = document.getElementById('chat-messages');
+  const conversationId = '<%= conversation.id %>';
+
+  // Scroll to bottom on load
+  function scrollToBottom() {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+  scrollToBottom();
+
+  // Send message
+  chatForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    try {
+      const response = await fetch('/chat/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          conversation_id: conversationId,
+          message: message
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Add message to UI
+        const messageHtml = `
+          <div class="message-wrapper sent">
+            <div class="message-bubble">
+              <p>${message}</p>
+              <span class="message-time">${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+          </div>
+        `;
+        messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+        
+        // Clear input and scroll
+        messageInput.value = '';
+        scrollToBottom();
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Gagal mengirim pesan');
+    }
+  });
+
+  // Auto-resize textarea
+  messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  // Poll for new messages every 3 seconds
+  let lastMessageTime = '<%= messages && messages.length > 0 ? messages[messages.length - 1].created_at : '' %>';
+  
+  setInterval(async function() {
+    try {
+      const url = lastMessageTime 
+        ? `/chat/api/${conversationId}/messages?since=${encodeURIComponent(lastMessageTime)}`
+        : `/chat/api/${conversationId}/messages`;
+
+      const response = await fetch(url, {
+        credentials: 'same-origin'
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.messages.length > 0) {
+        data.messages.forEach(function(msg) {
+          if (msg.sender_id != '<%= currentUserId %>') {
+            const messageHtml = `
+              <div class="message-wrapper received">
+                <div class="message-bubble">
+                  <p>${msg.message}</p>
+                  <span class="message-time">${new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              </div>
+            `;
+            messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+            scrollToBottom();
+          }
+          lastMessageTime = msg.created_at;
+        });
+      }
+    } catch (error) {
+      console.error('Error polling messages:', error);
+    }
+  }, 3000);
+</script>

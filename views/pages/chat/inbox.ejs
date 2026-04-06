@@ -1,0 +1,100 @@
+<!-- Chat Inbox Page -->
+<div class="chat-inbox-wrapper">
+  <div class="chat-inbox-container">
+    
+    <!-- Header -->
+    <div class="chat-inbox-header">
+      <h1>Pesan</h1>
+      <p>Komunikasi dengan HR dan pelamar</p>
+    </div>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert-box alert-error">
+      <%= error %>
+    </div>
+    <% } %>
+
+    <!-- Conversations List -->
+    <% if (typeof conversations !== 'undefined' && conversations && conversations.length > 0) { %>
+      <div class="conversations-list">
+        <% conversations.forEach(function(conv) { %>
+        <a href="/chat/<%= conv.conversation_id %>" class="conversation-item <%= conv.unread_count > 0 ? 'unread' : '' %>">
+          
+          <!-- Avatar -->
+          <div class="conv-avatar">
+            <% if (isApplicant) { %>
+              <span><%= conv.hr_name.charAt(0).toUpperCase() %></span>
+            <% } else { %>
+              <span><%= conv.applicant_name.charAt(0).toUpperCase() %></span>
+            <% } %>
+          </div>
+
+          <!-- Info -->
+          <div class="conv-info">
+            <div class="conv-header">
+              <h3 class="conv-name">
+                <%= isApplicant ? conv.hr_name : conv.applicant_name %>
+              </h3>
+              <span class="conv-time">
+                <%= conv.last_message_time ? formatTimeAgo(conv.last_message_time) : '' %>
+              </span>
+            </div>
+
+            <div class="conv-job">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M6.5 1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V2h2a.5.5 0 0 1 .5.5v2h1a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V5.5a.5.5 0 0 1 .5-.5h1V2h2v-.5z"/>
+              </svg>
+              <span><%= conv.company %></span>
+              <span class="job-title">- <%= conv.job_title %></span>
+            </div>
+
+            <p class="conv-last-message">
+              <%= conv.last_message ? (conv.last_message.length > 50 ? conv.last_message.substring(0, 50) + '...' : conv.last_message) : 'Belum ada pesan' %>
+            </p>
+          </div>
+
+          <!-- Unread Badge -->
+          <% if (conv.unread_count > 0) { %>
+          <div class="conv-unread">
+            <span class="unread-badge"><%= conv.unread_count %></span>
+          </div>
+          <% } %>
+
+        </a>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <!-- Empty State -->
+      <div class="chat-empty-state">
+        <div class="empty-icon">💬</div>
+        <h3>Belum ada pesan</h3>
+        <p>
+          <% if (isApplicant) { %>
+            Mulai chat dengan HR setelah melamar pekerjaan
+          <% } else { %>
+            Pelamar akan menghubungi Anda setelah melamar
+          <% } %>
+        </p>
+        <% if (isApplicant) { %>
+        <a href="/jobs" class="btn-primary">Cari Pekerjaan</a>
+        <% } %>
+      </div>
+    <% } %>
+
+  </div>
+</div>
+
+<script>
+  function formatTimeAgo(dateString) {
+    const now = new Date();
+    const date = new Date(dateString);
+    const seconds = Math.floor((now - date) / 1000);
+
+    if (seconds < 60) return 'Baru saja';
+    if (seconds < 3600) return Math.floor(seconds / 60) + ' menit lalu';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + ' jam lalu';
+    if (seconds < 604800) return Math.floor(seconds / 86400) + ' hari lalu';
+    
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  }
+</script>

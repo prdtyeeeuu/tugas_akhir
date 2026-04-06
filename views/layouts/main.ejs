@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'Lokerin' %></title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FFFFFF',
+            secondary: '#ADCEFF',
+            'secondary-light': '#C3ADFF',
+          },
+        },
+      },
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Profile Page Styles -->
+  <link rel="stylesheet" href="/css/profile.css">
+
+  <!-- Find Jobs Page Styles -->
+  <link rel="stylesheet" href="/css/find-jobs.css">
+
+  <!-- My Applications Page Styles -->
+  <link rel="stylesheet" href="/css/my-applications.css">
+
+  <!-- Chat Page Styles -->
+  <link rel="stylesheet" href="/css/chat.css">
+
+  <!-- Dashboard Page Styles -->
+  <link rel="stylesheet" href="/css/dashboard.css">
+
+  <!-- Profile Structured Styles -->
+  <link rel="stylesheet" href="/css/profile-structured.css">
+
+  <!-- Homepage Styles -->
+  <% if (typeof title !== 'undefined' && title && title.includes('Lokerin - Temukan')) { %>
+  <link rel="stylesheet" href="/css/home.css">
+  <% } %>
+
+  <!-- Job Detail Styles -->
+  <% if (typeof title !== 'undefined' && title && title.includes(' - ')) { %>
+  <link rel="stylesheet" href="/css/job-detail.css">
+  <% } %>
+
+  <!-- Profile New Styles -->
+  <% if (typeof title !== 'undefined' && title && title.toLowerCase().includes('profile')) { %>
+  <link rel="stylesheet" href="/css/profile-new.css">
+  <% } %>
+
+  <!-- Global Scroll Animations -->
+  <link rel="stylesheet" href="/css/animations.css">
+
+  <!-- Custom Styles -->
+  <style>
+    /* Navbar Unread Badge */
+    .unread-badge-nav {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 6px;
+      background: #dc2626;
+      color: white;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #FFFFFF;
+      color: #1a1a1a;
+    }
+
+    .gradient-hero {
+      background: linear-gradient(135deg, #ADCEFF 0%, #C3ADFF 100%);
+    }
+
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Navbar -->
+  <%- include('../partials/navbar') %>
+
+  <!-- Main Content -->
+  <main class="flex-grow">
+    <%- body %>
+  </main>
+
+  <!-- Footer -->
+  <%- include('../partials/footer') %>
+
+  <!-- Scripts -->
+  <script src="/js/main.js"></script>
+
+  <!-- Global Scroll Animation Script -->
+  <script>
+    // Intersection Observer for scroll animations (runs on all pages)
+    document.addEventListener('DOMContentLoaded', function() {
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      // Observe all animated elements
+      const animatedElements = document.querySelectorAll(
+        '.animate-on-scroll, .fade-in-up, .fade-in-down, .fade-in-left, .fade-in-right, .scale-in, .zoom-in, .slide-up, .slide-down'
+      );
+
+      animatedElements.forEach(el => {
+        observer.observe(el);
+      });
+    });
+  </script>
+</body>
+</html>
