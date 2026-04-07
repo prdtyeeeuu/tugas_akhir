@@ -193,9 +193,13 @@
       <div class="job-card">
         <div class="job-card-header">
           <div class="job-card-company">
-            <div class="company-logo">
-              <%= job.company.charAt(0) %>
-            </div>
+            <% if (job.company_logo) { %>
+              <img src="/images/companies/<%= job.company_logo %>" alt="Logo <%= job.company %>" class="company-logo">
+            <% } else { %>
+              <div class="company-logo flex items-center justify-center text-blue-600 font-bold text-xl bg-blue-50 border border-blue-100" style="display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 600; color: white; border: none;">
+                <%= job.company ? job.company.charAt(0).toUpperCase() : '?' %>
+              </div>
+            <% } %>
             <div>
               <div class="job-card-title"><%= job.title %></div>
               <div class="job-card-company-name"><%= job.company %> · <%= job.location %></div>

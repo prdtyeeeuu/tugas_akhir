@@ -101,22 +101,26 @@
         </div>
         
         <% 
-          // Calculate simple profile completeness
-          let completeness = 20; // Base for registration
-          if (user.profile_image) completeness += 20;
-          if (user.banner_image || user.banner_color) completeness += 20;
-          if (user.bio) completeness += 20;
-          // Cap at 100
-          if (completeness > 100) completeness = 100;
+          // Use completeness from backend (calculated by Profile.calculateCompleteness)
+          let completenessScore = typeof completeness !== 'undefined' ? completeness : 0;
+          // Fallback calculation if backend didn't provide it
+          if (!completeness) {
+            completenessScore = 20;
+            if (user.profile_image) completenessScore += 20;
+            if (user.banner_image || user.banner_color) completenessScore += 20;
+            if (user.bio) completenessScore += 20;
+            if (completenessScore > 100) completenessScore = 100;
+          }
+          const completenessText = completenessScore >= 80 ? 'Profil Anda hampir sempurna!' : completenessScore >= 50 ? 'Tambahkan keahlian dan pengalaman kerja.' : 'Lengkapi foto, bio, keahlian, dan pengalaman.';
         %>
         
         <div class="progress-label">
-          <span style="font-weight: 600;"><%= completeness %>% Lengkap</span>
+          <span style="font-weight: 600;"><%= completenessScore %>% Lengkap</span>
         </div>
         <div class="progress-bar-bg">
-          <div class="progress-bar-fill" style="width: <%= completeness %>%"></div>
+          <div class="progress-bar-fill" style="width: <%= completenessScore %>%"></div>
         </div>
-        <span class="progress-text">Tambahkan deskripsi diri dan foto untuk meningkatkan peluangmu.</span>
+        <span class="progress-text"><%= completenessText %></span>
       </div>
 
       <!-- Recent Activity -->

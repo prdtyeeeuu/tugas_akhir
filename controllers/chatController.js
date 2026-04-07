@@ -37,11 +37,14 @@ const checkApplicationExists = async (req, res, next) => {
 
 /**
  * Menampilkan halaman inbox chat
+ * Logika role:
+ * - isApplicant = true → job seeker (pencari kerja)
+ * - isApplicant = false → HR (pencari karyawan)
  */
 const showInbox = async (req, res) => {
   try {
     const userId = req.user.id;
-    const isApplicant = !req.user.isHR; // Asumsi ada flag isHR
+    const isApplicant = req.user.role === 'job_seeker';
 
     // Get conversations
     const conversations = await Chat.getConversations(userId, true);
@@ -61,7 +64,7 @@ const showInbox = async (req, res) => {
       title: 'Pesan - Lokerin',
       conversations: [],
       unreadCount: 0,
-      isApplicant: true,
+      isApplicant: false,
       error: 'Gagal memuat pesan'
     });
   }

@@ -1,0 +1,388 @@
+<!-- HR Homepage -->
+<div class="font-sans bg-white text-gray-900 antialiased">
+
+    <!-- ==================== HERO ==================== -->
+    <section class="pt-28 pb-16 lg:pt-36 lg:pb-24 hero-pattern">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center">
+                <!-- Badge -->
+                <div class="animate-fade-in-up inline-flex items-center gap-2 px-3 py-1.5 mb-6 bg-brand-50 border border-brand-100 rounded-full">
+                    <span class="w-1.5 h-1.5 bg-brand-500 rounded-full animate-pulse"></span>
+                    <span class="text-xs font-semibold text-brand-700"><%= stats.totalCandidates %> kandidat baru hari ini</span>
+                </div>
+
+                <h1 class="animate-fade-in-up-delay-1 text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight leading-[1.1]">
+                    Temukan Kandidat<br>
+                    <span class="text-brand-600">Terbaik</span> untuk Tim Anda
+                </h1>
+
+                <p class="animate-fade-in-up-delay-2 mt-5 text-lg sm:text-xl text-gray-500 leading-relaxed max-w-2xl mx-auto">
+                    Kelola seluruh proses rekrutmen dari satu platform. Posting lowongan, saring kandidat, dan jadwalkan interview dengan mudah.
+                </p>
+
+                <!-- CTA Buttons -->
+                <div class="animate-fade-in-up-delay-3 mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <a href="/hr/jobs/create" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-brand-600/25 hover:shadow-brand-600/40 transition-all duration-200">
+                        <i data-lucide="plus-circle" class="w-4.5 h-4.5"></i>
+                        Posting Lowongan Baru
+                    </a>
+                    <a href="#kandidat" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-gray-50 text-gray-700 font-semibold text-sm rounded-xl border border-gray-200 shadow-sm transition-all duration-200">
+                        <i data-lucide="users" class="w-4.5 h-4.5"></i>
+                        Lihat Kandidat
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== STATS ==================== -->
+    <section class="pb-16 lg:pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="animate-fade-in-up-delay-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-brand-100 transition-all duration-300 group">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 bg-brand-50 group-hover:bg-brand-100 rounded-xl flex items-center justify-center transition-colors">
+                            <i data-lucide="file-text" class="w-5 h-5 text-brand-600"></i>
+                        </div>
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                            <i data-lucide="trending-up" class="w-3 h-3"></i>
+                            +<%= stats.jobsGrowth %>%
+                        </span>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900 stat-number"><%= stats.activeJobs %></p>
+                    <p class="text-sm text-gray-500 mt-0.5">Lowongan Aktif</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-brand-100 transition-all duration-300 group">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 bg-blue-50 group-hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors">
+                            <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+                        </div>
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                            <i data-lucide="trending-up" class="w-3 h-3"></i>
+                            +<%= stats.applicantsGrowth %>%
+                        </span>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900 stat-number"><%= stats.totalApplicants %></p>
+                    <p class="text-sm text-gray-500 mt-0.5">Total Pelamar</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-brand-100 transition-all duration-300 group">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 bg-violet-50 group-hover:bg-violet-100 rounded-xl flex items-center justify-center transition-colors">
+                            <i data-lucide="calendar-check" class="w-5 h-5 text-violet-600"></i>
+                        </div>
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                            <i data-lucide="trending-up" class="w-3 h-3"></i>
+                            +<%= stats.interviewsGrowth %>%
+                        </span>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900 stat-number"><%= stats.totalInterviews %></p>
+                    <p class="text-sm text-gray-500 mt-0.5">Interview Terjadwal</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-brand-100 transition-all duration-300 group">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 bg-emerald-50 group-hover:bg-emerald-100 rounded-xl flex items-center justify-center transition-colors">
+                            <i data-lucide="user-check" class="w-5 h-5 text-emerald-600"></i>
+                        </div>
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                            <i data-lucide="trending-up" class="w-3 h-3"></i>
+                            +<%= stats.hiredGrowth %>%
+                        </span>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900 stat-number"><%= stats.totalHired %></p>
+                    <p class="text-sm text-gray-500 mt-0.5">Kandidat Diterima</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== QUICK ACTIONS ==================== -->
+    <section class="pb-16 lg:pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <a href="/hr/jobs/create" class="group flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100 hover:border-brand-200 hover:shadow-lg transition-all duration-300 text-left">
+                    <div class="flex-shrink-0 w-12 h-12 bg-brand-600 group-hover:bg-brand-700 rounded-2xl flex items-center justify-center transition-colors shadow-lg shadow-brand-600/20">
+                        <i data-lucide="plus" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900">Buat Lowongan</p>
+                        <p class="text-sm text-gray-500 mt-0.5">Posting lowongan kerja baru</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-auto group-hover:text-brand-400 group-hover:translate-x-1 transition-all"></i>
+                </a>
+                <a href="/hr/applications" class="group flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 text-left">
+                    <div class="flex-shrink-0 w-12 h-12 bg-blue-600 group-hover:bg-blue-700 rounded-2xl flex items-center justify-center transition-colors shadow-lg shadow-blue-600/20">
+                        <i data-lucide="inbox" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900">Kelola Lamaran</p>
+                        <p class="text-sm text-gray-500 mt-0.5"><%= stats.pendingApplications %> lamaran menunggu review</p>
+                    </div>
+                    <% if (stats.pendingApplications > 0) { %>
+                    <span class="flex-shrink-0 ml-auto mr-2 inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold text-white bg-red-500 rounded-full"><%= stats.pendingApplications %></span>
+                    <% } %>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-blue-400 group-hover:translate-x-1 transition-all"></i>
+                </a>
+                <a href="/hr/interviews" class="group flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100 hover:border-violet-200 hover:shadow-lg transition-all duration-300 text-left">
+                    <div class="flex-shrink-0 w-12 h-12 bg-violet-600 group-hover:bg-violet-700 rounded-2xl flex items-center justify-center transition-colors shadow-lg shadow-violet-600/20">
+                        <i data-lucide="video" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900">Jadwalkan Interview</p>
+                        <p class="text-sm text-gray-500 mt-0.5">Atur jadwal dengan kandidat</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-auto group-hover:text-violet-400 group-hover:translate-x-1 transition-all"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== LOWONGAN AKTIF ==================== -->
+    <section id="lowongan" class="pb-16 lg:pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-end justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Lowongan Aktif</h2>
+                    <p class="text-sm text-gray-500 mt-1">Kelola semua lowongan yang sedang dibuka</p>
+                </div>
+                <a href="/hr/jobs" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+                    Lihat Semua
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+
+            <% if (jobs && jobs.length > 0) { %>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <% jobs.slice(0, 4).forEach(function(job) { 
+                    var initials = (job.company || 'XX').substring(0, 2).toUpperCase();
+                    var bgColor = ['blue', 'violet', 'amber', 'rose', 'emerald', 'cyan'][Math.floor(Math.random() * 6)];
+                    var applicationCount = job.application_count || 0;
+                    var viewCount = job.view_count || 0;
+                %>
+                <div class="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-brand-100 transition-all duration-300">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 bg-<%= bgColor %>-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <span class="text-sm font-bold text-<%= bgColor %>-700"><%= initials %></span>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors"><%= job.title %></h3>
+                                <p class="text-sm text-gray-500"><%= job.company %></p>
+                            </div>
+                        </div>
+                        <span class="flex-shrink-0 inline-flex items-center px-2.5 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100">Aktif</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-gray-50 text-gray-600 rounded-lg">
+                            <i data-lucide="map-pin" class="w-3 h-3"></i> 
+                            <%= job.location || 'Tidak ditentukan' %>
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-gray-50 text-gray-600 rounded-lg">
+                            <i data-lucide="clock" class="w-3 h-3"></i> 
+                            <%= job.type || 'Full-time' %>
+                        </span>
+                        <% if (job.salary_min && job.salary_max) { %>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-gray-50 text-gray-600 rounded-lg">
+                            <i data-lucide="banknote" class="w-3 h-3"></i> 
+                            <%= formatSalary(job.salary_min) %>–<%= formatSalary(job.salary_max) %>
+                        </span>
+                        <% } %>
+                    </div>
+                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
+                        <div class="flex items-center gap-4 text-xs text-gray-500">
+                            <span class="inline-flex items-center gap-1">
+                                <i data-lucide="users" class="w-3.5 h-3.5"></i> 
+                                <%= applicationCount %> pelamar
+                            </span>
+                            <span class="inline-flex items-center gap-1">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i> 
+                                <%= viewCount > 1000 ? (viewCount / 1000).toFixed(1) + 'k' : viewCount %> dilihat
+                            </span>
+                        </div>
+                        <a href="/hr/jobs/<%= job.id %>" class="text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors">Detail →</a>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+            <% } else { %>
+            <div class="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                <i data-lucide="briefcase" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Lowongan</h3>
+                <p class="text-sm text-gray-500 mb-6">Mulai posting lowongan pertama Anda untuk menemukan kandidat terbaik.</p>
+                <a href="/hr/jobs/create" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-lg transition-all">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    Buat Lowongan Pertama
+                </a>
+            </div>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- ==================== KANDIDAT TERBARU ==================== -->
+    <section id="kandidat" class="pb-16 lg:pb-20 bg-gray-50/70">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+            <div class="flex items-end justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Kandidat Terbaru</h2>
+                    <p class="text-sm text-gray-500 mt-1">Pelamar yang baru mendaftar dalam 24 jam terakhir</p>
+                </div>
+                <a href="/hr/applications" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+                    Lihat Semua
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+
+            <% if (recentApplicants && recentApplicants.length > 0) { %>
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                <!-- Table Header -->
+                <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <div class="col-span-4">Kandidat</div>
+                    <div class="col-span-3">Posisi yang Dilamar</div>
+                    <div class="col-span-2">Pengalaman</div>
+                    <div class="col-span-2">Status</div>
+                    <div class="col-span-1 text-right">Aksi</div>
+                </div>
+
+                <% recentApplicants.forEach(function(applicant) {
+                    var initials = (applicant.name || 'XX').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                    var bgColor = ['brand', 'violet', 'emerald', 'rose', 'amber', 'blue'][Math.floor(Math.random() * 6)];
+                %>
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 border-b border-gray-50 hover:bg-brand-50/30 transition-colors items-center">
+                    <div class="col-span-4 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-<%= bgColor %>-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-xs font-bold text-<%= bgColor %>-700"><%= initials %></span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-900"><%= applicant.name %></p>
+                            <p class="text-xs text-gray-500"><%= applicant.email %></p>
+                        </div>
+                    </div>
+                    <div class="col-span-3 text-sm text-gray-600"><%= applicant.job_title %></div>
+                    <div class="col-span-2 text-sm text-gray-600">
+                        <% if (applicant.experience_years) { %>
+                            <%= applicant.experience_years %> tahun
+                        <% } else { %>
+                            -
+                        <% } %>
+                    </div>
+                    <div class="col-span-2">
+                        <% if (applicant.status === 'pending') { %>
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold bg-amber-50 text-amber-700 rounded-lg border border-amber-100">Baru</span>
+                        <% } else if (applicant.status === 'review') { %>
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700 rounded-lg border border-blue-100">Review</span>
+                        <% } else if (applicant.status === 'interview') { %>
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100">Interview</span>
+                        <% } else { %>
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold bg-gray-50 text-gray-700 rounded-lg border border-gray-100"><%= applicant.status %></span>
+                        <% } %>
+                    </div>
+                    <div class="col-span-1 flex justify-end">
+                        <a href="/hr/applications/<%= applicant.id %>" class="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+            <% } else { %>
+            <div class="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                <i data-lucide="users" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Kandidat</h3>
+                <p class="text-sm text-gray-500">Kandidat akan muncul di sini setelah ada yang melamar lowongan Anda.</p>
+            </div>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- ==================== FITUR ==================== -->
+    <section id="fitur" class="pb-16 lg:pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-brand-700 bg-brand-50 rounded-full border border-brand-100 mb-4">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    Fitur Unggulan
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Semua yang Anda Butuhkan<br>untuk Rekrutmen Efisien</h2>
+                <p class="text-gray-500 mt-3">Dari posting lowongan hingga onboarding, semuanya dalam satu platform.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-brand-200 hover:shadow-lg transition-all duration-300">
+                    <div class="w-12 h-12 bg-brand-50 group-hover:bg-brand-100 rounded-2xl flex items-center justify-center mb-4 transition-colors">
+                        <i data-lucide="megaphone" class="w-6 h-6 text-brand-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1.5">Posting Cepat</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Buat dan publikasikan lowongan kerja dalam hitungan menit dengan template yang siap pakai.</p>
+                </div>
+
+                <div class="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
+                    <div class="w-12 h-12 bg-blue-50 group-hover:bg-blue-100 rounded-2xl flex items-center justify-center mb-4 transition-colors">
+                        <i data-lucide="filter" class="w-6 h-6 text-blue-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1.5">Smart Filtering</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Saring kandidat berdasarkan skill, pengalaman, lokasi, dan kriteria lainnya secara otomatis.</p>
+                </div>
+
+                <div class="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-violet-200 hover:shadow-lg transition-all duration-300">
+                    <div class="w-12 h-12 bg-violet-50 group-hover:bg-violet-100 rounded-2xl flex items-center justify-center mb-4 transition-colors">
+                        <i data-lucide="message-square" class="w-6 h-6 text-violet-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1.5">Kirim Pesan Langsung</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Hubungi kandidat langsung melalui chat terintegrasi tanpa perlu keluar dari platform.</p>
+                </div>
+
+                <div class="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-emerald-200 hover:shadow-lg transition-all duration-300">
+                    <div class="w-12 h-12 bg-emerald-50 group-hover:bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 transition-colors">
+                        <i data-lucide="calendar" class="w-6 h-6 text-emerald-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1.5">Jadwal Interview</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Atur jadwal interview otomatis yang tersinkronisasi dengan kalender Anda.</p>
+                </div>
+
+                <div class="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-amber-200 hover:shadow-lg transition-all duration-300">
+                    <div class="w-12 h-12 bg-amber-50 group-hover:bg-amber-100 rounded-2xl flex items-center justify-center mb-4 transition-colors">
+                        <i data-lucide="bar-chart-3" class="w-6 h-6 text-amber-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1.5">Analytics Rekrutmen</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Pantau performa lowongan, waktu hire, dan metrik rekrutmen lainnya secara real-time.</p>
+                </div>
+
+                <div class="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-rose-200 hover:shadow-lg transition-all duration-300">
+                    <div class="w-12 h-12 bg-rose-50 group-hover:bg-rose-100 rounded-2xl flex items-center justify-center mb-4 transition-colors">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-rose-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1.5">Verifikasi Kandidat</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Pastikan keaslian data kandidat dengan sistem verifikasi background terintegrasi.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA SECTION ==================== -->
+    <section class="pb-16 lg:pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative overflow-hidden bg-brand-600 rounded-3xl px-8 py-14 lg:px-16 lg:py-20 text-center">
+                <!-- Decorative Elements -->
+                <div class="absolute top-0 left-0 w-64 h-64 bg-brand-500 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-50"></div>
+                <div class="absolute bottom-0 right-0 w-80 h-80 bg-brand-700 rounded-full translate-x-1/3 translate-y-1/3 opacity-40"></div>
+                <div class="absolute top-1/2 left-1/4 w-2 h-2 bg-white/30 rounded-full"></div>
+                <div class="absolute top-1/4 right-1/3 w-3 h-3 bg-white/20 rounded-full"></div>
+
+                <div class="relative z-10">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">Siap Mempercepat Proses<br>Rekrutmen Anda?</h2>
+                    <p class="mt-4 text-brand-100 text-lg max-w-xl mx-auto">Posting lowongan pertama Anda hari ini dan temukan kandidat ideal dalam waktu lebih singkat.</p>
+                    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <a href="/hr/jobs/create" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-brand-700 font-semibold text-sm rounded-xl shadow-lg hover:bg-brand-50 transition-all duration-200">
+                            <i data-lucide="plus-circle" class="w-4.5 h-4.5"></i>
+                            Posting Lowongan Sekarang
+                        </a>
+                        <a href="/contact" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-sm rounded-xl border border-brand-500 transition-all duration-200">
+                            <i data-lucide="headphones" class="w-4.5 h-4.5"></i>
+                            Hubungi Tim Kami
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>

@@ -4,13 +4,38 @@
  */
 const Job = require('../models/Job');
 const Application = require('../models/Application');
+const Profile = require('../models/Profile');
 
 /**
  * Menampilkan halaman Home (Public)
  * Homepage untuk semua user (belum login atau sudah login)
+ * Membedakan tampilan untuk HR dan Job Seeker
  */
 const showHome = async (req, res) => {
   try {
+    // Cek apakah user sudah login dan merupakan HR
+    const token = req.session?.token;
+    let isHR = false;
+    
+    if (token) {
+      const jwt = require('jsonwebtoken');
+      const JWT_SECRET = process.env.JWT_SECRET || 'lokerin-secret-key-2024';
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded.role === 'hr') {
+          isHR = true;
+        }
+      } catch (e) {
+        // Token tidak valid, abaikan
+      }
+    }
+
+    // Jika user adalah HR, arahkan ke homepage HR
+    if (isHR) {
+      return res.redirect('/hr/home');
+    }
+
+    // Untuk job seeker dan guest, tampilkan homepage job seeker
     // Ambil job terbaru untuk rekomendasi (max 6)
     const recentJobs = await Job.findRecent(6);
 
@@ -88,15 +113,18 @@ const showDashboard = async (req, res) => {
     // Ambil job terbaru untuk rekomendasi
     const jobs = await Job.findRecent(6);
 
-    // Statistik Sederhana (Mock Data & Basic Count)
-    // Note: 'views' is mocked because we don't track profile views yet
+    // Statistik dari Database (Real Data)
     const userId = req.user.id;
     const applications = await Application.findByUserId(userId);
+    const appStats = await Application.getStats(userId);
 
     const stats = {
-      applied: applications.length,
-      views: Math.floor(Math.random() * 50) + 10, // Mock random views for demo
-      interviews: applications.filter(app => app.status === 'interview').length
+      applied: appStats.total,
+      views: 0, // TODO: Implement profile views tracking
+      interviews: appStats.interview,
+      accepted: appStats.accepted,
+      pending: appStats.pending,
+      rejected: appStats.rejected
     };
 
     // Mock Activity Data
@@ -116,11 +144,23 @@ const showDashboard = async (req, res) => {
       });
     }
 
+    // Hitung kelengkapan profil dari DB
+    let completeness = 0;
+    try {
+      completeness = await Profile.calculateCompleteness(userId);
+    } catch(e) {
+      // Fallback jika tabel belum ada
+      completeness = 20;
+      if (req.user.profile_image) completeness += 20;
+      if (req.user.bio) completeness += 10;
+    }
+
     res.render('pages/dashboard', {
       title: 'Dashboard - Lokerin',
       jobs,
       stats,
-      activity
+      activity,
+      completeness
     });
   } catch (error) {
     console.error('Dashboard error:', error);

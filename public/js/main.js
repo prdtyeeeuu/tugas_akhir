@@ -21,10 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // Confirm before submitting application
   const applyForms = document.querySelectorAll('form[action*="/jobs/apply/"]');
   applyForms.forEach(function(form) {
-    form.addEventListener('submit', function(e) {
-      if (!confirm('Apakah Anda yakin ingin melamar pekerjaan ini?')) {
-        e.preventDefault();
-      }
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const ok = await lokerinConfirm('Apakah Anda yakin ingin melamar pekerjaan ini?', {
+        title: 'Konfirmasi Lamaran',
+        confirmText: 'Ya, Lamar Sekarang',
+        cancelText: 'Batal'
+      });
+      if (ok) form.submit();
     });
   });
 
@@ -36,14 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (file) {
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-          alert('Ukuran file terlalu besar. Maksimal 5MB');
+          lokerinAlert('Ukuran file terlalu besar. Maksimal 5MB', 'warning', 'File Terlalu Besar');
           e.target.value = '';
           return;
         }
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-          alert('File harus berupa gambar');
+          lokerinAlert('File harus berupa gambar (JPG, PNG, WEBP, dll)', 'error', 'Format Tidak Valid');
           e.target.value = '';
           return;
         }
@@ -84,13 +88,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Banner upload handler
+  // Banner upload handler - ONLY if not on profile page (profile.ejs has its own handler)
   const bannerInput = document.getElementById('banner-file-input');
-  if (bannerInput) {
+  const isProfilePage = window.location.pathname === '/profile';
+  
+  if (bannerInput && !isProfilePage) {
     bannerInput.addEventListener('change', async function() {
       if (this.files.length > 0) {
         const formData = new FormData();
         formData.append('bannerImage', this.files[0]);
+
+        // Preview langsung sebelum upload
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const banner = document.getElementById('profile-banner');
+          if (banner) {
+            banner.style.backgroundImage = `url(${e.target.result})`;
+            banner.style.backgroundColor = '';
+          }
+        };
+        reader.readAsDataURL(this.files[0]);
 
         try {
           const response = await fetch('/profile/upload-banner', {
@@ -99,32 +116,65 @@ document.addEventListener('DOMContentLoaded', function() {
             credentials: 'same-origin'
           });
 
-          if (response.ok) {
-            // Update banner immediately
-            const bannerDiv = document.getElementById('banner-display');
-            if (bannerDiv) {
-              const fileName = this.files[0].name;
-              // Reload page to show updated banner
-              window.location.reload();
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            // Update dengan URL server (dengan timestamp untuk cache bust)
+            const banner = document.getElementById('profile-banner');
+            if (banner && data.banner_image) {
+              banner.style.backgroundImage = `url('/images/banners/${data.banner_image}?t=${Date.now()}')`;
+            }
+            // Tutup dropdown jika ada
+            const menu = document.getElementById('banner-menu');
+            if (menu) {
+              menu.classList.add('hidden');
             }
           } else {
-            alert('Gagal mengupload banner');
+            lokerinAlert(data.error || 'Gagal mengupload banner', 'error');
+            window.location.reload();
           }
         } catch (error) {
           console.error('Error uploading banner:', error);
-          alert('Terjadi kesalahan saat mengupload banner');
+          lokerinAlert('Terjadi kesalahan saat mengupload banner', 'error');
+          window.location.reload();
         }
       }
     });
   }
 
-  // Profile upload handler
+  // Profile upload handler - ONLY if not on profile page (profile.ejs has its own handler)
   const profileInput = document.getElementById('profile-file-input');
-  if (profileInput) {
+  if (profileInput && !isProfilePage) {
     profileInput.addEventListener('change', async function() {
       if (this.files.length > 0) {
+        const file = this.files[0];
         const formData = new FormData();
-        formData.append('profileImage', this.files[0]);
+        formData.append('profileImage', file);
+
+        // Preview langsung
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const avatarImg = document.querySelector('.profile-avatar');
+          if (avatarImg) {
+            avatarImg.src = e.target.result;
+          } else {
+            // Jika belum ada avatar, buat elemen img
+            const avatarWrapper = document.querySelector('.avatar-wrapper');
+            if (avatarWrapper) {
+              // Hapus placeholder jika ada
+              const placeholder = avatarWrapper.querySelector('div[style*="background"]');
+              if (placeholder) {
+                placeholder.remove();
+              }
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.alt = 'Profile';
+              img.className = 'profile-avatar';
+              avatarWrapper.insertBefore(img, avatarWrapper.firstChild);
+            }
+          }
+        };
+        reader.readAsDataURL(file);
 
         try {
           const response = await fetch('/profile/upload-image', {
@@ -133,29 +183,37 @@ document.addEventListener('DOMContentLoaded', function() {
             credentials: 'same-origin'
           });
 
-          if (response.ok) {
-            // Reload page to show updated profile image
-            window.location.reload();
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            // Update dengan URL server
+            const avatarImg = document.querySelector('.profile-avatar');
+            if (avatarImg && data.profile_image) {
+              avatarImg.src = `/images/profiles/${data.profile_image}?t=${Date.now()}`;
+            }
           } else {
-            alert('Gagal mengupload foto profil');
+            lokerinAlert(data.error || 'Gagal mengupload foto profil', 'error');
+            window.location.reload();
           }
         } catch (error) {
           console.error('Error uploading profile image:', error);
-          alert('Terjadi kesalahan saat mengupload foto profil');
+          lokerinAlert('Terjadi kesalahan saat mengupload foto profil', 'error');
+          window.location.reload();
         }
       }
     });
   }
 
-  // Banner color selection handler
-  window.selectBannerColor = async function(color) {
-    const bannerDiv = document.getElementById('banner-display');
-    
+  // Banner color selection handler - ONLY if not on profile page (profile.ejs has its own handler)
+  if (!isProfilePage) {
+    window.selectBannerColor = async function(color) {
+    const banner = document.getElementById('profile-banner');
+
     // Update banner appearance immediately
-    if (bannerDiv) {
-      bannerDiv.style.backgroundColor = color;
-      bannerDiv.style.backgroundImage = 'none';
-      
+    if (banner) {
+      banner.style.backgroundColor = color;
+      banner.style.backgroundImage = 'none';
+
       // Update active state on color swatches
       document.querySelectorAll('.color-swatch').forEach(swatch => {
         swatch.classList.remove('active');
@@ -164,20 +222,20 @@ document.addEventListener('DOMContentLoaded', function() {
         event.target.classList.add('active');
       }
     }
-    
+
     // Submit to server using fetch (no page reload)
     try {
       const response = await fetch('/profile/set-banner-color', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
         credentials: 'same-origin',
-        body: `color=${encodeURIComponent(color)}`
+        body: JSON.stringify({ color })
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
         // Success - close dropdown menu
         const bannerMenu = document.getElementById('banner-menu');
@@ -185,17 +243,16 @@ document.addEventListener('DOMContentLoaded', function() {
           bannerMenu.classList.add('hidden');
         }
       } else {
-        alert(data.error || 'Gagal mengubah warna banner');
-        // Reload page to restore original state
+        lokerinAlert(data.error || 'Gagal mengubah warna banner', 'error');
         window.location.reload();
       }
     } catch (error) {
       console.error('Error updating banner color:', error);
-      alert('Terjadi kesalahan saat mengubah warna banner');
-      // Reload page to restore original state
+      lokerinAlert('Terjadi kesalahan saat mengubah warna banner', 'error');
       window.location.reload();
     }
   };
+  }
 
   // Toggle edit modal
   window.toggleEditMode = function() {

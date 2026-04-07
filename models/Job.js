@@ -11,14 +11,14 @@ const Job = {
    * @returns {Promise} - ID job yang baru dibuat
    */
   create: async (jobData) => {
-    const { title, company, location, category, type, description, salary_min, salary_max, hr_id } = jobData;
+    const { title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo } = jobData;
 
     const sql = `
-      INSERT INTO jobs (title, company, location, category, type, description, salary_min, salary_max, hr_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO jobs (title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const result = await query(sql, [title, company, location, category, type, description, salary_min || null, salary_max || null, hr_id]);
+    const result = await query(sql, [title, company, location, category, type, description, salary_min || null, salary_max || null, hr_id, company_logo || null]);
     return result.insertId;
   },
 

@@ -1,449 +1,1009 @@
-<!-- Profile Page - Redesigned -->
-<link rel="stylesheet" href="/css/profile-new.css">
+<style>
+:root {
+  --brand-50: #EFF6FF; --brand-100: #DBEAFE; --brand-200: #BFDBFE;
+  --brand-500: #3B82F6; --brand-600: #2563EB; --brand-700: #1D4ED8;
+}
+/* Brand color utilities */
+.bg-brand-50 { background-color: #EFF6FF !important; }
+.bg-brand-100 { background-color: #DBEAFE !important; }
+.bg-brand-500 { background-color: #3B82F6 !important; }
+.bg-brand-600 { background-color: #2563EB !important; }
+.bg-brand-700 { background-color: #1D4ED8 !important; }
+.hover\:bg-brand-50:hover { background-color: #EFF6FF !important; }
+.hover\:bg-brand-100:hover { background-color: #DBEAFE !important; }
+.hover\:bg-brand-700:hover { background-color: #1D4ED8 !important; }
+.text-brand-500 { color: #3B82F6 !important; }
+.text-brand-600 { color: #2563EB !important; }
+.text-brand-700 { color: #1D4ED8 !important; }
+.hover\:text-brand-600:hover { color: #2563EB !important; }
+.hover\:text-brand-700:hover { color: #1D4ED8 !important; }
+.border-brand-100 { border-color: #DBEAFE !important; }
+.border-brand-500 { border-color: #3B82F6 !important; }
+.border-brand-600 { border-color: #2563EB !important; }
+.ring-brand-500 { --tw-ring-color: #3B82F6; }
+.focus\:ring-brand-500:focus { box-shadow: 0 0 0 2px #3B82F6 !important; }
+/* Toast & Modal */
+.toast-custom { transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.16,1,0.3,1); z-index:100; pointer-events:none; }
+.toast-custom.show { transform: translateY(0); opacity: 1; }
+.modal-overlay { opacity:0; visibility:hidden; transition:all 0.2s ease; backdrop-filter:blur(2px); }
+.modal-overlay.active { opacity:1; visibility:visible; }
+.modal-container { transform:scale(0.95); transition:all 0.2s ease; }
+.modal-overlay.active .modal-container { transform:scale(1); }
+/* Banner gradients */
+.banner-gradient-1 { background: linear-gradient(135deg, #667eea, #764ba2); }
+.banner-gradient-2 { background: linear-gradient(135deg, #2563EB, #06b6d4); }
+.banner-gradient-3 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.banner-gradient-4 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.banner-gradient-5 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.banner-gradient-6 { background: linear-gradient(135deg, #fa709a, #fee140); }
+.banner-gradient-7 { background: linear-gradient(135deg, #30cfd0, #330867); }
+.banner-gradient-8 { background: linear-gradient(135deg, #ff9a9e, #fecfef); }
+/* Skill tags */
+.skill-tag { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:#fff; border:1px solid #e2e8f0; border-radius:9999px; font-size:12px; font-weight:500; color:#374151; }
+.skill-tag .del-btn { color:#94a3b8; cursor:pointer; font-size:14px; line-height:1; }
+.skill-tag .del-btn:hover { color:#ef4444; }
+/* Portfolio cards */
+.portfolio-card { position:relative; background:#fff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; transition:box-shadow 0.2s, transform 0.2s; }
+.portfolio-card:hover { box-shadow:0 8px 24px rgba(37,99,235,0.1); transform:translateY(-2px); }
+.portfolio-card .card-img { width:100%; height:150px; object-fit:cover; background:#f1f5f9; }
+.portfolio-card .card-img-placeholder { width:100%; height:150px; background:linear-gradient(135deg,#EFF6FF,#DBEAFE); display:flex; align-items:center; justify-content:center; }
+.portfolio-card .del-overlay { position:absolute; top:8px; right:8px; opacity:0; transition:opacity 0.2s; }
+.portfolio-card:hover .del-overlay { opacity:1; }
+/* Portfolio image upload preview */
+#portfolio-img-preview { width:100%; height:140px; object-fit:cover; border-radius:10px; display:none; }
+#portfolio-img-placeholder { width:100%; height:140px; border:2px dashed #e2e8f0; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; cursor:pointer; transition:all 0.2s; }
+#portfolio-img-placeholder:hover { border-color:#3B82F6; background:#EFF6FF; }
+</style>
+<script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
 
-<div class="profile-new-wrapper">
-  <!-- Profile Card -->
-  <div class="profile-card">
+<%
+  // Parse stored data safely
+  let parsedSkills = [];
+  let parsedExperiences = experiences || [];
+  let parsedEducations = educations || [];
+  let openToWork = true;
+  let workPrefs = ['Remote','Full-time'];
+  let salaryMin = user.expected_salary_min || '';
+  let salaryMax = user.expected_salary_max || '';
+  // HR tidak tampilkan badge "terbuka untuk kerja"
+  if (user.role === 'hr') {
+    openToWork = false;
+  } else {
+    if (user.open_to_work !== undefined) openToWork = user.open_to_work == 1;
+  }
+  try { if (user.work_preferences) workPrefs = JSON.parse(user.work_preferences); } catch(e){}
+  parsedSkills = skills || [];
+%>
 
+<!-- Hidden Upload Forms -->
+<form id="banner-upload-form" enctype="multipart/form-data" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;z-index:-1;">
+  <input type="file" name="bannerImage" id="banner-file-input" accept="image/*">
+</form>
+<form id="profile-upload-form" enctype="multipart/form-data" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;z-index:-1;">
+  <input type="file" name="profileImage" id="profile-file-input" accept="image/*">
+</form>
+
+<div class="pt-8 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+
+  <!-- SUCCESS/ERROR FLASH -->
+  <% if (typeof success !== 'undefined' && success) { %>
+  <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-center gap-2">
+    <span class="iconify" data-icon="lucide:check-circle-2"></span> <%= success %>
+  </div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error) { %>
+  <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+    <span class="iconify" data-icon="lucide:alert-circle"></span> <%= error %>
+  </div>
+  <% } %>
+
+  <!-- PROFILE HEADER CARD -->
+  <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-6">
     <!-- Banner -->
-    <div class="profile-banner" id="profile-banner" style="<%= typeof user !== 'undefined' && user.banner_image ? 'background-image: url(/images/banners/' + user.banner_image + ');' : '' %><%= typeof user !== 'undefined' && user.banner_color && !user.banner_image ? 'background-color: ' + user.banner_color + ';' : '' %>">
-      <div class="banner-actions">
-        <div class="dropdown" id="banner-dropdown">
-          <button type="button" class="btn-icon" onclick="toggleDropdown('banner-dropdown')">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-            </svg>
-          </button>
-          <div class="dropdown-menu hidden" id="banner-menu">
-            <label for="banner-file-input" class="dropdown-item">
-              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-              </svg>
-              <%= typeof user !== 'undefined' && user.banner_image ? 'Ganti Banner' : 'Upload Banner' %>
-            </label>
-            <% if (typeof bannerColors !== 'undefined') { %>
-            <div class="dropdown-divider"></div>
-            <div class="color-grid">
-              <% bannerColors.forEach(function(color) { %>
-                <button type="button" onclick="selectBannerColor('<%= color.value %>')" class="color-swatch <%= typeof user !== 'undefined' && user.banner_color === color.value && !user.banner_image ? 'active' : '' %>" style="background-color: <%= color.value %>;" title="<%= color.label %>"></button>
-              <% }); %>
-            </div>
-            <% } %>
-            <% if (typeof user !== 'undefined' && (user.banner_image || user.banner_color)) { %>
-            <div class="dropdown-divider"></div>
-            <form action="/profile/remove-banner" method="POST" style="padding: 0;">
-              <button type="submit" class="dropdown-item text-danger">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                  <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H14a1 1 0 0 1 1 1v1zM4 14V4h8v10H4z"/>
-                </svg>
-                Hapus Banner
-              </button>
-            </form>
-            <% } %>
-          </div>
-        </div>
+    <%
+      let bannerStyle = '';
+      let bannerClass = 'banner-gradient-2';
+      if (user.banner_image) {
+        bannerStyle = `background-image:url('/images/banners/${user.banner_image}?t=${Date.now()}');background-size:cover;background-position:center;`;
+        bannerClass = '';
+      } else if (user.banner_color) {
+        bannerStyle = `background:${user.banner_color};`;
+        bannerClass = '';
+      }
+    %>
+    <div id="profile-banner-preview" class="h-44 sm:h-56 relative <%- bannerClass %>" data-style="<%- bannerStyle %>">
+      <!-- Banner Controls -->
+      <div class="absolute top-3 right-3 flex gap-2 z-10">
+        <button onclick="document.getElementById('banner-file-input').click();" class="px-2.5 py-1.5 bg-white/25 backdrop-blur-sm text-white text-xs font-semibold rounded-lg hover:bg-white/40 transition-all">
+          <span class="iconify inline -mt-0.5" data-icon="lucide:camera"></span> Ubah Foto
+        </button>
+        <button onclick="document.getElementById('modal-banner-color').classList.add('active')" class="px-2.5 py-1.5 bg-white/25 backdrop-blur-sm text-white text-xs font-semibold rounded-lg hover:bg-white/40 transition-all">
+          <span class="iconify inline -mt-0.5" data-icon="lucide:palette"></span> Warna
+        </button>
+        <% if (user.banner_image) { %>
+        <button onclick="removeBanner()" class="px-2.5 py-1.5 bg-red-500/80 backdrop-blur-sm text-white text-xs font-semibold rounded-lg hover:bg-red-600/80 transition-all">
+          <span class="iconify inline -mt-0.5" data-icon="lucide:trash-2"></span>
+        </button>
+        <% } %>
       </div>
     </div>
 
-    <!-- Avatar & Header -->
-    <div class="profile-header-section">
-      <div class="avatar-wrapper">
-        <% if (typeof user !== 'undefined' && user.profile_image) { %>
-          <img src="/images/profiles/<%= user.profile_image %>" alt="Profile" class="profile-avatar">
-        <% } else { %>
-          <div class="profile-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700;">
-            <%= typeof user !== 'undefined' ? user.name.charAt(0).toUpperCase() : 'U' %>
+    <!-- Info -->
+    <div class="px-5 sm:px-8 pb-6">
+      <div class="flex flex-col sm:flex-row gap-5 -mt-16 sm:-mt-20">
+        <!-- Avatar -->
+        <div class="relative group shrink-0">
+          <div class="w-32 h-32 sm:w-44 sm:h-44 rounded-2xl border-4 border-white bg-slate-100 overflow-hidden shadow-md">
+            <img id="avatar-preview"
+              src="<%= user.profile_image ? '/images/profiles/' + user.profile_image + '?t=' + Date.now() : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=DBEAFE&color=1D4ED8&size=200' %>"
+              alt="Avatar" class="w-full h-full object-cover">
           </div>
-        <% } %>
-        <label for="profile-file-input" class="avatar-edit" title="Ganti foto">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5v.5a.5.5 0 0 1-.5.5H4a.5.5 0 0 1-.5-.5v-.5a.5.5 0 0 1 .146-.354z"/>
-          </svg>
-        </label>
-      </div>
-
-      <div class="header-info">
-        <div class="name-row">
-          <h1 class="user-name"><%= typeof user !== 'undefined' ? user.name : 'User' %></h1>
-          <% if (typeof user !== 'undefined' && user.role === 'hr') { %>
-          <span class="verified-badge" title="HR Verified">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.293 5.293a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7.5 8.793l3.293-3.293z"/>
-            </svg>
-          </span>
+          <button type="button" onclick="document.getElementById('profile-file-input').click();" class="absolute inset-0 rounded-2xl bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
+            <span class="iconify text-white text-2xl" data-icon="lucide:camera"></span>
+          </button>
+          <% if (user.profile_image) { %>
+          <button onclick="removeAvatar()" title="Hapus foto" class="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center z-20 hover:bg-red-600 transition-colors">
+            <span class="iconify text-xs" data-icon="lucide:x"></span>
+          </button>
           <% } %>
         </div>
-        <p class="user-email"><%= typeof user !== 'undefined' ? user.email : '' %></p>
-      </div>
 
-      <button type="button" class="btn-edit" onclick="toggleEditMode()">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5v.5a.5.5 0 0 1-.5.5H4a.5.5 0 0 1-.5-.5v-.5a.5.5 0 0 1 .146-.354z"/>
-        </svg>
-        Edit Profil
-      </button>
+        <!-- Details -->
+        <div class="flex-1 mt-16 sm:mt-20 pt-1">
+          <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight"><%= user.name %></h1>
+              <p class="text-slate-500 text-sm mt-1"><%= user.bio || 'Belum ada deskripsi singkat' %></p>
+              <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
+                <span class="flex items-center gap-1.5">
+                  <span class="iconify text-brand-500" data-icon="lucide:map-pin"></span>
+                  <span id="ui-address"><%= user.address || 'Lokasi belum diatur' %></span>
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="iconify text-brand-500" data-icon="lucide:mail"></span>
+                  <%= user.email %>
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="iconify text-brand-500" data-icon="lucide:phone"></span>
+                  <span id="ui-phone"><%= user.phone || 'Nomor belum diatur' %></span>
+                </span>
+              </div>
+            </div>
+            <% if (openToWork) { %>
+            <span id="ui-open-badge" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 text-xs font-semibold border border-green-100 rounded-full">
+              <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Terbuka untuk kerja
+            </span>
+            <% } else { %>
+            <span id="ui-open-badge" class="shrink-0 hidden inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 text-xs font-semibold border border-green-100 rounded-full">
+              <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Terbuka untuk kerja
+            </span>
+            <% } %>
+          </div>
+          <!-- Buttons -->
+          <div class="mt-5 flex flex-wrap gap-3">
+            <button onclick="document.getElementById('modal-edit-profile').classList.add('active')" class="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm">
+              <span class="iconify" data-icon="lucide:pencil"></span> Edit Profil
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Main Content -->
-    <div class="profile-content">
+  <div class="grid lg:grid-cols-3 gap-6">
+    <!-- LEFT COLUMN -->
+    <div class="lg:col-span-2 space-y-6">
 
-      <!-- Alert Messages -->
-      <% if (typeof success !== 'undefined' && success) { %>
-      <div class="alert alert-success">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-        </svg>
-        <%= success %>
+      <!-- Tentang Saya -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-3">Tentang Saya</h2>
+        <p class="text-slate-600 leading-relaxed text-sm" id="ui-about"><%= user.bio || 'Belum ada deskripsi profil.' %></p>
+        <div class="mt-4 flex flex-wrap gap-2" id="ui-work-prefs-container">
+          <% workPrefs.forEach(function(pref) { %>
+          <span class="px-3 py-1 bg-brand-50 text-brand-600 border border-brand-100 text-xs font-medium rounded-lg"><%= pref %></span>
+          <% }); %>
+        </div>
       </div>
-      <% } %>
-      <% if (typeof error !== 'undefined' && error) { %>
-      <div class="alert alert-error">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
-        </svg>
-        <%= error %>
+
+      <!-- Keahlian -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 relative">
+        <button onclick="openSkillModal()" class="absolute top-5 right-5 text-xs text-brand-600 hover:underline font-semibold">Edit</button>
+        <h2 class="text-base font-bold text-slate-900 mb-4">Keahlian</h2>
+        <div id="ui-skill-list" class="flex flex-wrap gap-2">
+          <% if (parsedSkills.length > 0) { %>
+            <% parsedSkills.forEach(function(s) { %>
+            <span class="px-4 py-1.5 bg-white border border-slate-200 text-brand-600 text-xs font-medium rounded-full shadow-sm"><%= s.name %></span>
+            <% }); %>
+          <% } else { %>
+          <p class="text-slate-400 text-xs italic">Belum ada keahlian. Klik Edit untuk menambah.</p>
+          <% } %>
+        </div>
       </div>
-      <% } %>
 
-      <!-- Sidebar: Contact Info -->
-      <aside class="profile-sidebar">
-        <div class="sidebar-section">
-          <h3 class="sidebar-title">Kontak</h3>
-          <div class="contact-list">
-            <div class="contact-item">
-              <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
-              </svg>
-              <span><%= typeof user !== 'undefined' ? user.email : '' %></span>
-            </div>
-            <% if (typeof user !== 'undefined' && user.phone) { %>
-            <div class="contact-item">
-              <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
-              </svg>
-              <span><%= user.phone %></span>
-            </div>
-            <% } %>
-          </div>
-        </div>
-
-        <% if (typeof profile !== 'undefined' && profile && profile.location) { %>
-        <div class="sidebar-section">
-          <h3 class="sidebar-title">Lokasi</h3>
-          <div class="contact-item">
-            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
-            </svg>
-            <span><%= profile.location %></span>
-          </div>
-        </div>
-        <% } %>
-
-        <div class="sidebar-section">
-          <h3 class="sidebar-title">Sosial Media</h3>
-          <div class="social-links">
-            <% if (typeof profile !== 'undefined' && profile && profile.linkedin) { %>
-            <a href="<%= profile.linkedin %>" target="_blank" class="social-link">
-              <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>
-              </svg>
-              LinkedIn
-            </a>
-            <% } %>
-            <% if (typeof profile !== 'undefined' && profile && profile.github) { %>
-            <a href="<%= profile.github %>" target="_blank" class="social-link">
-              <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-              </svg>
-              GitHub
-            </a>
-            <% } %>
-          </div>
-        </div>
-      </aside>
-
-      <!-- Main Sections -->
-      <main class="profile-main">
-        <!-- Tentang Saya -->
-        <section class="profile-section">
-          <h2 class="section-title">
-            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-            </svg>
-            Tentang Saya
-          </h2>
-          <textarea id="bio-textarea" name="bio" class="bio-textarea" placeholder="Ceritakan tentang diri Anda..." rows="4"><%= typeof user !== 'undefined' && user.bio ? user.bio : '' %></textarea>
-        </section>
-
-        <!-- Keahlian / Skills -->
-        <section class="profile-section">
-          <h2 class="section-title">
-            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-              <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
-            </svg>
-            Keahlian
-          </h2>
-          <div class="skills-container">
-            <% if (typeof skills !== 'undefined' && skills && skills.length > 0) { %>
-              <% skills.forEach(function(skill) { %>
-              <span class="skill-tag">
-                <%= skill.name %>
-                <button type="button" class="skill-remove" onclick="removeSkill(<%= skill.id %>)">×</button>
-              </span>
-              <% }); %>
-            <% } %>
-            <input type="text" id="skill-input" class="skill-input" placeholder="Tekan Enter untuk tambah keahlian..." onkeypress="handleSkillInput(event)">
-          </div>
-        </section>
-
-        <!-- Portfolio -->
-        <section class="profile-section">
-          <h2 class="section-title">
-            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
-            </svg>
-            Portofolio & Proyek
-          </h2>
-          <div class="portfolio-grid">
-            <label for="portfolio-upload" class="portfolio-card upload-card">
-              <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-              </svg>
-              <span>Upload Proyek</span>
-            </label>
-            <% if (typeof portfolios !== 'undefined' && portfolios && portfolios.length > 0) { %>
-              <% portfolios.forEach(function(portfolio) { %>
-              <div class="portfolio-card">
-                <% if (portfolio.image_url) { %>
-                <img src="<%= portfolio.image_url %>" alt="<%= portfolio.title %>" class="portfolio-image">
-                <% } else { %>
-                <div class="portfolio-placeholder">
-                  <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                    <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/>
-                  </svg>
-                </div>
-                <% } %>
-                <div class="portfolio-info">
-                  <h4 class="portfolio-title"><%= portfolio.title %></h4>
-                  <p class="portfolio-desc"><%= portfolio.description ? portfolio.description.substring(0, 60) + '...' : '' %></p>
-                  <div class="portfolio-actions">
-                    <% if (portfolio.url) { %>
-                    <a href="<%= portfolio.url %>" target="_blank" class="portfolio-link">Live Demo</a>
-                    <% } %>
-                    <% if (portfolio.github_url) { %>
-                    <a href="<%= portfolio.github_url %>" target="_blank" class="portfolio-link">GitHub</a>
-                    <% } %>
+      <!-- Pengalaman Kerja -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 relative">
+        <button onclick="document.getElementById('modal-add-exp').classList.add('active')" class="absolute top-5 right-5 inline-flex items-center gap-1 text-xs text-brand-600 hover:underline font-semibold">
+          <span class="iconify" data-icon="lucide:plus"></span> Tambah
+        </button>
+        <h2 class="text-base font-bold text-slate-900 mb-5">Pengalaman Kerja</h2>
+        <div id="ui-experiences-list" class="space-y-5">
+          <% if (parsedExperiences.length > 0) { %>
+            <% parsedExperiences.forEach(function(exp, i) {
+              var expInitials = (exp.company || 'XX').substring(0,2).toUpperCase();
+              var expBorderClass = (i < parsedExperiences.length-1) ? 'border-b border-slate-100 pb-5' : '';
+              var expStartStr = exp.start_date ? new Date(exp.start_date).toLocaleDateString('id-ID',{month:'short',year:'numeric'}) : '-';
+              var expEndStr = exp.is_current ? 'Sekarang' : (exp.end_date ? new Date(exp.end_date).toLocaleDateString('id-ID',{month:'short',year:'numeric'}) : '-');
+            %>
+            <div class="flex gap-3 group" data-exp-id="<%- exp.id %>">
+              <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center shrink-0 text-xs font-bold text-brand-700">
+                <%- expInitials %>
+              </div>
+              <div class="flex-1 <%- expBorderClass %>">
+                <div class="flex justify-between items-start gap-2">
+                  <div>
+                    <h3 class="font-bold text-slate-900 text-sm"><%- exp.position %></h3>
+                    <p class="text-brand-600 text-xs font-medium mt-0.5"><%- exp.company %></p>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-xs text-slate-400"><%- expStartStr %> — <%- expEndStr %></span>
+                    <button data-id="<%- exp.id %>" onclick="deleteExperience(this.dataset.id, this)" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-all">
+                      <span class="iconify" data-icon="lucide:trash-2"></span>
+                    </button>
                   </div>
                 </div>
+                <% if (exp.description) { %><p class="text-xs text-slate-500 mt-1.5 leading-relaxed"><%- exp.description %></p><% } %>
               </div>
-              <% }); %>
-            <% } %>
-          </div>
-        </section>
-
-        <!-- Submit Button -->
-        <div class="profile-actions">
-          <button type="submit" class="btn-save" onclick="saveProfile()">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-            </svg>
-            Simpan Perubahan
-          </button>
+            </div>
+            <% }); %>
+          <% } else { %>
+          <p class="text-slate-400 text-xs italic">Belum ada pengalaman kerja. Klik Tambah di kanan atas.</p>
+          <% } %>
         </div>
-      </main>
+      </div>
+
+      <!-- Pendidikan -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 relative">
+        <button onclick="document.getElementById('modal-add-edu').classList.add('active')" class="absolute top-5 right-5 inline-flex items-center gap-1 text-xs text-brand-600 hover:underline font-semibold">
+          <span class="iconify" data-icon="lucide:plus"></span> Tambah
+        </button>
+        <h2 class="text-base font-bold text-slate-900 mb-5">Pendidikan</h2>
+        <div id="ui-educations-list" class="space-y-3">
+          <% if (parsedEducations.length > 0) { %>
+            <% parsedEducations.forEach(function(edu) {
+              var eduEndYear = edu.end_year || 'Sekarang';
+            %>
+            <div class="flex gap-4 bg-slate-50 rounded-xl p-4 group" data-edu-id="<%- edu.id %>">
+              <div class="w-10 h-10 rounded-full bg-brand-100/60 flex items-center justify-center shrink-0">
+                <span class="iconify text-brand-600 text-lg" data-icon="lucide:graduation-cap"></span>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-bold text-slate-900 text-sm"><%- edu.degree %> <%- edu.field_of_study %></h3>
+                <p class="text-brand-600 text-xs font-medium mt-0.5"><%- edu.school %></p>
+                <p class="text-slate-400 text-xs mt-1">
+                  <%- edu.start_year %> — <%- eduEndYear %>
+                  <% if (edu.gpa) { %> &middot; IPK <%- edu.gpa %><% } %>
+                </p>
+              </div>
+              <button data-id="<%- edu.id %>" onclick="deleteEducation(this.dataset.id, this)" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-all self-start mt-1">
+                <span class="iconify" data-icon="lucide:trash-2"></span>
+              </button>
+            </div>
+            <% }); %>
+          <% } else { %>
+          <p class="text-slate-400 text-xs italic">Belum ada pendidikan. Klik Tambah di kanan atas.</p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Portofolio & Proyek Kerja -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 relative">
+        <button onclick="document.getElementById('modal-add-portfolio').classList.add('active')" class="absolute top-5 right-5 inline-flex items-center gap-1 text-xs text-brand-600 hover:underline font-semibold">
+          <span class="iconify" data-icon="lucide:plus"></span> Tambah
+        </button>
+        <h2 class="text-base font-bold text-slate-900 mb-5">Portofolio & Proyek Kerja</h2>
+        <div id="ui-portfolios-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <% let parsedPortfolios = portfolios || []; %>
+          <% if (parsedPortfolios.length > 0) { %>
+            <% parsedPortfolios.forEach(function(pf) { %>
+            <div class="portfolio-card group" data-portfolio-id="<%- pf.id %>">
+              <% if (pf.image_url) { %>
+                <img src="/images/portfolios/<%- pf.image_url %>" alt="<%- pf.title %>" class="card-img">
+              <% } else { %>
+                <div class="card-img-placeholder">
+                  <span class="iconify text-4xl text-brand-300" data-icon="lucide:layout-dashboard"></span>
+                </div>
+              <% } %>
+              <div class="p-4">
+                <h3 class="font-bold text-slate-900 text-sm leading-snug"><%- pf.title %></h3>
+                <% if (pf.description) { %><p class="text-xs text-slate-500 mt-1 line-clamp-2"><%- pf.description %></p><% } %>
+                <div class="mt-3 flex items-center gap-3">
+                  <% if (pf.url) { %>
+                  <a href="<%- pf.url %>" target="_blank" class="inline-flex items-center gap-1 text-xs text-brand-600 font-medium hover:underline">
+                    <span class="iconify" data-icon="lucide:external-link"></span> Demo
+                  </a>
+                  <% } %>
+                  <% if (pf.github_url) { %>
+                  <a href="<%- pf.github_url %>" target="_blank" class="inline-flex items-center gap-1 text-xs text-slate-500 font-medium hover:underline">
+                    <span class="iconify" data-icon="lucide:github"></span> GitHub
+                  </a>
+                  <% } %>
+                </div>
+              </div>
+              <div class="del-overlay">
+                <button data-id="<%- pf.id %>" onclick="deletePortfolio(this.dataset.id, this)" class="w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors">
+                  <span class="iconify text-sm" data-icon="lucide:trash-2"></span>
+                </button>
+              </div>
+            </div>
+            <% }); %>
+          <% } else { %>
+          <div class="col-span-2">
+            <p class="text-slate-400 text-xs italic">Belum ada portofolio. Klik Tambah untuk mengunggah proyek Anda.</p>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="space-y-5">
+
+      <!-- Statistik -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5">
+        <h2 class="text-sm font-bold text-slate-900 mb-3">Statistik</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-brand-50 rounded-xl p-3.5 text-center">
+            <p class="text-2xl font-bold text-brand-600"><%= typeof stats !== 'undefined' ? stats.total : 0 %></p>
+            <p class="text-[10px] text-slate-500 mt-0.5 font-semibold uppercase tracking-wider">Lamaran</p>
+          </div>
+          <div class="bg-green-50 rounded-xl p-3.5 text-center">
+            <p class="text-2xl font-bold text-green-600"><%= typeof stats !== 'undefined' ? stats.accepted : 0 %></p>
+            <p class="text-[10px] text-slate-500 mt-0.5 font-semibold uppercase tracking-wider">Diterima</p>
+          </div>
+          <div class="bg-amber-50 rounded-xl p-3.5 text-center">
+            <p class="text-2xl font-bold text-amber-500"><%= typeof stats !== 'undefined' ? stats.interview : 0 %></p>
+            <p class="text-[10px] text-slate-500 mt-0.5 font-semibold uppercase tracking-wider">Wawancara</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-center">
+            <p class="text-2xl font-bold text-slate-700"><%= typeof stats !== 'undefined' ? stats.pending : 0 %></p>
+            <p class="text-[10px] text-slate-500 mt-0.5 font-semibold uppercase tracking-wider">Pending</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ekspektasi Gaji -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5">
+        <h2 class="text-sm font-bold text-slate-900 mb-3">Ekspektasi Gaji</h2>
+        <div class="bg-brand-50 border border-brand-100 rounded-xl p-4 text-center">
+          <p class="text-xl font-bold text-brand-700" id="ui-salary">
+            <% if (salaryMin && salaryMax) { %>Rp <%= salaryMin %> — <%= salaryMax %> Jt<% } else { %>Belum diatur<% } %>
+          </p>
+          <p class="text-xs text-brand-500 mt-1">per bulan</p>
+        </div>
+      </div>
+
+      <!-- Sosial Media -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5">
+        <h2 class="text-sm font-bold text-slate-900 mb-3">Sosial Media</h2>
+        <div class="space-y-1">
+          <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors text-slate-600 hover:text-brand-600"><span class="iconify text-lg" data-icon="lucide:linkedin"></span><span class="text-sm font-medium">LinkedIn</span></a>
+          <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors text-slate-600 hover:text-brand-600"><span class="iconify text-lg" data-icon="lucide:github"></span><span class="text-sm font-medium">GitHub</span></a>
+          <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors text-slate-600 hover:text-brand-600"><span class="iconify text-lg" data-icon="lucide:twitter"></span><span class="text-sm font-medium">Twitter</span></a>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- Hidden Forms -->
-<form id="banner-upload-form" enctype="multipart/form-data" style="display: none;">
-  <input type="file" name="bannerImage" id="banner-file-input" accept="image/*">
-</form>
-<form id="profile-upload-form" enctype="multipart/form-data" style="display: none;">
-  <input type="file" name="profileImage" id="profile-file-input" accept="image/*">
-</form>
-<form id="portfolio-upload-form" enctype="multipart/form-data" style="display: none;">
-  <input type="file" name="portfolioImage" id="portfolio-upload" accept="image/*">
-</form>
+<!-- ==================== MODALS ==================== -->
+
+<!-- Modal: Edit Profil Utama -->
+<div id="modal-edit-profile" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
+  <div class="modal-container bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[92vh] overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-bold text-slate-900 text-lg">Edit Profil</h3>
+      <button onclick="document.getElementById('modal-edit-profile').classList.remove('active')" class="text-slate-400 hover:text-slate-600"><span class="iconify text-xl" data-icon="lucide:x"></span></button>
+    </div>
+    <div class="p-6 overflow-y-auto space-y-4">
+      <!-- Bio -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Tentang Saya</label>
+        <textarea id="inp-bio" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"><%= user.bio || '' %></textarea>
+      </div>
+      <!-- Kontak -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Alamat</label>
+          <input type="text" id="inp-address" value="<%= user.address || '' %>" placeholder="Jakarta, Indonesia" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">No. Telpon</label>
+          <input type="text" id="inp-phone" value="<%= user.phone || '' %>" placeholder="+62 812..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+      </div>
+      <!-- Gaji -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Ekspektasi Gaji (Juta/bulan)</label>
+        <div class="flex items-center gap-2">
+          <input type="number" id="inp-salary-min" value="<%= salaryMin %>" placeholder="Min" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+          <span class="text-slate-400 font-medium">-</span>
+          <input type="number" id="inp-salary-max" value="<%= salaryMax %>" placeholder="Max" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+          <span class="text-slate-500 text-sm font-medium">Jt</span>
+        </div>
+      </div>
+      <% if (user.role !== 'hr') { %>
+      <!-- Terbuka untuk kerja -->
+      <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+        <div>
+          <p class="text-sm font-bold text-slate-900">Terbuka untuk kerja</p>
+          <p class="text-xs text-slate-500 mt-0.5">Tampilkan badge hijau di profil</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="inp-open-work" class="sr-only peer" <%= openToWork ? 'checked' : '' %>>
+          <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+        </label>
+      </div>
+      <!-- Preferensi Kerja -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">Preferensi Kerja (pilih yang sesuai)</label>
+        <div class="flex flex-wrap gap-2" id="pref-options">
+          <% ['Remote','Hybrid','Full-time','Part-time','Freelance','Kontrak'].forEach(function(p) { %>
+          <label class="cursor-pointer">
+            <input type="checkbox" class="pref-checkbox sr-only" value="<%= p %>" <%= workPrefs.includes(p) ? 'checked' : '' %>>
+            <span class="pref-tag px-3 py-1.5 border text-xs font-medium rounded-lg transition-all select-none <%= workPrefs.includes(p) ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200' %>"><%= p %></span>
+          </label>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+      <button onclick="document.getElementById('modal-edit-profile').classList.remove('active')" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800">Batal</button>
+      <button onclick="saveProfileDetails()" class="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit Keahlian -->
+<div id="modal-edit-skills" class="modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50">
+  <div class="modal-container bg-white rounded-2xl shadow-2xl w-full max-w-sm flex flex-col">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+      <h3 class="font-bold text-slate-900">Kelola Keahlian</h3>
+      <button onclick="document.getElementById('modal-edit-skills').classList.remove('active')" class="text-slate-400 hover:text-slate-600"><span class="iconify text-xl" data-icon="lucide:x"></span></button>
+    </div>
+    <div class="p-5">
+      <form id="skill-add-form" class="flex gap-2 mb-4">
+        <input type="text" id="inp-new-skill" autocomplete="off" placeholder="Misal: Laravel, Python..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <button type="submit" class="px-3 py-2 bg-brand-50 text-brand-600 hover:bg-brand-100 rounded-lg font-bold text-sm transition-colors">+</button>
+      </form>
+      <div id="modal-skill-chips" class="flex flex-wrap gap-2 max-h-44 overflow-y-auto"></div>
+    </div>
+    <div class="px-5 py-4 bg-slate-50 border-t border-slate-100">
+      <button onclick="document.getElementById('modal-edit-skills').classList.remove('active')" class="w-full px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">Selesai</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tambah Pengalaman -->
+<div id="modal-add-exp" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
+  <div class="modal-container bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[92vh] overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-bold text-slate-900 text-lg">Tambah Pengalaman Kerja</h3>
+      <button onclick="document.getElementById('modal-add-exp').classList.remove('active')" class="text-slate-400 hover:text-slate-600"><span class="iconify text-xl" data-icon="lucide:x"></span></button>
+    </div>
+    <div class="p-6 overflow-y-auto space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2">
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Posisi / Jabatan *</label>
+          <input type="text" id="exp-position" placeholder="Misal: Frontend Developer" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Perusahaan *</label>
+          <input type="text" id="exp-company" placeholder="Misal: PT Tokopedia" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Mulai</label>
+          <input type="month" id="exp-start" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Selesai</label>
+          <input type="month" id="exp-end" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div class="col-span-2 flex items-center gap-2">
+          <input type="checkbox" id="exp-current" class="rounded border-slate-300 text-brand-600">
+          <label for="exp-current" class="text-sm text-slate-600">Saya masih bekerja di sini</label>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Deskripsi</label>
+          <textarea id="exp-desc" rows="3" placeholder="Ceritakan pencapaian atau tanggung jawab Anda..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+      <button onclick="document.getElementById('modal-add-exp').classList.remove('active')" class="px-4 py-2 text-sm font-semibold text-slate-600">Batal</button>
+      <button onclick="submitExperience()" class="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">Tambahkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tambah Pendidikan -->
+<div id="modal-add-edu" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
+  <div class="modal-container bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-bold text-slate-900 text-lg">Tambah Pendidikan</h3>
+      <button onclick="document.getElementById('modal-add-edu').classList.remove('active')" class="text-slate-400 hover:text-slate-600"><span class="iconify text-xl" data-icon="lucide:x"></span></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Institusi / Universitas *</label>
+        <input type="text" id="edu-school" placeholder="Misal: Universitas Indonesia" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Gelar</label>
+          <input type="text" id="edu-degree" placeholder="S1, S2, D3..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Jurusan</label>
+          <input type="text" id="edu-field" placeholder="Teknik Informatika" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Tahun Mulai</label>
+          <input type="number" id="edu-start" placeholder="2018" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Tahun Selesai</label>
+          <input type="number" id="edu-end" placeholder="2022" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">IPK (opsional)</label>
+          <input type="text" id="edu-gpa" placeholder="3.75" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+      <button onclick="document.getElementById('modal-add-edu').classList.remove('active')" class="px-4 py-2 text-sm font-semibold text-slate-600">Batal</button>
+      <button onclick="submitEducation()" class="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">Tambahkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tambah Portofolio -->
+<div id="modal-add-portfolio" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
+  <div class="modal-container bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[92vh] overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-bold text-slate-900 text-lg">Tambah Portofolio</h3>
+      <button onclick="closePortfolioModal()" class="text-slate-400 hover:text-slate-600"><span class="iconify text-xl" data-icon="lucide:x"></span></button>
+    </div>
+    <div class="p-6 overflow-y-auto space-y-4">
+      <!-- Image Upload -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">Gambar Proyek (opsional)</label>
+        <div id="portfolio-img-placeholder" onclick="document.getElementById('portfolio-img-input').click()">
+          <span class="iconify text-3xl text-slate-300" data-icon="lucide:image-plus"></span>
+          <span class="text-xs text-slate-400 font-medium">Klik untuk mengunggah gambar</span>
+          <span class="text-[10px] text-slate-300">JPG, PNG, WEBP — Maks. 5MB</span>
+        </div>
+        <img id="portfolio-img-preview" src="" alt="Preview">
+        <input type="file" id="portfolio-img-input" accept="image/*" class="sr-only" onchange="previewPortfolioImage(this)">
+        <button id="portfolio-img-clear" onclick="clearPortfolioImage()" class="mt-1 text-xs text-red-400 hover:text-red-600 hidden">Hapus gambar</button>
+      </div>
+      <!-- Title -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Judul Proyek *</label>
+        <input type="text" id="pf-title" placeholder="Misal: Aplikasi E-Commerce" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+      </div>
+      <!-- Description -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Deskripsi</label>
+        <textarea id="pf-desc" rows="3" placeholder="Ceritakan proyek Anda secara singkat..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"></textarea>
+      </div>
+      <!-- URLs -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Link Demo / Website</label>
+          <input type="url" id="pf-url" placeholder="https://..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">GitHub URL</label>
+          <input type="url" id="pf-github" placeholder="https://github.com/..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+      <button onclick="closePortfolioModal()" class="px-4 py-2 text-sm font-semibold text-slate-600">Batal</button>
+      <button onclick="submitPortfolio()" class="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">Tambahkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Pilih Warna Banner -->
+<div id="modal-banner-color" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
+  <div class="modal-container bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+      <h3 class="font-bold text-slate-900">Pilih Warna Banner</h3>
+      <button onclick="document.getElementById('modal-banner-color').classList.remove('active')" class="text-slate-400 hover:text-slate-600"><span class="iconify text-xl" data-icon="lucide:x"></span></button>
+    </div>
+    <div class="p-5">
+      <p class="text-xs text-slate-500 mb-4">Pilih gradasi warna untuk banner profil Anda</p>
+      <div class="grid grid-cols-4 gap-3">
+        <button onclick="setBannerGradient('linear-gradient(135deg,#667eea,#764ba2)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#667eea,#764ba2)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#2563EB,#06b6d4)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#2563EB,#06b6d4)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#f093fb,#f5576c)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#f093fb,#f5576c)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#4facfe,#00f2fe)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#4facfe,#00f2fe)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#43e97b,#38f9d7)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#43e97b,#38f9d7)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#fa709a,#fee140)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#fa709a,#fee140)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#30cfd0,#330867)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#30cfd0,#330867)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#ff9a9e,#fecfef)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#ff9a9e,#fecfef)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#a18cd1,#fbc2eb)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#ffecd2,#fcb69f)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#ffecd2,#fcb69f)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#0f2027,#203a43,#2c5364)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#0f2027,#203a43,#2c5364)"></button>
+        <button onclick="setBannerGradient('linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)')" class="h-14 rounded-xl cursor-pointer hover:scale-105 transition-transform border-2 border-transparent hover:border-slate-300" style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast-custom fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 bg-slate-900 text-white text-sm font-medium rounded-xl shadow-2xl flex items-center gap-2.5">
+  <span class="iconify text-brand-400 text-lg shrink-0" data-icon="lucide:info"></span>
+  <span id="toast-msg">Siap!</span>
+</div>
+
+<div id="page-data" 
+  data-skills='<%- JSON.stringify(parsedSkills.map(function(s){return{id:s.id,name:s.name};})) %>'
+  style="display:none"></div>
 
 <script>
-  // Toggle dropdown
-  function toggleDropdown(id) {
-    const menu = document.getElementById(id.replace('dropdown', 'menu'));
-    menu.classList.toggle('hidden');
-  }
-
-  // Toggle edit mode (for compatibility)
-  function toggleEditMode() {
-    // Scroll to top or show edit mode
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // Save profile
-  async function saveProfile() {
-    const bio = document.getElementById('bio-textarea').value;
-
-    try {
-      const response = await fetch('/profile/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bio })
-      });
-
-      if (response.ok) {
-        alert('Profil berhasil disimpan!');
-        location.reload();
-      } else {
-        alert('Gagal menyimpan profil');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Terjadi kesalahan');
-    }
-  }
-
-  // Handle skill input
-  async function handleSkillInput(event) {
-    if (event.key === 'Enter') {
-      const input = event.target;
-      const skillName = input.value.trim();
-
-      if (!skillName) return;
-
-      try {
-        const response = await fetch('/profile/skills', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: skillName })
-        });
-
-        if (response.ok) {
-          location.reload();
-        } else {
-          alert('Gagal menambah keahlian');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    }
-  }
-
-  // Remove skill
-  async function removeSkill(skillId) {
-    if (!confirm('Hapus keahlian ini?')) return;
-
-    try {
-      const response = await fetch(`/profile/skills/${skillId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        location.reload();
-      } else {
-        alert('Gagal menghapus keahlian');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  }
-
-  // Close dropdown when clicking outside
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.dropdown')) {
-      document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        menu.classList.add('hidden');
-      });
+  // ====== INIT: Apply banner style from data attribute ======
+  document.addEventListener('DOMContentLoaded', function() {
+    const banner = document.getElementById('profile-banner-preview');
+    if (banner) {
+      const s = banner.getAttribute('data-style');
+      if (s) banner.setAttribute('style', s);
     }
   });
 
-  // Handle profile image upload
+  // ====== TOAST ======
+  let _tt;
+  function showToast(msg, type='info') {
+    const icons = { info:'lucide:info', success:'lucide:check-circle-2', error:'lucide:alert-circle' };
+    document.querySelector('#toast .iconify').setAttribute('data-icon', icons[type]||icons.info);
+    document.getElementById('toast-msg').innerText = msg;
+    clearTimeout(_tt);
+    document.getElementById('toast').classList.add('show');
+    _tt = setTimeout(() => document.getElementById('toast').classList.remove('show'), 3500);
+  }
+
+  // ====== PREFERENCE CHECKBOXES ======
+  document.querySelectorAll('.pref-checkbox').forEach(cb => {
+    cb.addEventListener('change', function() {
+      const tag = this.nextElementSibling;
+      if (this.checked) { tag.classList.add('bg-brand-600','text-white','border-brand-600'); tag.classList.remove('bg-white','text-slate-600','border-slate-200'); }
+      else { tag.classList.remove('bg-brand-600','text-white','border-brand-600'); tag.classList.add('bg-white','text-slate-600','border-slate-200'); }
+    });
+  });
+
+  // ====== PROFILE DETAILS SAVE ======
+  async function saveProfileDetails() {
+    const bio = document.getElementById('inp-bio').value;
+    const address = document.getElementById('inp-address').value;
+    const phone = document.getElementById('inp-phone').value;
+    const salaryMin = document.getElementById('inp-salary-min').value;
+    const salaryMax = document.getElementById('inp-salary-max').value;
+    const openWork = document.getElementById('inp-open-work').checked;
+    const prefs = Array.from(document.querySelectorAll('.pref-checkbox:checked')).map(c => c.value);
+
+    showToast('Menyimpan profil...');
+    try {
+      const res = await fetch('/profile/update-details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bio, address, phone, expected_salary_min: salaryMin, expected_salary_max: salaryMax, open_to_work: openWork, work_preferences: JSON.stringify(prefs) })
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Update UI
+        document.getElementById('ui-about').innerText = bio;
+        document.getElementById('ui-address').innerText = address || 'Lokasi belum diatur';
+        document.getElementById('ui-phone').innerText = phone || 'Nomor belum diatur';
+        if (salaryMin && salaryMax) document.getElementById('ui-salary').innerText = `Rp ${salaryMin} — ${salaryMax} Jt`;
+        // Open to work
+        const badge = document.getElementById('ui-open-badge');
+        badge.classList.toggle('hidden', !openWork);
+        // Prefs
+        const prefsEl = document.getElementById('ui-work-prefs-container');
+        prefsEl.innerHTML = prefs.map(p => `<span class="px-3 py-1 bg-brand-50 text-brand-600 border border-brand-100 text-xs font-medium rounded-lg">${p}</span>`).join('');
+        document.getElementById('modal-edit-profile').classList.remove('active');
+        showToast('Profil berhasil disimpan!', 'success');
+      } else { showToast(data.error || 'Gagal menyimpan', 'error'); }
+    } catch(e) { showToast('Koneksi gagal ke server', 'error'); }
+  }
+
+  // ====== SKILLS ======
+  let currentSkills = JSON.parse(document.getElementById('page-data').dataset.skills || '[]');
+
+  function openSkillModal() {
+    renderSkillChips();
+    document.getElementById('modal-edit-skills').classList.add('active');
+    setTimeout(() => document.getElementById('inp-new-skill').focus(), 100);
+  }
+
+  function renderSkillChips() {
+    const c = document.getElementById('modal-skill-chips');
+    c.innerHTML = currentSkills.length === 0
+      ? '<p class="text-slate-400 text-xs italic">Belum ada keahlian. Tambahkan di atas.</p>'
+      : currentSkills.map(s => `<div class="skill-tag">${s.name}<span class="del-btn" onclick="deleteSkill(${s.id||'null'},'${s.name}',this)">×</span></div>`).join('');
+  }
+
+  document.getElementById('skill-add-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const val = document.getElementById('inp-new-skill').value.trim();
+    if (!val) return;
+    if (currentSkills.find(s => s.name.toLowerCase() === val.toLowerCase())) { showToast('Sudah ada!', 'error'); return; }
+    try {
+      const res = await fetch('/profile/skills/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:val}) });
+      const data = await res.json();
+      if (data.success) {
+        currentSkills.push({ id: data.id||null, name: val });
+        document.getElementById('inp-new-skill').value = '';
+        renderSkillChips();
+        updateSkillListUI();
+      } else showToast(data.error||'Gagal', 'error');
+    } catch(e) { showToast('Koneksi gagal','error'); }
+  });
+
+  async function deleteSkill(id, name, el) {
+    try {
+      if (id) {
+        const res = await fetch(`/profile/skills/remove/${id}`, { method:'POST' });
+        const data = await res.json();
+        if (!data.success) { showToast('Gagal hapus','error'); return; }
+      }
+      currentSkills = currentSkills.filter(s => s.name !== name);
+      renderSkillChips();
+      updateSkillListUI();
+    } catch(e) { showToast('Koneksi gagal','error'); }
+  }
+
+  function updateSkillListUI() {
+    const c = document.getElementById('ui-skill-list');
+    c.innerHTML = currentSkills.length === 0
+      ? '<p class="text-slate-400 text-xs italic">Belum ada keahlian. Klik Edit untuk menambah.</p>'
+      : currentSkills.map(s => `<span class="px-4 py-1.5 bg-white border border-slate-200 text-brand-600 text-xs font-medium rounded-full shadow-sm">${s.name}</span>`).join('');
+  }
+
+  // ====== EXPERIENCE ======
+  async function submitExperience() {
+    const position = document.getElementById('exp-position').value.trim();
+    const company = document.getElementById('exp-company').value.trim();
+    if (!position || !company) { showToast('Posisi dan perusahaan wajib diisi','error'); return; }
+    const start_date = document.getElementById('exp-start').value;
+    const end_date = document.getElementById('exp-end').value;
+    const is_current = document.getElementById('exp-current').checked;
+    const description = document.getElementById('exp-desc').value;
+    try {
+      const res = await fetch('/profile/experiences/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({position,company,start_date,end_date,is_current,description}) });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('modal-add-exp').classList.remove('active');
+        showToast('Pengalaman berhasil ditambahkan!','success');
+        setTimeout(() => location.reload(), 800);
+      } else showToast(data.error||'Gagal','error');
+    } catch(e) { showToast('Koneksi gagal','error'); }
+  }
+
+  async function deleteExperience(id, btn) {
+    const ok = await lokerinConfirm('Hapus pengalaman kerja ini dari profil Anda?', {
+      title: 'Hapus Pengalaman', confirmText: 'Ya, Hapus', cancelText: 'Batal', danger: true
+    });
+    if (!ok) return;
+    try {
+      const res = await fetch(`/profile/experiences/remove/${id}`, { method:'POST' });
+      const data = await res.json();
+      if (data.success) { btn.closest('[data-exp-id]').remove(); showToast('Pengalaman dihapus','success'); }
+      else showToast(data.error||'Gagal','error');
+    } catch(e) { showToast('Koneksi gagal','error'); }
+  }
+
+  // ====== EDUCATION ======
+  async function submitEducation() {
+    const school = document.getElementById('edu-school').value.trim();
+    if (!school) { showToast('Nama institusi wajib diisi','error'); return; }
+    const degree = document.getElementById('edu-degree').value;
+    const field_of_study = document.getElementById('edu-field').value;
+    const start_year = document.getElementById('edu-start').value;
+    const end_year = document.getElementById('edu-end').value;
+    const gpa = document.getElementById('edu-gpa').value;
+    try {
+      const res = await fetch('/profile/educations/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({school,degree,field_of_study,start_year,end_year,gpa}) });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('modal-add-edu').classList.remove('active');
+        showToast('Pendidikan berhasil ditambahkan!','success');
+        setTimeout(() => location.reload(), 800);
+      } else showToast(data.error||'Gagal','error');
+    } catch(e) { showToast('Koneksi gagal','error'); }
+  }
+
+  async function deleteEducation(id, btn) {
+    const ok = await lokerinConfirm('Hapus riwayat pendidikan ini dari profil Anda?', {
+      title: 'Hapus Pendidikan', confirmText: 'Ya, Hapus', cancelText: 'Batal', danger: true
+    });
+    if (!ok) return;
+    try {
+      const res = await fetch(`/profile/educations/remove/${id}`, { method:'POST' });
+      const data = await res.json();
+      if (data.success) { btn.closest('[data-edu-id]').remove(); showToast('Pendidikan dihapus','success'); }
+      else showToast(data.error||'Gagal','error');
+    } catch(e) { showToast('Koneksi gagal','error'); }
+  }
+
+  // ====== AVATAR UPLOAD ======
   document.getElementById('profile-file-input').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
-
-    const formData = new FormData();
-    formData.append('profileImage', file);
-
-    fetch('/profile/upload-image', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        location.reload();
-      } else {
-        alert(data.error || 'Gagal upload foto profil');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Terjadi kesalahan saat upload');
-    });
+    showToast('Mengunggah foto profil...');
+    const reader = new FileReader();
+    reader.onload = e2 => document.getElementById('avatar-preview').src = e2.target.result;
+    reader.readAsDataURL(file);
+    const fd = new FormData(); fd.append('profileImage', file);
+    fetch('/profile/upload-image', { method:'POST', body:fd })
+      .then(r => r.json()).then(d => {
+        if (d.success) { showToast('Foto profil diperbarui!','success'); setTimeout(() => location.href='/profile?t='+Date.now(), 800); }
+        else showToast(d.error||'Gagal upload','error');
+      }).catch(() => showToast('Koneksi gagal','error'));
   });
 
-  // Handle banner image upload
+  async function removeAvatar() {
+    const ok = await lokerinConfirm('Foto profil Anda akan dihapus.', {
+      title: 'Hapus Foto Profil', confirmText: 'Ya, Hapus', cancelText: 'Batal', danger: true
+    });
+    if (!ok) return;
+    const res = await fetch('/profile/remove-image', { method:'POST' });
+    showToast('Foto dihapus','success');
+    setTimeout(() => location.href='/profile?t='+Date.now(), 600);
+  }
+
+  // ====== BANNER UPLOAD ======
   document.getElementById('banner-file-input').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
-
-    const formData = new FormData();
-    formData.append('bannerImage', file);
-
-    // Tampilkan preview langsung
+    showToast('Mengunggah banner...');
     const reader = new FileReader();
-    reader.onload = function(e) {
-      const banner = document.getElementById('profile-banner');
-      banner.style.backgroundImage = `url(${e.target.result})`;
-    };
+    reader.onload = e2 => { const b = document.getElementById('profile-banner-preview'); b.style.backgroundImage = `url('${e2.target.result}')`; b.style.backgroundSize='cover'; b.style.backgroundPosition='center'; };
     reader.readAsDataURL(file);
-
-    fetch('/profile/upload-banner', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Update banner dengan timestamp untuk force reload
-        const banner = document.getElementById('profile-banner');
-        banner.style.backgroundImage = `url('/images/banners/${data.banner_image}?t=${Date.now()}')`;
-        // Hapus background color jika ada
-        banner.style.backgroundColor = '';
-      } else {
-        alert(data.error || 'Gagal upload banner');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Terjadi kesalahan saat upload');
-    });
+    const fd = new FormData(); fd.append('bannerImage', file);
+    fetch('/profile/upload-banner', { method:'POST', body:fd })
+      .then(r => r.json()).then(d => {
+        if (d.success) { showToast('Banner diperbarui!','success'); setTimeout(() => location.href='/profile?v='+Date.now(), 800); }
+        else showToast(d.error||'Gagal upload','error');
+      }).catch(() => showToast('Koneksi gagal','error'));
   });
 
-  // Handle banner color selection
-  async function selectBannerColor(color) {
+  async function removeBanner() {
+    const ok = await lokerinConfirm('Banner profil Anda akan dihapus.', {
+      title: 'Hapus Banner', confirmText: 'Ya, Hapus', cancelText: 'Batal', danger: true
+    });
+    if (!ok) return;
+    // Visually reset immediately
+    const banner = document.getElementById('profile-banner-preview');
+    banner.setAttribute('style', '');
+    banner.className = banner.className.replace(/banner-gradient-\S+/g, '').trim() + ' banner-gradient-2';
+    showToast('Banner dihapus', 'success');
+    await fetch('/profile/remove-banner', { method: 'POST' });
+    setTimeout(() => location.href = '/profile?v=' + Date.now(), 600);
+  }
+
+  // ====== BANNER GRADIENT ======
+  // ====== PORTFOLIO ======
+  function previewPortfolioImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('portfolio-img-preview');
+      img.src = e.target.result;
+      img.style.display = 'block';
+      document.getElementById('portfolio-img-placeholder').style.display = 'none';
+      document.getElementById('portfolio-img-clear').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearPortfolioImage() {
+    document.getElementById('portfolio-img-input').value = '';
+    document.getElementById('portfolio-img-preview').style.display = 'none';
+    document.getElementById('portfolio-img-preview').src = '';
+    document.getElementById('portfolio-img-placeholder').style.display = 'flex';
+    document.getElementById('portfolio-img-clear').classList.add('hidden');
+  }
+
+  function closePortfolioModal() {
+    document.getElementById('modal-add-portfolio').classList.remove('active');
+    // Reset form
+    document.getElementById('pf-title').value = '';
+    document.getElementById('pf-desc').value = '';
+    document.getElementById('pf-url').value = '';
+    document.getElementById('pf-github').value = '';
+    clearPortfolioImage();
+  }
+
+  async function submitPortfolio() {
+    const title = document.getElementById('pf-title').value.trim();
+    if (!title) { showToast('Judul proyek wajib diisi', 'error'); return; }
+
+    const description = document.getElementById('pf-desc').value;
+    const url = document.getElementById('pf-url').value;
+    const github_url = document.getElementById('pf-github').value;
+    const imgInput = document.getElementById('portfolio-img-input');
+
+    const fd = new FormData();
+    fd.append('title', title);
+    fd.append('description', description);
+    fd.append('url', url);
+    fd.append('github_url', github_url);
+    if (imgInput.files[0]) {
+      fd.append('portfolioImage', imgInput.files[0]);
+    }
+
+    showToast('Menyimpan portofolio...');
     try {
-      const response = await fetch('/profile/set-banner-color', {
+      const res = await fetch('/portfolios/add', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.success) {
+        closePortfolioModal();
+        showToast('Portofolio berhasil ditambahkan!', 'success');
+        setTimeout(() => location.reload(), 800);
+      } else {
+        showToast(data.error || 'Gagal menyimpan', 'error');
+      }
+    } catch(e) { showToast('Koneksi gagal', 'error'); }
+  }
+
+  async function deletePortfolio(id, btn) {
+    const ok = await lokerinConfirm('Portofolio ini akan dihapus dari profil Anda.', {
+      title: 'Hapus Portofolio', confirmText: 'Ya, Hapus', cancelText: 'Batal', danger: true
+    });
+    if (!ok) return;
+    try {
+      const res = await fetch(`/portfolios/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        btn.closest('[data-portfolio-id]').remove();
+        showToast('Portofolio dihapus', 'success');
+        // Show empty message if no items left
+        const grid = document.getElementById('ui-portfolios-list');
+        if (grid && grid.children.length === 0) {
+          grid.innerHTML = '<div class="col-span-2"><p class="text-slate-400 text-xs italic">Belum ada portofolio. Klik Tambah untuk mengunggah proyek Anda.</p></div>';
+        }
+      } else showToast(data.error || 'Gagal', 'error');
+    } catch(e) { showToast('Koneksi gagal', 'error'); }
+  }
+
+  async function setBannerGradient(gradient) {
+    // Immediately update banner visuals (no refresh needed)
+    const banner = document.getElementById('profile-banner-preview');
+    banner.setAttribute('style', 'background:' + gradient + ';');
+    banner.className = banner.className.replace(/banner-gradient-\S+/g, '').trim();
+
+    // Close modal instantly
+    document.getElementById('modal-banner-color').classList.remove('active');
+    showToast('Menerapkan warna...', 'info');
+
+    // Save first solid hex color to DB (for persistence)
+    const firstColor = gradient.match(/#[0-9a-fA-F]{6}/)?.[0] || '#2563EB';
+    try {
+      const res = await fetch('/profile/set-banner-color', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ color })
+        body: JSON.stringify({ color: firstColor })
       });
-
-      const data = await response.json();
-
-      if (data.success) {
-        location.reload();
-      } else {
-        alert(data.error || 'Gagal mengubah warna banner');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Terjadi kesalahan');
-    }
+      const d = await res.json();
+      if (d.success) showToast('Warna banner disimpan!', 'success');
+      else showToast(d.error || 'Gagal menyimpan', 'error');
+    } catch(e) { showToast('Koneksi gagal', 'error'); }
   }
 </script>

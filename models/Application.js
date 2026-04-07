@@ -105,6 +105,32 @@ const Application = {
     `;
     const results = await query(sql, [id]);
     return results[0] || null;
+  },
+
+  /**
+   * Menghitung statistik aplikasi untuk seorang user
+   * @param {number} userId - ID user
+   * @returns {Promise} - Object berisi statistik
+   */
+  getStats: async (userId) => {
+    const sql = `
+      SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'interview' THEN 1 ELSE 0 END) as interview,
+        SUM(CASE WHEN status = 'diterima' THEN 1 ELSE 0 END) as accepted,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status = 'ditolak' THEN 1 ELSE 0 END) as rejected
+      FROM applications
+      WHERE user_id = ?
+    `;
+    const results = await query(sql, [userId]);
+    return results[0] || {
+      total: 0,
+      interview: 0,
+      accepted: 0,
+      pending: 0,
+      rejected: 0
+    };
   }
 };
 

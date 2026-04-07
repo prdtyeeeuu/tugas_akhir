@@ -32,9 +32,11 @@ const requireAuth = (req, res, next) => {
       return res.redirect('/login');
     }
     
-    // Jika user adalah HR dan mencoba akses job seeker routes (bukan / atau /hr/*), redirect
-    if (decoded.role === 'hr' && req.path !== '/' && !req.path.startsWith('/hr/')) {
-      return res.redirect('/hr/dashboard');
+    // Jika user adalah HR dan mencoba akses job seeker routes (bukan / atau /hr/* atau shared routes), redirect
+    const allowedForHR = ['/', '/profile', '/chat'];
+    const isAllowed = allowedForHR.some(p => req.path === p || req.path.startsWith(p + '/') || req.path.startsWith('/hr/'));
+    if (decoded.role === 'hr' && !isAllowed) {
+      return res.redirect('/hr/home');
     }
     
     next();
@@ -57,7 +59,7 @@ const redirectIfAuthenticated = (req, res, next) => {
       const decoded = jwt.verify(token, JWT_SECRET);
       // Redirect berdasarkan role
       if (decoded.role === 'hr') {
-        return res.redirect('/hr/dashboard');
+        return res.redirect('/hr/home');
       }
       return res.redirect('/'); // User sudah login, redirect ke dashboard job seeker
     } catch (error) {

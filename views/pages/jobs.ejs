@@ -50,7 +50,13 @@
           
           <!-- Card Header -->
           <div class="job-card-header">
-            <div class="company-logo"></div>
+            <% if (job.company_logo) { %>
+              <img src="/images/companies/<%= job.company_logo %>" alt="Logo <%= job.company %>" class="company-logo">
+            <% } else { %>
+              <div class="company-logo flex items-center justify-center text-blue-600 font-bold text-xl bg-blue-50 border border-blue-100" style="display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 600; color: white; border: none;">
+                <%= job.company ? job.company.charAt(0).toUpperCase() : '?' %>
+              </div>
+            <% } %>
             <span class="time-posted"><%= formatTimeAgo(job.created_at) %></span>
           </div>
 

@@ -43,9 +43,19 @@ const User = {
    * @returns {Promise} - Data user
    */
   findById: async (id) => {
-    const sql = 'SELECT id, name, email, role, profile_image, banner_image, banner_color, bio, created_at FROM users WHERE id = ?';
-    const results = await query(sql, [id]);
-    return results[0] || null;
+    // Try fetching with extended columns; if they don't exist, fall back
+    try {
+      const sql = `SELECT id, name, email, role, profile_image, banner_image, banner_color, bio,
+                   phone, address, expected_salary_min, expected_salary_max, open_to_work,
+                   work_preferences, created_at FROM users WHERE id = ?`;
+      const results = await query(sql, [id]);
+      return results[0] || null;
+    } catch(e) {
+      // Fallback to basic columns if migration hasn't run yet
+      const sql = 'SELECT id, name, email, role, profile_image, banner_image, banner_color, bio, created_at FROM users WHERE id = ?';
+      const results = await query(sql, [id]);
+      return results[0] || null;
+    }
   },
 
   /**

@@ -4,7 +4,9 @@
       "Bash(curl *)",
       "Bash(select-string *)",
       "Bash(select-object *)",
-      "Bash(timeout *)"
+      "Bash(timeout *)",
+      "Bash(tasklist)",
+      "Bash(findstr *)"
     ]
   },
   "$version": 3

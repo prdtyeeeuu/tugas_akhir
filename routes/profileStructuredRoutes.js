@@ -4,9 +4,47 @@
  */
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const profileStructuredController = require('../controllers/profileStructuredController');
 const profileController = require('../controllers/profileController');
 const { requireAuth } = require('../middleware/auth');
+
+// Setup upload portfolio
+const portfolioUploadDir = path.join(__dirname, '../public/images/portfolios');
+if (!fs.existsSync(portfolioUploadDir)) {
+  fs.mkdirSync(portfolioUploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, portfolioUploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+    cb(null, uniqueName);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif|webp/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Hanya file gambar yang diperbolehkan (jpeg, jpg, png, gif, webp)'));
+  }
+};
+
+const uploadPortfolio = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Max 5MB
+  fileFilter: fileFilter
+});
+
 
 // Semua route memerlukan auth
 router.use(requireAuth);
@@ -34,8 +72,8 @@ router.put('/educations/:id', profileStructuredController.updateEducation);
 router.delete('/educations/:id', profileStructuredController.deleteEducation);
 
 // Portfolios
-router.post('/portfolios/add', profileStructuredController.addPortfolio);
-router.put('/portfolios/:id', profileStructuredController.updatePortfolio);
+router.post('/portfolios/add', uploadPortfolio.single('portfolioImage'), profileStructuredController.addPortfolio);
+router.put('/portfolios/:id', uploadPortfolio.single('portfolioImage'), profileStructuredController.updatePortfolio);
 router.delete('/portfolios/:id', profileStructuredController.deletePortfolio);
 
 // Privacy Settings

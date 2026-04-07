@@ -256,46 +256,7 @@
 </style>
 
 <div class="hr-page">
-  <!-- HR Navigation -->
-  <nav class="hr-nav">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-        <!-- Logo -->
-        <div class="flex items-center">
-          <a href="/hr/dashboard" class="flex items-center space-x-2">
-            <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-              <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-            </svg>
-            <span class="text-xl font-bold text-gray-800">Lokerin</span>
-          </a>
-        </div>
 
-        <!-- HR Navigation Links -->
-        <div class="hidden md:flex items-center space-x-1">
-          <a href="/hr/dashboard" class="hr-nav-link">
-            Dashboard
-          </a>
-          <a href="/hr/jobs" class="hr-nav-link active">
-            Kelola Lowongan
-          </a>
-        </div>
-
-        <!-- Right Side -->
-        <div class="flex items-center space-x-4">
-          <div class="user-menu">
-            <div class="user-avatar">
-              <%= user.name.charAt(0).toUpperCase() %>
-            </div>
-            <span class="user-name"><%= user.name %></span>
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="text-gray-500">
-              <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-  </nav>
 
   <!-- Main Content -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -305,6 +266,12 @@
         <h1>📋 Kelola Lowongan</h1>
         <p class="text-gray-600 mt-1">Kelola semua lowongan pekerjaan yang Anda buat</p>
       </div>
+      <a href="/hr/jobs/create" class="btn-post-job">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+        </svg>
+        Buat Lowongan
+      </a>
     </div>
 
     <!-- Success Message -->
@@ -385,14 +352,14 @@
                         <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
                       </svg>
                     </a>
-                    <form action="/hr/jobs/<%= job.id %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus lowongan ini?');">
-                      <button type="submit" class="action-btn delete" title="Hapus">
+                    <button type="button" class="action-btn delete" title="Hapus"
+                      onclick="deleteJob('<%= job.id %>')">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                           <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                           <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v.5h.5a1 1 0 0 1 1 1v.5zm-1.5 0H13V3H3v.5h10zM5 4a.5.5 0 0 1 .5-.5h5A.5.5 0 0 1 11 4v.5h-6V4z"/>
                         </svg>
-                      </button>
-                    </form>
+                    </button>
+                    <form id="form-delete-<%= job.id %>" action="/hr/jobs/<%= job.id %>?_method=DELETE" method="POST" style="display:none"></form>
                   </div>
                 </td>
               </tr>
@@ -415,5 +382,16 @@
         </a>
       </div>
     <% } %>
-  </div>
 </div>
+
+<script>
+async function deleteJob(jobId) {
+  const ok = await lokerinConfirm('Apakah Anda yakin ingin menghapus lowongan ini? Tindakan ini tidak dapat dibatalkan.', {
+    title: 'Hapus Lowongan',
+    confirmText: 'Ya, Hapus',
+    cancelText: 'Batal',
+    danger: true
+  });
+  if (ok) document.getElementById('form-delete-' + jobId).submit();
+}
+</script>

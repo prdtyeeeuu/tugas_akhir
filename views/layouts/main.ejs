@@ -28,6 +28,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- SweetAlert2 for Alerts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <!-- Profile Page Styles -->
   <link rel="stylesheet" href="/css/profile.css">
 
@@ -59,6 +62,11 @@
   <!-- Profile New Styles -->
   <% if (typeof title !== 'undefined' && title && title.toLowerCase().includes('profile')) { %>
   <link rel="stylesheet" href="/css/profile-new.css">
+  <% } %>
+
+  <!-- HR Homepage Styles -->
+  <% if (typeof title !== 'undefined' && title && title.includes('HR Panel')) { %>
+  <link rel="stylesheet" href="/css/home-hr.css">
   <% } %>
 
   <!-- Global Scroll Animations -->
@@ -106,6 +114,9 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
   </style>
+
+  <!-- Extracted Styles from Views -->
+  <%- typeof style !== 'undefined' ? style : '' %>
 </head>
 <body class="min-h-screen flex flex-col">
   <!-- Navbar -->
@@ -120,7 +131,57 @@
   <%- include('../partials/footer') %>
 
   <!-- Scripts -->
+  <script src="/js/lokerin-dialog.js"></script>
   <script src="/js/main.js"></script>
+
+  <!-- Global Logout Confirmation -->
+  <script>
+    function confirmLogout() {
+      Swal.fire({
+        title: 'Yakin ingin logout?',
+        text: 'Anda akan keluar dari akun dan perlu login kembali',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Show loading
+          Swal.fire({
+            title: 'Logging out...',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+          
+          // Redirect to logout
+          window.location.href = '/logout';
+        }
+      });
+    }
+
+    // Toggle Password Visibility
+    function togglePassword(inputId, button) {
+      const input = document.getElementById(inputId);
+      const eyeOpen = button.querySelector('.eye-open');
+      const eyeClosed = button.querySelector('.eye-closed');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeOpen.classList.add('hidden');
+        eyeClosed.classList.remove('hidden');
+      } else {
+        input.type = 'password';
+        eyeOpen.classList.remove('hidden');
+        eyeClosed.classList.add('hidden');
+      }
+    }
+  </script>
 
   <!-- Global Scroll Animation Script -->
   <script>
@@ -151,5 +212,8 @@
       });
     });
   </script>
+
+  <!-- Extracted Scripts from Views -->
+  <%- typeof script !== 'undefined' ? script : '' %>
 </body>
 </html>

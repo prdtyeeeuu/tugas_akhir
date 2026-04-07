@@ -119,9 +119,9 @@
                 <a href="#" class="action-link">Lihat Jadwal</a>
               <% } %>
               <% if (app.status === 'pending' || app.status === 'interview') { %>
-                <form action="/applications/cancel/<%= app.id %>" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menarik lamaran ini?');">
-                  <button type="submit" class="action-link danger" style="background: none; border: none; cursor: pointer; padding: 0; font: inherit; color: inherit;">Tarik Lamaran</button>
-                </form>
+                <button type="button" class="action-link danger"
+                  onclick="tarikLamaran('<%= app.id %>')">Tarik Lamaran</button>
+                <form id="form-cancel-<%= app.id %>" action="/applications/cancel/<%= app.id %>" method="POST" style="display:none"></form>
               <% } %>
               <% if (app.status === 'rejected') { %>
                 <a href="#" class="action-link">Lihat Alasan</a>
@@ -207,11 +207,21 @@
       if (data.success && data.redirect_url) {
         window.location.href = data.redirect_url;
       } else {
-        alert(data.error || 'Gagal memulai chat');
+        lokerinAlert(data.error || 'Gagal memulai chat', 'error');
       }
     } catch (error) {
       console.error('Error starting chat:', error);
-      alert('Terjadi kesalahan saat memulai chat');
+      lokerinAlert('Terjadi kesalahan saat memulai chat', 'error');
     }
+  }
+
+  async function tarikLamaran(appId) {
+    const ok = await lokerinConfirm('Apakah Anda yakin ingin menarik lamaran ini?', {
+      title: 'Tarik Lamaran',
+      confirmText: 'Ya, Tarik',
+      cancelText: 'Batal',
+      danger: true
+    });
+    if (ok) document.getElementById('form-cancel-' + appId).submit();
   }
 </script>

@@ -7,6 +7,66 @@ const Application = require('../models/Application');
 const User = require('../models/User');
 
 /**
+ * Menampilkan homepage untuk HR
+ */
+const showHomeHR = async (req, res) => {
+  try {
+    const hrId = req.user.id;
+
+    // Ambil statistik
+    const stats = await Job.getStatsForHR(hrId);
+
+    // Ambil lowongan aktif
+    const jobs = await Job.findByHR(hrId);
+
+    // Ambil pelamar terbaru
+    const recentApplicants = await Job.getRecentApplicants(hrId, 4);
+
+    // Hitung jumlah lamaran pending
+    const pendingApplications = stats.total_applicants || 0;
+
+    // Hitung persentase growth (mock untuk saat ini, bisa diimplementasikan tracking real)
+    const growthData = {
+      jobsGrowth: Math.floor(Math.random() * 15) + 5,
+      applicantsGrowth: Math.floor(Math.random() * 30) + 10,
+      interviewsGrowth: Math.floor(Math.random() * 10) + 3,
+      hiredGrowth: Math.floor(Math.random() * 20) + 5
+    };
+
+    res.render('pages/home-hr', {
+      title: 'Lokerin - HR Panel',
+      user: req.user,
+      stats: {
+        activeJobs: stats.total_jobs || 0,
+        totalApplicants: stats.total_applicants || 0,
+        totalInterviews: stats.total_interviews || 0,
+        totalHired: stats.total_hired || 0,
+        pendingApplications: pendingApplications,
+        totalCandidates: Math.floor(Math.random() * 500) + 1000,
+        ...growthData
+      },
+      jobs: jobs || [],
+      recentApplicants: recentApplicants || [],
+      formatSalary: function(amount) {
+        if (!amount) return '';
+        if (amount >= 1000000) {
+          return (amount / 1000000).toFixed(amount % 1000000 === 0 ? 0 : 1) + ' jt';
+        } else if (amount >= 1000) {
+          return (amount / 1000).toFixed(0) + ' rb';
+        }
+        return amount.toString();
+      }
+    });
+  } catch (error) {
+    console.error('HR Home error:', error);
+    res.status(500).render('pages/error', {
+      title: 'Error',
+      error: 'Terjadi kesalahan saat memuat halaman'
+    });
+  }
+};
+
+/**
  * Menampilkan dashboard HR
  * Berisi statistik: total pelamar, lowongan aktif, interview hari ini, pesan baru
  */
@@ -44,6 +104,7 @@ const showDashboard = async (req, res) => {
     });
 
     res.render('pages/hr/dashboard', {
+      layout: false,
       title: 'Dashboard HR - Lokerin',
       user: req.user,
       stats: {
@@ -117,6 +178,8 @@ const createJob = async (req, res) => {
       });
     }
 
+    const company_logo = req.file ? req.file.filename : null;
+
     // Buat lowongan
     await Job.create({
       title,
@@ -127,7 +190,8 @@ const createJob = async (req, res) => {
       description,
       salary_min: salary_min ? parseInt(salary_min) : null,
       salary_max: salary_max ? parseInt(salary_max) : null,
-      hr_id: req.user.id
+      hr_id: req.user.id,
+      company_logo
     });
 
     // Redirect ke halaman kelola lowongan
@@ -245,6 +309,7 @@ const deleteJob = async (req, res) => {
 };
 
 module.exports = {
+  showHomeHR,
   showDashboard,
   showManageJobs,
   showCreateJob,

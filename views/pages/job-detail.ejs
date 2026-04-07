@@ -17,9 +17,13 @@
     <!-- Header Card -->
     <div class="job-detail-header">
       <div class="header-top">
-        <div class="company-logo">
-          <%= job.company.charAt(0) %>
-        </div>
+        <% if (job.company_logo) { %>
+          <img src="/images/companies/<%= job.company_logo %>" alt="Logo <%= job.company %>" class="company-logo">
+        <% } else { %>
+          <div class="company-logo flex items-center justify-center text-blue-600 font-bold text-2xl bg-blue-50 border border-blue-100" style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600; color: white; border: none; width: 64px; height: 64px; border-radius: 12px;">
+            <%= job.company ? job.company.charAt(0).toUpperCase() : '?' %>
+          </div>
+        <% } %>
         <div class="header-info">
           <h1><%= job.title %></h1>
           <p class="company-name"><%= job.company %></p>
@@ -64,7 +68,7 @@
       </div>
 
       <div class="job-actions">
-        <button type="button" onclick="startChat(<%= job.id %>)" class="btn-chat">
+        <button type="button" data-id="<%- job.id %>" onclick="startChat(this.dataset.id)" class="btn-chat">
           <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2zm5 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
           </svg>
@@ -103,11 +107,11 @@
       if (data.success && data.redirect_url) {
         window.location.href = data.redirect_url;
       } else {
-        alert(data.error || 'Gagal memulai chat');
+        lokerinAlert(data.error || 'Gagal memulai chat', 'error');
       }
     } catch (error) {
       console.error('Error starting chat:', error);
-      alert('Terjadi kesalahan saat memulai chat');
+      lokerinAlert('Terjadi kesalahan saat memulai chat', 'error');
     }
   }
 </script>

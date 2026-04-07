@@ -60,8 +60,11 @@ router.use(requireAuth);
 // GET /profile - Tampilkan halaman profil
 router.get('/profile', profileController.showProfile);
 
-// POST /profile/update - Update data profil
+// POST /profile/update - Update data profil dasar (legacy)
 router.post('/profile/update', profileController.updateProfile);
+
+// POST /profile/update-details - Update data profil lengkap (address, gaji, dsb)
+router.post('/profile/update-details', profileController.updateProfileDetails);
 
 // POST /profile/upload-image - Upload foto profil
 router.post('/profile/upload-image', upload.single('profileImage'), profileController.uploadProfileImage);
@@ -77,5 +80,17 @@ router.post('/profile/remove-banner', profileController.removeBannerImage);
 
 // POST /profile/set-banner-color - Set banner color
 router.post('/profile/set-banner-color', profileController.setBannerColor);
+
+// Skills
+router.post('/profile/skills/add', profileController.addSkill);
+router.post('/profile/skills/remove/:id', profileController.removeSkill);
+
+// Experiences
+router.post('/profile/experiences/add', profileController.addExperience);
+router.post('/profile/experiences/remove/:id', profileController.deleteExperience);
+
+// Educations
+router.post('/profile/educations/add', profileController.addEducation);
+router.post('/profile/educations/remove/:id', profileController.deleteEducation);
 
 module.exports = router;

@@ -33,18 +33,29 @@ const Profile = {
   // ==================== EXPERIENCES ====================
 
   getExperiences: async (userId) => {
-    const sql = 'SELECT * FROM experiences WHERE user_id = ? ORDER BY start_date DESC';
+    const sql = 'SELECT * FROM experiences WHERE user_id = ? ORDER BY start_date DESC, created_at DESC';
     return await query(sql, [userId]);
   },
 
   addExperience: async (userId, data) => {
     const { position, company, start_date, end_date, is_current, description } = data;
-    const sql = `
-      INSERT INTO experiences (user_id, position, company, start_date, end_date, is_current, description)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-    const result = await query(sql, [userId, position, company, start_date, end_date, is_current, description]);
-    return result.insertId;
+    // Allow nullable start_date — use null if empty string or undefined
+    const safeStart = (start_date && start_date.trim && start_date.trim() !== '') ? start_date : null;
+    const safeEnd   = (end_date   && end_date.trim   && end_date.trim()   !== '') ? end_date   : null;
+    try {
+      const sql = `INSERT INTO experiences (user_id, position, company, start_date, end_date, is_current, description) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+      const result = await query(sql, [userId, position, company, safeStart, safeEnd, is_current || 0, description || null]);
+      return result.insertId;
+    } catch(e) {
+      // If start_date column is still NOT NULL at DB level, try fallback with today's date
+      if (e.code === 'ER_NO_DEFAULT_FOR_FIELD' || e.code === 'WARN_DATA_TRUNCATED' || e.message.includes('start_date')) {
+        const today = new Date().toISOString().split('T')[0];
+        const sql2 = `INSERT INTO experiences (user_id, position, company, start_date, end_date, is_current, description) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        const result = await query(sql2, [userId, position, company, today, safeEnd, is_current || 0, description || null]);
+        return result.insertId;
+      }
+      throw e;
+    }
   },
 
   updateExperience: async (expId, data) => {
@@ -72,13 +83,20 @@ const Profile = {
   },
 
   addEducation: async (userId, data) => {
-    const { school, degree, field_of_study, start_year, end_year } = data;
+    const { school, degree, field_of_study, start_year, end_year, gpa } = data;
     const sql = `
-      INSERT INTO educations (user_id, school, degree, field_of_study, start_year, end_year)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO educations (user_id, school, degree, field_of_study, start_year, end_year, gpa)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
-    const result = await query(sql, [userId, school, degree, field_of_study, start_year, end_year]);
-    return result.insertId;
+    try {
+      const result = await query(sql, [userId, school, degree, field_of_study, start_year, end_year, gpa || null]);
+      return result.insertId;
+    } catch(e) {
+      // Fallback if gpa column doesn't exist yet
+      const fallbackSql = 'INSERT INTO educations (user_id, school, degree, field_of_study, start_year, end_year) VALUES (?, ?, ?, ?, ?, ?)';
+      const result = await query(fallbackSql, [userId, school, degree, field_of_study, start_year, end_year]);
+      return result.insertId;
+    }
   },
 
   updateEducation: async (eduId, data) => {

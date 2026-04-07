@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 0;
+        }
+        img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .banner {
+            width: 100%;
+            height: 300px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Images - Profile & Banner</h1>
+    
+    <div class="test-card">
+        <h2>1. Profile Image Test</h2>
+        <p>Filename dari database: <code>1775474119968-173969975.jpg</code></p>
+        <p>URL yang dicoba: <code>http://localhost:3000/images/profiles/1775474119968-173969975.jpg</code></p>
+        <img id="profile-img" src="/images/profiles/1775474119968-173969975.jpg" alt="Profile Image Test" onerror="this.onerror=null; this.parentElement.querySelector('.status').className='status error'; this.parentElement.querySelector('.status').innerHTML='❌ Gambar TIDAK bisa dimuat!'; this.style.display='none';">
+        <div class="status success">✅ Jika gambar muncul di atas, berarti file bisa diakses</div>
+    </div>
+
+    <div class="test-card">
+        <h2>2. Banner Image Test</h2>
+        <p>Filename dari database: <code>1775474294309-284691562.jpeg</code></p>
+        <p>URL yang dicoba: <code>http://localhost:3000/images/banners/1775474294309-284691562.jpeg</code></p>
+        <div id="banner-test" class="banner" style="background-image: url('/images/banners/1775474294309-284691562.jpeg');">
+        </div>
+        <div id="banner-status" class="status" style="margin-top: 10px;">
+            Memuat gambar banner...
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>3. Debug Info</h2>
+        <p>Buka browser console (F12) untuk melihat detail error jika ada</p>
+        <button onclick="checkImages()">🔄 Check Images Again</button>
+    </div>
+
+    <script>
+        // Check if images loaded successfully
+        setTimeout(() => {
+            const profileImg = document.getElementById('profile-img');
+            const bannerDiv = document.getElementById('banner-test');
+            const bannerStatus = document.getElementById('banner-status');
+            
+            // Profile image check
+            if (profileImg && profileImg.naturalWidth > 0) {
+                console.log('✅ Profile image loaded successfully');
+                console.log('   Natural size:', profileImg.naturalWidth, 'x', profileImg.naturalHeight);
+            } else {
+                console.error('❌ Profile image failed to load');
+            }
+            
+            // Banner image check
+            const bannerStyle = window.getComputedStyle(bannerDiv);
+            const bgImage = bannerStyle.backgroundImage;
+            console.log('Banner background-image:', bgImage);
+            
+            if (bgImage && bgImage !== 'none') {
+                bannerStatus.className = 'status success';
+                bannerStatus.innerHTML = '✅ Banner background-image CSS terpasang: ' + bgImage;
+            } else {
+                bannerStatus.className = 'status error';
+                bannerStatus.innerHTML = '❌ Banner background-image tidak terpasang!';
+            }
+        }, 1000);
+
+        function checkImages() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
