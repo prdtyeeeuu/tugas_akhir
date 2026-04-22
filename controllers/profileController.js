@@ -7,6 +7,7 @@ const Profile = require('../models/Profile');
 const Application = require('../models/Application');
 const path = require('path');
 const fs = require('fs');
+const logger = require('../utils/logger');
 
 // Pastikan folder upload ada
 const uploadDirs = [
@@ -110,6 +111,69 @@ const showProfile = async (req, res) => {
 };
 
 /**
+ * Menampilkan profil publik user lain
+ * Hanya menampilkan data yang boleh dilihat publik
+ */
+const showUserProfile = async (req, res) => {
+  try {
+    const viewUserId = req.params.id;
+
+    // Ambil data user yang dilihat
+    const user = await User.findById(viewUserId);
+
+    if (!user) {
+      return res.status(404).render('pages/404', {
+        title: 'User Tidak Ditemukan',
+        user: req.user || null
+      });
+    }
+
+    // Ambil data publik user (skills, experiences, educations, portfolios)
+    const [skills, experiences, educations, portfolios] = await Promise.all([
+      Profile.getSkills(viewUserId),
+      Profile.getExperiences(viewUserId),
+      Profile.getEducations(viewUserId),
+      Profile.getPortfolios(viewUserId)
+    ]);
+
+    // Cek apakah yang melihat adalah pemilik profil
+    const isOwner = req.user && req.user.id === viewUserId;
+
+    // Jika pemilik, redirect ke halaman profil sendiri
+    if (isOwner) {
+      return res.redirect('/profile');
+    }
+
+    // Pastikan salary fields ada di user object (untuk job seeker)
+    const profileUser = {
+      ...user,
+      expected_salary_min: user.expected_salary_min || 0,
+      expected_salary_max: user.expected_salary_max || 0
+    };
+
+    // Render halaman profil publik
+    // Kirim currentUser agar navbar menampilkan user yang login dengan benar
+    res.render('pages/user-profile', {
+      title: `${user.name} - Lokerin`,
+      profileUser: profileUser,
+      skills,
+      experiences,
+      educations,
+      portfolios,
+      isOwner: false,
+      currentUserRole: req.user ? req.user.role : null,
+      currentUser: req.user || null // Untuk navbar
+    });
+  } catch (error) {
+    console.error('Show user profile error:', error);
+    res.status(500).render('pages/error', {
+      title: 'Error',
+      error: 'Terjadi kesalahan saat memuat profil'
+    });
+  }
+};
+
+/**
  * Tambah skill baru
  */
 const addSkill = async (req, res) => {
@@ -135,7 +199,11 @@ const addSkill = async (req, res) => {
 const removeSkill = async (req, res) => {
   try {
     const skillId = req.params.id;
-    await Profile.deleteSkill(skillId);
+    const userId = req.user.id;
+    const deleted = await Profile.deleteSkill(skillId, userId);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Keahlian tidak ditemukan' });
+    }
     res.json({ success: true, message: 'Keahlian berhasil dihapus' });
   } catch (error) {
     console.error('Remove skill error:', error);
@@ -151,6 +219,7 @@ const updateProfileDetails = async (req, res) => {
     const userId = req.user.id;
     const { 
       bio, 
+      about_me,
       phone, 
       address, 
       expected_salary_min, 
@@ -162,6 +231,7 @@ const updateProfileDetails = async (req, res) => {
     // Build update object based on what's provided
     const updateData = {};
     if (bio !== undefined) updateData.bio = bio;
+    if (about_me !== undefined) updateData.about_me = about_me;
     if (phone !== undefined) updateData.phone = phone;
     if (address !== undefined) updateData.address = address;
     if (expected_salary_min !== undefined) updateData.expected_salary_min = expected_salary_min;
@@ -222,47 +292,35 @@ const uploadProfileImage = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    console.log(`\n📸 ============================================`);
-    console.log(`📸 Upload profile image request received`);
-    console.log(`📸 User ID: ${userId}`);
-    console.log(`📸 File received:`, req.file ? req.file.originalname : 'NO FILE');
-    console.log(`📸 ============================================\n`);
-
     if (!req.file) {
-      console.error('❌ No file received in request');
       return res.status(400).json({ error: 'Silakan pilih file gambar' });
     }
 
     // Hapus foto lama jika ada
     const user = await User.findById(userId);
-    console.log(`👤 Current user profile_image: ${user.profile_image || 'none'}`);
-    
     if (user.profile_image) {
       const oldFilePath = path.join(__dirname, '../public/images/profiles', user.profile_image);
       if (fs.existsSync(oldFilePath)) {
         fs.unlinkSync(oldFilePath);
-        console.log(`🗑️ Deleted old profile image: ${user.profile_image}`);
       }
     }
 
     // Simpan nama file ke database
     const fileName = req.file.filename;
-    console.log(`💾 Saving new profile_image to database: ${fileName}`);
     await User.update(userId, { profile_image: fileName });
 
-    // Verify the update
+    // Refresh token in session to reflect the new profile_image site-wide
     const updatedUser = await User.findById(userId);
-    console.log(`✅ Verified profile_image in database: ${updatedUser.profile_image}`);
-    console.log(`✅ Upload successful!\n`);
+    const { generateToken } = require('../middleware/auth');
+    req.session.token = generateToken(updatedUser);
 
-    // Return JSON response for AJAX
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Foto profil berhasil diupload',
-      profile_image: fileName 
+      profile_image: fileName
     });
   } catch (error) {
-    console.error('❌ Upload profile image error:', error);
+    logger.error('Upload profile image error', { error: error.message });
     res.status(500).json({ error: 'Gagal mengupload foto profil' });
   }
 };
@@ -274,54 +332,32 @@ const uploadBannerImage = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    console.log(`\n🖼️ ============================================`);
-    console.log(`🖼️ Upload banner image request received`);
-    console.log(`🖼️ User ID: ${userId}`);
-    console.log(`🖼️ File received:`, req.file ? req.file.originalname : 'NO FILE');
-    console.log(`🖼️ ============================================\n`);
-
     if (!req.file) {
-      console.error('❌ No file received in request');
       return res.status(400).json({ error: 'Silakan pilih file gambar' });
     }
 
-    // Hapus banner lama jika ada
     const user = await User.findById(userId);
-    console.log(`👤 Current user banner_image: ${user.banner_image || 'none'}`);
-    console.log(`👤 Current user banner_color: ${user.banner_color || 'none'}`);
-    
     if (user.banner_image) {
       const oldFilePath = path.join(__dirname, '../public/images/banners', user.banner_image);
       if (fs.existsSync(oldFilePath)) {
         fs.unlinkSync(oldFilePath);
-        console.log(`🗑️ Deleted old banner: ${user.banner_image}`);
       }
     }
 
-    // Jika ada banner color, hapus juga
     if (user.banner_color) {
       await User.update(userId, { banner_color: null });
-      console.log(`🎨 Cleared banner_color`);
     }
 
-    // Simpan nama file ke database
     const fileName = req.file.filename;
-    console.log(`💾 Saving new banner_image to database: ${fileName}`);
     await User.update(userId, { banner_image: fileName });
 
-    // Verify the update
-    const updatedUser = await User.findById(userId);
-    console.log(`✅ Verified banner_image in database: ${updatedUser.banner_image}`);
-    console.log(`✅ Upload successful!\n`);
-
-    // Return JSON response for AJAX
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Banner berhasil diupload',
-      banner_image: fileName 
+      banner_image: fileName
     });
   } catch (error) {
-    console.error('❌ Upload banner error:', error);
+    logger.error('Upload banner error', { error: error.message });
     res.status(500).json({ error: 'Gagal mengupload banner' });
   }
 };
@@ -346,6 +382,11 @@ const removeProfileImage = async (req, res) => {
     // Hapus dari database
     await User.update(userId, { profile_image: null });
 
+    // Refresh token in session to remove profile_image site-wide
+    const updatedUser = await User.findById(userId);
+    const { generateToken } = require('../middleware/auth');
+    req.session.token = generateToken(updatedUser);
+
     // Redirect dengan pesan sukses
     res.redirect('/profile?success=Foto+profil+berhasil+dihapus');
   } catch (error) {
@@ -367,17 +408,15 @@ const removeBannerImage = async (req, res) => {
       const filePath = path.join(__dirname, '../public/images/banners', user.banner_image);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
-        console.log(`✅ Deleted banner image: ${filePath}`);
       }
     }
 
-    // Hapus dari database
-    await User.update(userId, { banner_image: null });
+    // Hapus banner_image dan banner_color dari database
+    await User.update(userId, { banner_image: null, banner_color: null });
 
-    // Redirect dengan pesan sukses
     res.redirect('/profile?success=Banner+berhasil+dihapus');
   } catch (error) {
-    console.error('Remove banner error:', error);
+    logger.error('Remove banner error', { error: error.message });
     res.redirect('/profile?error=Gagal+menghapus+banner');
   }
 };
@@ -390,51 +429,31 @@ const setBannerColor = async (req, res) => {
     const userId = req.user.id;
     const { color } = req.body;
 
-    console.log(`🎨 Setting banner color for user ${userId}: ${color}`);
-
-    // Validasi color hex format (6 digits dengan #)
     const colorRegex = /^#[0-9A-Fa-f]{6}$/;
     if (!color || !colorRegex.test(color)) {
-      console.error(`❌ Invalid color format: ${color}`);
       return res.status(400).json({ error: 'Warna tidak valid' });
     }
 
-    // Get current user data
     const user = await User.findById(userId);
-    console.log(`📋 Current user banner_image: ${user.banner_image}, banner_color: ${user.banner_color}`);
-    
     const updateData = { banner_color: color };
 
-    // Jika ada banner image, hapus file dan set null
     if (user.banner_image) {
       const filePath = path.join(__dirname, '../public/images/banners', user.banner_image);
       if (fs.existsSync(filePath)) {
-        try {
-          fs.unlinkSync(filePath);
-          console.log(`🗑️ Deleted banner image file: ${filePath}`);
-        } catch (deleteError) {
-          console.error(`⚠️ Failed to delete file: ${deleteError.message}`);
-        }
+        try { fs.unlinkSync(filePath); } catch (deleteError) { /* ignore */ }
       }
-      // Set banner_image to null
       updateData.banner_image = null;
     }
 
-    console.log(`💾 Updating user with data:`, updateData);
     await User.update(userId, updateData);
 
-    // Get updated user data
-    const updatedUser = await User.findById(userId);
-    console.log(`✅ Updated user banner_color: ${updatedUser.banner_color}, banner_image: ${updatedUser.banner_image}`);
-
-    // Return JSON response for AJAX request
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Warna banner berhasil diubah',
-      banner_color: updatedUser.banner_color 
+      banner_color: color
     });
   } catch (error) {
-    console.error('❌ Set banner color error:', error);
+    logger.error('Set banner color error', { error: error.message });
     res.status(500).json({ error: 'Gagal mengubah warna banner' });
   }
 };
@@ -445,8 +464,7 @@ const addExperience = async (req, res) => {
     const userId = req.user.id;
     let { position, company, start_date, end_date, is_current, description } = req.body;
     if (!position || !company) return res.status(400).json({ error: 'Posisi dan perusahaan wajib diisi' });
-    
-    // Format dates flexibly from YYYY-MM to YYYY-MM-DD for MySQL
+
     if (start_date && start_date.includes('-') && start_date.split('-').length === 2) {
       start_date = start_date + '-01';
     }
@@ -457,15 +475,18 @@ const addExperience = async (req, res) => {
     const id = await Profile.addExperience(userId, { position, company, start_date, end_date, is_current: is_current ? 1 : 0, description });
     res.json({ success: true, id, message: 'Pengalaman berhasil ditambahkan' });
   } catch (error) {
-    console.error('Add experience error:', error);
-    // Return actual error for debugging
-    res.status(500).json({ error: 'Gagal menambah pengalaman: ' + error.message });
+    logger.error('Add experience error', { error: error.message });
+    res.status(500).json({ error: 'Gagal menambah pengalaman' });
   }
 };
 
 const deleteExperience = async (req, res) => {
   try {
-    await Profile.deleteExperience(req.params.id);
+    const userId = req.user.id;
+    const deleted = await Profile.deleteExperience(req.params.id, userId);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Pengalaman tidak ditemukan' });
+    }
     res.json({ success: true, message: 'Pengalaman berhasil dihapus' });
   } catch (error) {
     console.error('Delete experience error:', error);
@@ -489,7 +510,11 @@ const addEducation = async (req, res) => {
 
 const deleteEducation = async (req, res) => {
   try {
-    await Profile.deleteEducation(req.params.id);
+    const userId = req.user.id;
+    const deleted = await Profile.deleteEducation(req.params.id, userId);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Pendidikan tidak ditemukan' });
+    }
     res.json({ success: true, message: 'Pendidikan berhasil dihapus' });
   } catch (error) {
     console.error('Delete education error:', error);
@@ -499,6 +524,7 @@ const deleteEducation = async (req, res) => {
 
 module.exports = {
   showProfile,
+  showUserProfile,
   updateProfile,
   updateProfileDetails,
   addSkill,

@@ -5,6 +5,10 @@
 const Job = require('../models/Job');
 const Application = require('../models/Application');
 const Profile = require('../models/Profile');
+const { formatSalary, formatTimeAgo } = require('../utils/helpers');
+const { query } = require('../config/db');
+const jwt = require('jsonwebtoken');
+const config = require('../config/config');
 
 /**
  * Menampilkan halaman Home (Public)
@@ -13,20 +17,19 @@ const Profile = require('../models/Profile');
  */
 const showHome = async (req, res) => {
   try {
-    // Cek apakah user sudah login dan merupakan HR
     const token = req.session?.token;
     let isHR = false;
-    
+    let isLoggedIn = false;
+
     if (token) {
-      const jwt = require('jsonwebtoken');
-      const JWT_SECRET = process.env.JWT_SECRET || 'lokerin-secret-key-2024';
       try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, config.JWT_SECRET);
+        isLoggedIn = true;
         if (decoded.role === 'hr') {
           isHR = true;
         }
       } catch (e) {
-        // Token tidak valid, abaikan
+        // Token tidak valid
       }
     }
 
@@ -35,58 +38,23 @@ const showHome = async (req, res) => {
       return res.redirect('/hr/home');
     }
 
-    // Untuk job seeker dan guest, tampilkan homepage job seeker
-    // Ambil job terbaru untuk rekomendasi (max 6)
-    const recentJobs = await Job.findRecent(6);
+    // Untuk job seeker dan guest
+    let recentJobs = [];
+    let categories = [];
 
-    // Ambil semua kategori
-    const categories = await Job.findCategories();
+    // Hanya ambil jobs jika user sudah login
+    if (isLoggedIn) {
+      recentJobs = await Job.findRecent(6);
+      categories = await Job.findCategories();
+    }
 
     res.render('pages/home', {
       title: 'Lokerin - Temukan Pekerjaan Impianmu',
       jobs: recentJobs,
       categories,
-      formatSalary: function(amount) {
-        if (!amount) return '';
-        if (amount >= 1000000) {
-          return (amount / 1000000).toFixed(amount % 1000000 === 0 ? 0 : 1) + ' jt';
-        } else if (amount >= 1000) {
-          return (amount / 1000).toFixed(0) + ' rb';
-        }
-        return amount.toString();
-      },
-      formatTimeAgo: function(dateString) {
-        const now = new Date();
-        const date = new Date(dateString);
-        const seconds = Math.floor((now - date) / 1000);
-
-        const intervals = [
-          { label: 'tahun', seconds: 31536000 },
-          { label: 'bulan', seconds: 2592000 },
-          { label: 'minggu', seconds: 604800 },
-          { label: 'hari', seconds: 86400 },
-          { label: 'jam', seconds: 3600 },
-          { label: 'menit', seconds: 60 }
-        ];
-
-        for (const interval of intervals) {
-          const count = Math.floor(seconds / interval.seconds);
-          if (count >= 1) {
-            if (interval.label === 'jam') {
-              return count + ' jam lalu';
-            } else if (interval.label === 'menit') {
-              return count < 60 ? 'Baru Saja' : count + ' menit lalu';
-            } else if (interval.label === 'hari') {
-              if (count === 1) return '1 hari lalu';
-              if (count < 7) return count + ' hari lalu';
-            }
-            break;
-          }
-        }
-
-        if (seconds < 60) return 'Baru Saja';
-        return Math.floor(seconds / 3600) + ' jam lalu';
-      }
+      formatSalary,
+      formatTimeAgo,
+      isLoggedIn
     });
   } catch (error) {
     console.error('Home error:', error);
@@ -155,12 +123,15 @@ const showDashboard = async (req, res) => {
       if (req.user.bio) completeness += 10;
     }
 
+    const appliedJobIds = applications.map(app => app.job_id);
+
     res.render('pages/dashboard', {
       title: 'Dashboard - Lokerin',
       jobs,
       stats,
       activity,
-      completeness
+      completeness,
+      appliedJobIds
     });
   } catch (error) {
     console.error('Dashboard error:', error);
@@ -174,56 +145,60 @@ const showDashboard = async (req, res) => {
   }
 };
 
-// Helper function moved here or kept in render
-function formatTimeAgo(dateString) {
-  const now = new Date();
-  const date = new Date(dateString);
-  const seconds = Math.floor((now - date) / 1000);
-  const intervals = [
-    { label: 'tahun', seconds: 31536000 },
-    { label: 'bulan', seconds: 2592000 },
-    { label: 'hari', seconds: 86400 },
-  ];
-  for (const interval of intervals) {
-    const count = Math.floor(seconds / interval.seconds);
-    if (count >= 1) return count + ' ' + interval.label + ' lalu';
-  }
-  return 'Baru saja';
-}
-
 /**
  * Menampilkan halaman find jobs
- * Jika user adalah HR, redirect ke /hr/dashboard
  */
 const showFindJobs = async (req, res) => {
   try {
-    // Cek jika user adalah HR, redirect ke dashboard HR
     const token = req.session?.token;
+    let isLoggedIn = false;
+
     if (token) {
-      const jwt = require('jsonwebtoken');
-      const JWT_SECRET = process.env.JWT_SECRET || 'lokerin-secret-key-2024';
       try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, config.JWT_SECRET);
+        isLoggedIn = true;
         if (decoded.role === 'hr') {
           return res.redirect('/hr/dashboard');
         }
       } catch (e) {
-        // Token tidak valid, abaikan dan tampilkan jobs biasa
+        // Token tidak valid
       }
     }
 
     const { category, search } = req.query;
-
-    // Build filter
     const filters = {};
     if (category) filters.category = category;
     if (search) filters.search = search;
 
-    // Ambil semua jobs dengan filter
-    const jobs = await Job.findAll(filters);
+    let jobs = [];
+    let categories = [];
+    let pagination = null;
 
-    // Ambil semua kategori untuk filter dropdown
-    const categories = await Job.findCategories();
+    let appliedJobIds = [];
+
+    if (isLoggedIn) {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const result = await Job.findAll(filters, { page, limit });
+      jobs = result.jobs;
+      categories = await Job.findCategories();
+      
+      const token = req.session?.token;
+      if (token) {
+        const decoded = jwt.verify(token, config.JWT_SECRET);
+        const userApplications = await require('../models/Application').findByUserId(decoded.id);
+        appliedJobIds = userApplications.map(app => app.job_id);
+      }
+
+      pagination = {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages
+      };
+    } else {
+      categories = await Job.findCategories();
+    }
 
     res.render('pages/jobs', {
       title: 'Find Jobs - Lokerin',
@@ -231,47 +206,11 @@ const showFindJobs = async (req, res) => {
       categories,
       selectedCategory: category,
       searchQuery: search,
-      formatSalary: function(amount) {
-        if (!amount) return '';
-        if (amount >= 1000000) {
-          return (amount / 1000000).toFixed(amount % 1000000 === 0 ? 0 : 1) + ' jt';
-        } else if (amount >= 1000) {
-          return (amount / 1000).toFixed(0) + ' rb';
-        }
-        return amount.toString();
-      },
-      formatTimeAgo: function(dateString) {
-        const now = new Date();
-        const date = new Date(dateString);
-        const seconds = Math.floor((now - date) / 1000);
-
-        const intervals = [
-          { label: 'tahun', seconds: 31536000 },
-          { label: 'bulan', seconds: 2592000 },
-          { label: 'minggu', seconds: 604800 },
-          { label: 'hari', seconds: 86400 },
-          { label: 'jam', seconds: 3600 },
-          { label: 'menit', seconds: 60 }
-        ];
-
-        for (const interval of intervals) {
-          const count = Math.floor(seconds / interval.seconds);
-          if (count >= 1) {
-            if (interval.label === 'jam') {
-              return count + ' jam lalu';
-            } else if (interval.label === 'menit') {
-              return count < 60 ? 'Baru Saja' : count + ' menit lalu';
-            } else if (interval.label === 'hari') {
-              if (count === 1) return '1 hari lalu';
-              if (count < 7) return count + ' hari lalu';
-            }
-            break;
-          }
-        }
-
-        if (seconds < 60) return 'Baru Saja';
-        return Math.floor(seconds / 3600) + ' jam lalu';
-      }
+      formatSalary,
+      formatTimeAgo,
+      isLoggedIn,
+      pagination,
+      appliedJobIds
     });
   } catch (error) {
     console.error('Find jobs error:', error);
@@ -340,8 +279,20 @@ const applyJob = async (req, res) => {
       return res.redirect('/jobs');
     }
 
+    // Cek deadline
+    if (job.deadline && new Date(job.deadline) < new Date()) {
+      req.flash('error', 'Pekerjaan sudah ditutup');
+      return res.redirect('/jobs');
+    }
+
     // Buat lamaran baru
-    await Application.create({ user_id: userId, job_id: jobId });
+    const cv_image = req.file ? req.file.filename : null;
+    if (!cv_image) {
+      req.flash('error', 'CV berupa foto wajib dilampirkan');
+      return res.redirect('/jobs');
+    }
+    
+    await Application.create({ user_id: userId, job_id: jobId, cv_image });
 
     // Redirect ke halaman lamaran dengan pesan sukses
     res.redirect('/applications?success=true');
@@ -368,22 +319,15 @@ const showJobDetail = async (req, res) => {
 
     if (!job) {
       return res.status(404).render('pages/404', {
-        title: 'Lowongan Tidak Ditemukan'
+        title: 'Lowongan Tidak Ditemukan',
+        user: req.user || null
       });
     }
 
     res.render('pages/job-detail', {
       title: `${job.title} - ${job.company}`,
       job,
-      formatSalary: function(amount) {
-        if (!amount) return '';
-        if (amount >= 1000000) {
-          return (amount / 1000000).toFixed(amount % 1000000 === 0 ? 0 : 1) + ' jt';
-        } else if (amount >= 1000) {
-          return (amount / 1000).toFixed(0) + ' rb';
-        }
-        return amount.toString();
-      }
+      formatSalary
     });
   } catch (error) {
     console.error('Job detail error:', error);
@@ -402,28 +346,22 @@ const cancelApplication = async (req, res) => {
     const applicationId = req.params.id;
     const userId = req.user.id;
 
-    // Cek apakah lamaran ini milik user
     const applications = await Application.findByUserId(userId);
     const app = applications.find(a => a.id == applicationId);
 
     if (!app) {
-      return res.status(404).json({ error: 'Lamaran tidak ditemukan' });
+      return res.redirect('/applications?error=Lamaran+tidak+ditemukan');
     }
 
-    // Hanya bisa tarik lamaran yang statusnya pending atau interview
     if (app.status !== 'pending' && app.status !== 'interview') {
-      return res.status(400).json({ error: 'Lamaran tidak dapat ditarik' });
+      return res.redirect('/applications?error=Lamaran+tidak+dapat+ditarik');
     }
 
-    // Hapus lamaran dari database
-    const { query } = require('../config/db');
-    await query('DELETE FROM applications WHERE id = ? AND user_id = ?', [applicationId, userId]);
-
-    // Redirect kembali ke halaman lamaran
+    await Application.cancel(applicationId, userId);
     res.redirect('/applications?cancelled=true');
   } catch (error) {
     console.error('Cancel application error:', error);
-    res.status(500).json({ error: 'Terjadi kesalahan saat menarik lamaran' });
+    res.redirect('/applications?error=Gagal+menarik+lamaran');
   }
 };
 

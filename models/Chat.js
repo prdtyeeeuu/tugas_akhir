@@ -23,6 +23,7 @@ const Chat = {
 
   /**
    * Mendapatkan atau membuat conversation
+   * Menggunakan INSERT IGNORE untuk menghindari race condition
    * @param {number} applicantId - ID applicant
    * @param {number} hrId - ID HR
    * @param {number} jobId - ID job
@@ -31,7 +32,7 @@ const Chat = {
   getOrCreateConversation: async (applicantId, hrId, jobId) => {
     // Cek apakah conversation sudah ada
     const checkSql = `
-      SELECT id FROM chat_conversations 
+      SELECT id FROM chat_conversations
       WHERE applicant_id = ? AND hr_id = ? AND job_id = ?
     `;
     const existing = await query(checkSql, [applicantId, hrId, jobId]);
@@ -40,13 +41,17 @@ const Chat = {
       return existing[0].id;
     }
 
-    // Buat conversation baru
+    // Buat conversation baru dengan INSERT IGNORE untuk menghindari race condition
+    // Tabel harus memiliki UNIQUE KEY pada (applicant_id, hr_id, job_id)
     const insertSql = `
-      INSERT INTO chat_conversations (applicant_id, hr_id, job_id)
+      INSERT IGNORE INTO chat_conversations (applicant_id, hr_id, job_id)
       VALUES (?, ?, ?)
     `;
-    const result = await query(insertSql, [applicantId, hrId, jobId]);
-    return result.insertId;
+    await query(insertSql, [applicantId, hrId, jobId]);
+
+    // Ambil ID yang baru saja di-insert (atau yang sudah ada)
+    const newResult = await query(checkSql, [applicantId, hrId, jobId]);
+    return newResult[0].id;
   },
 
   /**
@@ -75,36 +80,68 @@ const Chat = {
   getConversations: async (userId, isApplicant) => {
     const sql = isApplicant
       ? `
-        SELECT 
+        SELECT
           c.id as conversation_id,
           c.job_id,
           j.title as job_title,
           j.company,
           u.name as hr_name,
-          (SELECT message FROM chat_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
-          (SELECT created_at FROM chat_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message_time,
-          (SELECT COUNT(*) FROM chat_messages WHERE conversation_id = c.id AND receiver_id = ? AND is_read = FALSE) as unread_count
+          lm.last_message,
+          lm.last_message_time,
+          COALESCE(unread.unread_count, 0) as unread_count
         FROM chat_conversations c
         JOIN jobs j ON c.job_id = j.id
         JOIN users u ON c.hr_id = u.id
+        LEFT JOIN (
+          SELECT conversation_id,
+                 message as last_message,
+                 created_at as last_message_time
+          FROM chat_messages m1
+          WHERE created_at = (
+            SELECT MAX(created_at) FROM chat_messages m2
+            WHERE m2.conversation_id = m1.conversation_id
+          )
+        ) lm ON lm.conversation_id = c.id
+        LEFT JOIN (
+          SELECT conversation_id, COUNT(*) as unread_count
+          FROM chat_messages
+          WHERE receiver_id = ? AND is_read = FALSE
+          GROUP BY conversation_id
+        ) unread ON unread.conversation_id = c.id
         WHERE c.applicant_id = ?
-        ORDER BY last_message_time DESC
+        ORDER BY lm.last_message_time DESC
       `
       : `
-        SELECT 
+        SELECT
           c.id as conversation_id,
           c.job_id,
           j.title as job_title,
           j.company,
           u.name as applicant_name,
-          (SELECT message FROM chat_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
-          (SELECT created_at FROM chat_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message_time,
-          (SELECT COUNT(*) FROM chat_messages WHERE conversation_id = c.id AND receiver_id = ? AND is_read = FALSE) as unread_count
+          lm.last_message,
+          lm.last_message_time,
+          COALESCE(unread.unread_count, 0) as unread_count
         FROM chat_conversations c
         JOIN jobs j ON c.job_id = j.id
         JOIN users u ON c.applicant_id = u.id
+        LEFT JOIN (
+          SELECT conversation_id,
+                 message as last_message,
+                 created_at as last_message_time
+          FROM chat_messages m1
+          WHERE created_at = (
+            SELECT MAX(created_at) FROM chat_messages m2
+            WHERE m2.conversation_id = m1.conversation_id
+          )
+        ) lm ON lm.conversation_id = c.id
+        LEFT JOIN (
+          SELECT conversation_id, COUNT(*) as unread_count
+          FROM chat_messages
+          WHERE receiver_id = ? AND is_read = FALSE
+          GROUP BY conversation_id
+        ) unread ON unread.conversation_id = c.id
         WHERE c.hr_id = ?
-        ORDER BY last_message_time DESC
+        ORDER BY lm.last_message_time DESC
       `;
 
     return await query(sql, [userId, userId]);

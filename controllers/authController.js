@@ -4,12 +4,13 @@
  */
 const User = require('../models/User');
 const { generateToken } = require('../middleware/auth');
+const { validateReturnUrl } = require('../utils/helpers');
 
 /**
  * Menampilkan halaman login
  */
 const showLoginPage = (req, res) => {
-  const returnUrl = req.query.returnUrl || '/';
+  const returnUrl = validateReturnUrl(req.query.returnUrl);
   res.render('pages/auth/login', {
     title: 'Login - Lokerin',
     returnUrl,
@@ -46,10 +47,11 @@ const login = async (req, res) => {
     // Cari user berdasarkan email
     const user = await User.findByEmail(email);
 
+    // Generic error message to prevent user enumeration
     if (!user) {
       return res.render('pages/auth/login', {
         title: 'Login - Lokerin',
-        error: 'Email tidak terdaftar',
+        error: 'Email atau password salah',
         req: req
       });
     }
@@ -60,7 +62,7 @@ const login = async (req, res) => {
     if (!isPasswordValid) {
       return res.render('pages/auth/login', {
         title: 'Login - Lokerin',
-        error: 'Password salah',
+        error: 'Email atau password salah',
         req: req
       });
     }
@@ -73,11 +75,11 @@ const login = async (req, res) => {
 
     // Redirect berdasarkan role
     if (user.role === 'hr') {
-      return res.redirect('/hr/dashboard');
+      return res.redirect('/hr/home');
     }
 
     // Redirect ke halaman yang dituju atau dashboard
-    const returnUrl = req.body.returnUrl || '/';
+    const returnUrl = validateReturnUrl(req.body.returnUrl);
     res.redirect(returnUrl);
 
   } catch (error) {
@@ -118,6 +120,17 @@ const register = async (req, res) => {
       });
     }
 
+    // Validasi email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.render('pages/auth/register', {
+        title: 'Register - Lokerin',
+        error: 'Format email tidak valid',
+        formData: { name, email, role },
+        req: req
+      });
+    }
+
     // Validasi role
     const validRoles = ['job_seeker', 'hr'];
     const userRole = validRoles.includes(role) ? role : 'job_seeker';
@@ -146,10 +159,10 @@ const register = async (req, res) => {
 
     // Redirect berdasarkan role
     if (userRole === 'hr') {
-      return res.redirect('/hr/dashboard'); // Nanti kita buat dashboard HR
+      return res.redirect('/hr/home');
     }
-    
-    res.redirect('/'); // Job seeker ke dashboard utama
+
+    res.redirect('/');
 
   } catch (error) {
     console.error('Register error:', error);
@@ -163,10 +176,9 @@ const register = async (req, res) => {
 };
 
 /**
- * Proses logout
+ * Proses logout - Changed to POST for CSRF protection
  */
 const logout = (req, res) => {
-  // Hapus session token
   req.session.token = null;
   req.session.destroy((err) => {
     if (err) {

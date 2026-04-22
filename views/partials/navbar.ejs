@@ -16,9 +16,12 @@
       </div>
 
       <!-- Navigation Menu (Desktop) - For logged in users -->
-      <% if (typeof user !== 'undefined' && user) { %>
+      <%
+        let loggedInUser = typeof currentUser !== 'undefined' && currentUser ? currentUser : (typeof user !== 'undefined' && user ? user : null);
+        if (loggedInUser) {
+      %>
         <div class="hidden md:flex items-center space-x-1">
-          <% if (user.role === 'hr') { %>
+          <% if (loggedInUser.role === 'hr') { %>
             <!-- HR Navigation -->
             <a href="/hr/dashboard" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-secondary hover:text-gray-900 transition <%= typeof active !== 'undefined' && active === 'hr-dashboard' ? 'bg-secondary text-gray-900' : '' %>">
               Dashboard
@@ -57,25 +60,29 @@
         <!-- Right Side - Logged In -->
         <div class="flex items-center space-x-3">
           <!-- User Name Badge -->
-          <div class="hidden sm:block px-4 py-2 bg-secondary rounded-full text-sm font-medium text-gray-800">
-            <%= user.name %>
-          </div>
+          <a href="/profile" title="Lihat Profil Saya" class="hidden sm:flex items-center gap-2 pl-2 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-100 transition-colors cursor-pointer">
+            <img src="<%= loggedInUser.profile_image ? '/images/profiles/' + loggedInUser.profile_image + '?t=' + Date.now() : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(loggedInUser.name) + '&background=f3f4f6&color=4b5563&size=100' %>" 
+                 alt="Profile" 
+                 class="w-7 h-7 rounded-full object-cover border border-gray-200 bg-white">
+            <div class="flex flex-col">
+              <span class="leading-none"><%= loggedInUser.name %></span>
+              <span class="text-[10px] font-bold tracking-wide <%= loggedInUser.role === 'hr' ? 'text-indigo-600' : 'text-blue-500' %> uppercase mt-0.5">
+                <%= loggedInUser.role === 'hr' ? 'Recruiter' : 'Job Seeker' %>
+              </span>
+            </div>
+          </a>
 
           <!-- Logout Button -->
-          <button onclick="confirmLogout()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition text-sm font-medium cursor-pointer">
-            Logout
-          </button>
+          <form action="/logout" method="POST" style="display:inline;">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' && csrfToken ? csrfToken : '' %>">
+            <button type="submit" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition text-sm font-medium cursor-pointer">
+              Logout
+            </button>
+          </form>
         </div>
       <% } else { %>
         <!-- Navigation Menu (Desktop) - For public/guest users -->
-        <div class="hidden md:flex items-center space-x-1">
-          <a href="/" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-secondary hover:text-gray-900 transition">
-            Beranda
-          </a>
-          <a href="/jobs" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-secondary hover:text-gray-900 transition">
-            Lowongan
-          </a>
-        </div>
+        <div class="hidden md:flex items-center"></div>
 
         <!-- Right Side - Not Logged In -->
         <div class="flex items-center space-x-3">

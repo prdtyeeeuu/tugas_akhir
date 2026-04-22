@@ -4,11 +4,11 @@
 <div class="job-detail-page">
   <!-- Back Button -->
   <div class="job-detail-back">
-    <a href="/applications" class="back-link">
+    <a href="javascript:void(0)" onclick="if(document.referrer.includes(window.location.host) && document.referrer !== window.location.href) { window.history.back(); } else { window.location.href='/jobs'; }" class="back-link">
       <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
       </svg>
-      Kembali ke Lamaran Saya
+      Kembali
     </a>
   </div>
 
@@ -63,6 +63,18 @@
           <% } else { %>
             Hingga Rp <%= Number(job.salary_max).toLocaleString('id-ID') %>
           <% } %>
+        </span>
+        <% } %>
+        <% if (job.deadline) { 
+             const now = new Date();
+             const isClosed = new Date(job.deadline) < now;
+        %>
+        <span class="job-tag" style="color: <%= isClosed ? '#ef4444' : '#d97706' %>;">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+          </svg>
+          <%= isClosed ? 'Ditutup pada ' : 'Berakhir pada ' %> <%= new Date(job.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
         </span>
         <% } %>
       </div>

@@ -11,47 +11,63 @@ const Job = {
    * @returns {Promise} - ID job yang baru dibuat
    */
   create: async (jobData) => {
-    const { title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo } = jobData;
+    const { title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline } = jobData;
 
     const sql = `
-      INSERT INTO jobs (title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO jobs (title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const result = await query(sql, [title, company, location, category, type, description, salary_min || null, salary_max || null, hr_id, company_logo || null]);
+    const result = await query(sql, [title, company, location, category, type, description, salary_min || null, salary_max || null, hr_id, company_logo || null, deadline || null]);
     return result.insertId;
   },
 
   /**
-   * Mengambil semua lowongan kerja
+   * Mengambil semua lowongan kerja (dengan pagination)
    * @param {object} filters - Filter opsional { category, search }
-   * @returns {Promise} - Array of jobs
+   * @param {object} pagination - Pagination opsional { page, limit }
+   * @returns {Promise} - Array of jobs + total count
    */
-  findAll: async (filters = {}) => {
-    let sql = `
-      SELECT j.*, u.name as hr_name 
-      FROM jobs j 
-      LEFT JOIN users u ON j.hr_id = u.id 
-      WHERE 1=1
-    `;
+  findAll: async (filters = {}, pagination = {}) => {
+    let whereClause = '';
     const params = [];
+    const countParams = [];
 
-    // Filter berdasarkan kategori
     if (filters.category) {
-      sql += ' AND j.category = ?';
-      params.push(filters.category);
+      whereClause += ' AND j.category LIKE ?';
+      params.push(`%${filters.category}%`);
+      countParams.push(`%${filters.category}%`);
     }
 
-    // Filter berdasarkan search (title atau company)
     if (filters.search) {
-      sql += ' AND (j.title LIKE ? OR j.company LIKE ?)';
+      whereClause += ' AND (j.title LIKE ? OR j.company LIKE ?)';
       const searchTerm = `%${filters.search}%`;
       params.push(searchTerm, searchTerm);
+      countParams.push(searchTerm, searchTerm);
     }
 
-    sql += ' ORDER BY j.created_at DESC';
+    // Get total count
+    const countSql = `SELECT COUNT(*) as total FROM jobs j WHERE 1=1${whereClause}`;
+    const [totalResult] = await query(countSql, countParams);
+    const total = totalResult.total;
 
-    return await query(sql, params);
+    // Get paginated results
+    const page = Math.max(1, parseInt(pagination.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(pagination.limit) || 20));
+    const offset = (page - 1) * limit;
+
+    const sql = `
+      SELECT j.*, u.name as hr_name, u.profile_image as hr_image
+      FROM jobs j
+      LEFT JOIN users u ON j.hr_id = u.id
+      WHERE 1=1${whereClause}
+      ORDER BY j.created_at DESC
+      LIMIT ? OFFSET ?
+    `;
+    params.push(limit, offset);
+
+    const jobs = await query(sql, params);
+    return { jobs, total, page, limit, totalPages: Math.ceil(total / limit) };
   },
 
   /**
@@ -61,7 +77,7 @@ const Job = {
    */
   findById: async (id) => {
     const sql = `
-      SELECT j.*, u.name as hr_name 
+      SELECT j.*, u.name as hr_name, u.profile_image as hr_image 
       FROM jobs j 
       LEFT JOIN users u ON j.hr_id = u.id 
       WHERE j.id = ?
@@ -77,7 +93,7 @@ const Job = {
    */
   findRecent: async (limit = 6) => {
     const sql = `
-      SELECT j.*, u.name as hr_name 
+      SELECT j.*, u.name as hr_name, u.profile_image as hr_image 
       FROM jobs j 
       LEFT JOIN users u ON j.hr_id = u.id 
       ORDER BY j.created_at DESC 
@@ -192,8 +208,9 @@ const Job = {
    */
   getRecentApplicants: async (hrId, limit = 10) => {
     const sql = `
-      SELECT 
+      SELECT
         a.*,
+        a.user_id,
         j.title as job_title,
         u.name as applicant_name,
         u.email as applicant_email,

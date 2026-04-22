@@ -1,6 +1,6 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
+` utilities;
 
 /* Custom styles */
 body {
@@ -17,4 +17,103 @@ body {
 
 .card-hover:hover {
   transform: translateY(-4px);
+}
+
+/* Login CTA Section & Card - shown when user is not logged in */
+.login-cta-section {
+  padding: 4rem 0;
+}
+
+.login-cta-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3.5rem 2.5rem;
+  background: linear-gradient(135deg, #f0f4ff 0%, #f5f0ff 100%);
+  border-radius: 1.25rem;
+  border: 2px dashed #c7c7d6;
+  gap: 1.25rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.login-cta-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #eef2ff 0%, #ede9fe 100%);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.login-cta-icon svg {
+  color: #6366f1;
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
+.login-cta-card h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.login-cta-card p {
+  font-size: 0.93rem;
+  color: #6b7280;
+  max-width: 440px;
+  margin: 0;
+  line-height: 1.65;
+}
+
+.login-cta-buttons {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  padding-top: 0.25rem;
+}
+
+.login-cta-buttons .cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-width: 150px;
+  line-height: 1;
+}
+
+.login-cta-buttons .cta-btn.primary {
+  background: #4f46e5;
+  color: white;
+  border: 2px solid #4f46e5;
+}
+
+.login-cta-buttons .cta-btn.primary:hover {
+  background: #4338ca;
+  border-color: #4338ca;
+}
+
+.login-cta-buttons .cta-btn.outline {
+  background: #ffffff;
+  color: #4f46e5;
+  border: 2px solid #4f46e5;
+}
+
+.login-cta-buttons .cta-btn.outline:hover {
+  background: #f0f4ff;
 }

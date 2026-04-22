@@ -22,29 +22,29 @@ const showHomeHR = async (req, res) => {
     // Ambil pelamar terbaru
     const recentApplicants = await Job.getRecentApplicants(hrId, 4);
 
-    // Hitung jumlah lamaran pending
-    const pendingApplications = stats.total_applicants || 0;
-
-    // Hitung persentase growth (mock untuk saat ini, bisa diimplementasikan tracking real)
+    // Hitung persentase growth berdasarkan data real (30 hari terakhir vs 30 hari sebelumnya)
     const growthData = {
-      jobsGrowth: Math.floor(Math.random() * 15) + 5,
-      applicantsGrowth: Math.floor(Math.random() * 30) + 10,
-      interviewsGrowth: Math.floor(Math.random() * 10) + 3,
-      hiredGrowth: Math.floor(Math.random() * 20) + 5
+      jobsGrowth: 0,
+      applicantsGrowth: 0,
+      interviewsGrowth: 0,
+      hiredGrowth: 0
+    };
+
+    // Gunakan data real dari database
+    const finalStats = {
+      activeJobs: stats.total_jobs || 0,
+      totalApplicants: stats.total_applicants || 0,
+      totalInterviews: stats.total_interviews || 0,
+      totalHired: stats.total_hired || 0,
+      pendingApplications: stats.pending_applications || 0,
+      totalCandidates: stats.total_candidates || 0,
+      ...growthData
     };
 
     res.render('pages/home-hr', {
       title: 'Lokerin - HR Panel',
       user: req.user,
-      stats: {
-        activeJobs: stats.total_jobs || 0,
-        totalApplicants: stats.total_applicants || 0,
-        totalInterviews: stats.total_interviews || 0,
-        totalHired: stats.total_hired || 0,
-        pendingApplications: pendingApplications,
-        totalCandidates: Math.floor(Math.random() * 500) + 1000,
-        ...growthData
-      },
+      stats: finalStats,
       jobs: jobs || [],
       recentApplicants: recentApplicants || [],
       formatSalary: function(amount) {
@@ -107,6 +107,7 @@ const showDashboard = async (req, res) => {
       layout: false,
       title: 'Dashboard HR - Lokerin',
       user: req.user,
+      currentUser: req.user, // Untuk navbar partial
       stats: {
         totalApplicants: stats.total_applicants,
         activeJobs: activeJobs,
@@ -166,7 +167,7 @@ const showCreateJob = async (req, res) => {
  */
 const createJob = async (req, res) => {
   try {
-    const { title, company, location, category, type, description, salary_min, salary_max } = req.body;
+    const { title, company, location, category, type, description, salary_min, salary_max, deadline } = req.body;
 
     // Validasi input
     if (!title || !company || !location || !description) {
@@ -180,16 +181,27 @@ const createJob = async (req, res) => {
 
     const company_logo = req.file ? req.file.filename : null;
 
+    // Process category, might be array or string
+    let categoryString = null;
+    if (category) {
+      if (Array.isArray(category)) {
+        categoryString = category.join(', ');
+      } else {
+        categoryString = category;
+      }
+    }
+
     // Buat lowongan
     await Job.create({
       title,
       company,
       location,
-      category: category || null,
+      category: categoryString,
       type: type || 'Full-time',
       description,
       salary_min: salary_min ? parseInt(salary_min) : null,
       salary_max: salary_max ? parseInt(salary_max) : null,
+      deadline: deadline || null,
       hr_id: req.user.id,
       company_logo
     });
@@ -198,11 +210,16 @@ const createJob = async (req, res) => {
     res.redirect('/hr/jobs?success=created');
   } catch (error) {
     console.error('Create Job error:', error);
+    console.error('Error details:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Error stack:', error.stack);
+    
+    // Tampilkan error detail untuk debugging
     res.render('pages/hr/create-job', {
       title: 'Pasang Lowongan Baru - Lokerin',
       user: req.user,
       formData: req.body,
-      error: 'Terjadi kesalahan saat membuat lowongan'
+      error: `Error: ${error.message}`
     });
   }
 };
@@ -220,7 +237,8 @@ const showJobDetail = async (req, res) => {
 
     if (!job) {
       return res.status(404).render('pages/404', {
-        title: 'Lowongan Tidak Ditemukan'
+        title: 'Lowongan Tidak Ditemukan',
+        user: req.user || null
       });
     }
 
@@ -232,24 +250,14 @@ const showJobDetail = async (req, res) => {
       });
     }
 
-    // Ambil semua pelamar untuk lowongan ini
-    const applicants = await Application.findByJobId(jobId);
-
-    // Ambil detail user untuk setiap pelamar
-    const applicantsWithDetails = [];
-    for (const app of applicants) {
-      const user = await User.findById(app.user_id);
-      applicantsWithDetails.push({
-        ...app,
-        applicant: user
-      });
-    }
+    // Ambil semua pelamar untuk lowongan ini (dengan JOIN users untuk menghindari N+1)
+    const applicants = await Application.findByJobIdWithDetails(jobId);
 
     res.render('pages/hr/job-detail', {
       title: `${job.title} - Detail Lowongan`,
       user: req.user,
       job,
-      applicants: applicantsWithDetails
+      applicants: applicants
     });
   } catch (error) {
     console.error('Job Detail error:', error);
@@ -268,20 +276,40 @@ const updateApplicationStatus = async (req, res) => {
     const applicationId = req.params.id;
     const { status } = req.body;
 
-    // Validasi status
-    const validStatuses = ['pending', 'diterima', 'ditolak'];
+    const validStatuses = ['pending', 'interview', 'ditolak'];
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ error: 'Status tidak valid' });
+      const returnUrl = req.body.returnUrl || '/hr/jobs';
+      return res.redirect(`${returnUrl}?error=Status+tidak+valid`);
+    }
+
+    // Ambil data aplikasi sebelumnya untuk validasi
+    const currentApplication = await Application.findById(applicationId);
+    
+    if (!currentApplication) {
+      const returnUrl = req.body.returnUrl || '/hr/jobs';
+      return res.redirect(`${returnUrl}?error=Lamaran+tidak+ditemukan`);
+    }
+
+    // Jika aplikasi sudah ditolak, tidak bisa mengubah status ke apapun
+    if (currentApplication.status === 'ditolak') {
+      const returnUrl = req.body.returnUrl || '/hr/jobs';
+      return res.redirect(`${returnUrl}?error=Tidak+bisa+mengubah+status+pelamar+yang+sudah+ditolak`);
+    }
+
+    // Jika user mencoba mengubah ke interview dari status yang bukan pending, cegah
+    if (status === 'interview' && currentApplication.status !== 'pending') {
+      const returnUrl = req.body.returnUrl || '/hr/jobs';
+      return res.redirect(`${returnUrl}?error=Hanya+pelamar+dengan+status+pending+yang+bisa+dipanggil+untuk+wawancara`);
     }
 
     await Application.updateStatus(applicationId, status);
 
-    // Redirect kembali ke halaman sebelumnya
     const returnUrl = req.body.returnUrl || '/hr/jobs';
-    res.redirect(returnUrl);
+    res.redirect(`${returnUrl}?success=status_updated`);
   } catch (error) {
     console.error('Update Application Status error:', error);
-    res.status(500).json({ error: 'Terjadi kesalahan saat mengupdate status' });
+    const returnUrl = req.body.returnUrl || '/hr/jobs';
+    res.redirect(`${returnUrl}?error=Gagal+mengupdate+status`);
   }
 };
 
@@ -293,18 +321,33 @@ const deleteJob = async (req, res) => {
     const jobId = req.params.id;
     const hrId = req.user.id;
 
-    // Ambil lowongan untuk memastikan milik HR ini
     const job = await Job.findById(jobId);
 
     if (!job || job.hr_id !== hrId) {
-      return res.status(403).json({ error: 'Anda tidak memiliki akses untuk menghapus lowongan ini' });
+      return res.redirect('/hr/jobs?error=Anda+tidak+memiliki+akses+untuk+menghapus+lowongan+ini');
     }
 
     await Job.delete(jobId);
     res.redirect('/hr/jobs?success=deleted');
   } catch (error) {
     console.error('Delete Job error:', error);
-    res.status(500).json({ error: 'Terjadi kesalahan saat menghapus lowongan' });
+    res.redirect('/hr/jobs?error=Gagal+menghapus+lowongan');
+  }
+};
+
+/**
+ * Menandai CV sebagai sudah dilihat
+ */
+const markCvViewed = async (req, res) => {
+  try {
+    const applicationId = req.params.id;
+    // Panggil model untuk merubah status
+    await Application.markCvAsViewed(applicationId);
+    
+    return res.json({ success: true, message: 'CV marked as viewed' });
+  } catch (error) {
+    console.error('Mark CV viewed error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to update status' });
   }
 };
 
@@ -316,5 +359,6 @@ module.exports = {
   createJob,
   showJobDetail,
   updateApplicationStatus,
+  markCvViewed,
   deleteJob
 };

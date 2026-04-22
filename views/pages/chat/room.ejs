@@ -90,7 +90,7 @@
   // Send message
   chatForm.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const message = messageInput.value.trim();
     if (!message) return;
 
@@ -110,17 +110,25 @@
       const data = await response.json();
 
       if (data.success) {
-        // Add message to UI
-        const messageHtml = `
-          <div class="message-wrapper sent">
-            <div class="message-bubble">
-              <p>${message}</p>
-              <span class="message-time">${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-          </div>
-        `;
-        messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
-        
+        // Add message to UI - using textContent to prevent XSS
+        const msgWrapper = document.createElement('div');
+        msgWrapper.className = 'message-wrapper sent';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+
+        const msgP = document.createElement('p');
+        msgP.textContent = message; // XSS-safe: textContent escapes HTML
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'message-time';
+        timeSpan.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        bubble.appendChild(msgP);
+        bubble.appendChild(timeSpan);
+        msgWrapper.appendChild(bubble);
+        messagesContainer.appendChild(msgWrapper);
+
         // Clear input and scroll
         messageInput.value = '';
         scrollToBottom();
@@ -139,10 +147,10 @@
 
   // Poll for new messages every 3 seconds
   let lastMessageTime = '<%= messages && messages.length > 0 ? messages[messages.length - 1].created_at : '' %>';
-  
+
   setInterval(async function() {
     try {
-      const url = lastMessageTime 
+      const url = lastMessageTime
         ? `/chat/api/${conversationId}/messages?since=${encodeURIComponent(lastMessageTime)}`
         : `/chat/api/${conversationId}/messages`;
 
@@ -155,15 +163,24 @@
       if (data.success && data.messages.length > 0) {
         data.messages.forEach(function(msg) {
           if (msg.sender_id != '<%= currentUserId %>') {
-            const messageHtml = `
-              <div class="message-wrapper received">
-                <div class="message-bubble">
-                  <p>${msg.message}</p>
-                  <span class="message-time">${new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-              </div>
-            `;
-            messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+            // XSS-safe: use DOM methods instead of insertAdjacentHTML
+            const msgWrapper = document.createElement('div');
+            msgWrapper.className = 'message-wrapper received';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+
+            const msgP = document.createElement('p');
+            msgP.textContent = msg.message; // XSS-safe
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'message-time';
+            timeSpan.textContent = new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            bubble.appendChild(msgP);
+            bubble.appendChild(timeSpan);
+            msgWrapper.appendChild(bubble);
+            messagesContainer.appendChild(msgWrapper);
             scrollToBottom();
           }
           lastMessageTime = msg.created_at;

@@ -1,0 +1,265 @@
+<!-- User Public Profile Page -->
+<style>
+:root {
+  --brand-50: #EFF6FF; --brand-100: #DBEAFE; --brand-200: #BFDBFE;
+  --brand-500: #3B82F6; --brand-600: #2563EB; --brand-700: #1D4ED8;
+}
+.bg-brand-50 { background-color: #EFF6FF !important; }
+.bg-brand-100 { background-color: #DBEAFE !important; }
+.bg-brand-500 { background-color: #3B82F6 !important; }
+.bg-brand-600 { background-color: #2563EB !important; }
+.text-brand-500 { color: #3B82F6 !important; }
+.text-brand-600 { color: #2563EB !important; }
+.text-brand-700 { color: #1D4ED8 !important; }
+.border-brand-100 { border-color: #DBEAFE !important; }
+.banner-gradient-2 { background: linear-gradient(135deg, #2563EB, #06b6d4); }
+.skill-tag { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:#fff; border:1px solid #e2e8f0; border-radius:9999px; font-size:12px; font-weight:500; color:#374151; }
+</style>
+<script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+
+<div class="pt-8 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+
+  <!-- Back Button -->
+  <div class="mb-4">
+    <a href="javascript:history.back()" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+      <span class="iconify" data-icon="lucide:arrow-left"></span>
+      Kembali
+    </a>
+  </div>
+
+  <!-- Profile Header Card -->
+  <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-6">
+    <!-- Banner -->
+    <%
+      let bannerStyle = '';
+      let bannerClass = 'banner-gradient-2';
+      if (profileUser.banner_image) {
+        bannerStyle = `background-image:url('/images/banners/${profileUser.banner_image}');background-size:cover;background-position:center;`;
+        bannerClass = '';
+      } else if (profileUser.banner_color) {
+        bannerStyle = `background:${profileUser.banner_color};`;
+        bannerClass = '';
+      }
+    %>
+    <div class="h-44 sm:h-56 relative <%= bannerClass %> profile-banner" data-style="<%= bannerStyle %>"></div>
+
+    <!-- Info -->
+    <div class="px-5 sm:px-8 pb-6">
+      <div class="flex flex-col sm:flex-row gap-5 -mt-14 sm:-mt-16">
+        <!-- Avatar -->
+        <div class="relative shrink-0">
+          <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-white bg-slate-100 overflow-hidden shadow-md">
+            <% if (profileUser.profile_image) { %>
+              <img src="/images/profiles/<%= profileUser.profile_image %>" alt="<%= profileUser.name %>" class="w-full h-full object-cover">
+            <% } else { %>
+              <div class="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                <span class="text-4xl font-bold text-blue-600"><%= profileUser.name.charAt(0).toUpperCase() %></span>
+              </div>
+            <% } %>
+          </div>
+          <% if (profileUser.role === 'hr') { %>
+          <div class="absolute -bottom-1 -right-1 px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded-md shadow-sm">
+            HR
+          </div>
+          <% } %>
+        </div>
+
+        <!-- Details -->
+        <div class="flex-1 mt-14 sm:mt-16 pt-1">
+          <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight"><%= profileUser.name %></h1>
+              <p class="text-slate-500 text-sm mt-1"><%= profileUser.bio || 'Belum ada deskripsi singkat' %></p>
+              <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
+                <span class="flex items-center gap-1.5">
+                  <span class="iconify text-brand-500" data-icon="lucide:map-pin"></span>
+                  <span><%= profileUser.address || 'Lokasi belum diatur' %></span>
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="iconify text-brand-500" data-icon="lucide:user"></span>
+                  <span><%= profileUser.role === 'hr' ? 'HR / Recruiter' : 'Job Seeker' %></span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-5 flex flex-wrap gap-3">
+            <% if (typeof currentUserRole !== 'undefined' && currentUserRole && currentUserRole !== profileUser.role) { %>
+              <% if (currentUserRole === 'hr' && profileUser.role !== 'hr') { %>
+              <a href="/chat" class="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm">
+                <span class="iconify" data-icon="lucide:message-square"></span>
+                Kirim Pesan
+              </a>
+              <% } %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="grid lg:grid-cols-3 gap-6">
+    <!-- LEFT COLUMN -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Tentang Saya -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-3">Tentang Saya</h2>
+        <p class="text-slate-600 leading-relaxed text-sm"><%= profileUser.about_me || 'Belum ada deskripsi profil.' %></p>
+      </div>
+
+      <!-- Keahlian -->
+      <% if (skills && skills.length > 0) { %>
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-4">Keahlian</h2>
+        <div class="flex flex-wrap gap-2">
+          <% skills.forEach(function(s) { %>
+          <span class="px-4 py-1.5 bg-white border border-slate-200 text-brand-600 text-xs font-medium rounded-full shadow-sm"><%= s.name %></span>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Pengalaman Kerja -->
+      <% if (experiences && experiences.length > 0) { %>
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-5">Pengalaman Kerja</h2>
+        <div class="space-y-5">
+          <% experiences.forEach(function(exp, i) {
+            var expInitials = (exp.company || 'XX').substring(0, 2).toUpperCase();
+            var expBorderClass = (i < experiences.length - 1) ? 'border-b border-slate-100 pb-5' : '';
+            var expStartStr = exp.start_date ? new Date(exp.start_date).toLocaleDateString('id-ID', {month: 'short', year: 'numeric'}) : '-';
+            var expEndStr = exp.is_current ? 'Sekarang' : (exp.end_date ? new Date(exp.end_date).toLocaleDateString('id-ID', {month: 'short', year: 'numeric'}) : '-');
+          %>
+          <div class="flex gap-3">
+            <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center shrink-0 text-xs font-bold text-brand-700">
+              <%= expInitials %>
+            </div>
+            <div class="flex-1 <%= expBorderClass %>">
+              <div class="flex justify-between items-start gap-2">
+                <div>
+                  <h3 class="font-bold text-slate-900 text-sm"><%= exp.position %></h3>
+                  <p class="text-brand-600 text-xs font-medium mt-0.5"><%= exp.company %></p>
+                </div>
+                <span class="text-xs text-slate-400"><%= expStartStr %> — <%= expEndStr %></span>
+              </div>
+              <% if (exp.description) { %><p class="text-xs text-slate-500 mt-1.5 leading-relaxed"><%= exp.description %></p><% } %>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Pendidikan -->
+      <% if (educations && educations.length > 0) { %>
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-5">Pendidikan</h2>
+        <div class="space-y-3">
+          <% educations.forEach(function(edu) {
+            var eduEndYear = edu.end_year || 'Sekarang';
+          %>
+          <div class="flex gap-4 bg-slate-50 rounded-xl p-4">
+            <div class="w-10 h-10 rounded-full bg-brand-100/60 flex items-center justify-center shrink-0">
+              <span class="iconify text-brand-600 text-lg" data-icon="lucide:graduation-cap"></span>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-bold text-slate-900 text-sm"><%= edu.degree %> <%= edu.field_of_study %></h3>
+              <p class="text-brand-600 text-xs font-medium mt-0.5"><%= edu.school %></p>
+              <p class="text-slate-400 text-xs mt-1">
+                <%= edu.start_year %> — <%= eduEndYear %>
+                <% if (edu.gpa) { %> &middot; IPK <%= edu.gpa %><% } %>
+              </p>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Portofolio -->
+      <% if (portfolios && portfolios.length > 0) { %>
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-5">Portofolio & Proyek Kerja</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <% portfolios.forEach(function(pf) { %>
+          <div class="bg-slate-50 rounded-xl overflow-hidden">
+            <% if (pf.image_url) { %>
+              <img src="/images/portfolios/<%= pf.image_url %>" alt="<%= pf.title %>" class="w-full h-32 object-cover">
+            <% } else { %>
+              <div class="w-full h-32 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                <span class="iconify text-4xl text-blue-300" data-icon="lucide:layout-dashboard"></span>
+              </div>
+            <% } %>
+            <div class="p-4">
+              <h3 class="font-bold text-slate-900 text-sm leading-snug"><%= pf.title %></h3>
+              <% if (pf.description) { %><p class="text-xs text-slate-500 mt-1 line-clamp-2"><%= pf.description %></p><% } %>
+              <div class="mt-3 flex items-center gap-3">
+                <% if (pf.url) { %>
+                <a href="<%= pf.url %>" target="_blank" class="inline-flex items-center gap-1 text-xs text-brand-600 font-medium hover:underline">
+                  <span class="iconify" data-icon="lucide:external-link"></span> Demo
+                </a>
+                <% } %>
+              </div>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Empty State -->
+      <% if (!profileUser.bio && !profileUser.about_me && (!skills || skills.length === 0) && (!experiences || experiences.length === 0) && (!educations || educations.length === 0) && (!portfolios || portfolios.length === 0)) { %>
+      <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+        <span class="iconify text-6xl text-slate-300 mx-auto mb-4 block" data-icon="lucide:user-x"></span>
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">Profil Belum Lengkap</h3>
+        <p class="text-sm text-slate-500">User ini belum melengkapi profilnya.</p>
+      </div>
+      <% } %>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="space-y-5">
+
+      <!-- Role Badge -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5">
+        <h2 class="text-sm font-bold text-slate-900 mb-3">Tipe Akun</h2>
+        <div class="<%= profileUser.role === 'hr' ? 'bg-blue-50 border-blue-100' : 'bg-green-50 border-green-100' %> border rounded-xl p-4 text-center">
+          <p class="text-sm font-semibold <%= profileUser.role === 'hr' ? 'text-blue-700' : 'text-green-700' %>">
+            <%= profileUser.role === 'hr' ? '🏢 HR / Perusahaan' : '👤 Pencari Kerja' %>
+          </p>
+        </div>
+      </div>
+
+      <!-- Ekspektasi Gaji (Job Seeker Only) -->
+      <% if (profileUser.role !== 'hr' && profileUser.expected_salary_min && profileUser.expected_salary_max) { %>
+      <div class="bg-white rounded-2xl border border-slate-200 p-5">
+        <h2 class="text-sm font-bold text-slate-900 mb-3">Ekspektasi Gaji</h2>
+        <div class="bg-brand-50 border border-brand-100 rounded-xl p-4 text-center">
+          <p class="text-xl font-bold text-brand-700">
+            Rp <%= profileUser.expected_salary_min %> — <%= profileUser.expected_salary_max %> Jt
+          </p>
+          <p class="text-xs text-brand-500 mt-1">per bulan</p>
+        </div>
+      </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for Profile Banner -->
+<script>
+  // Apply profile banner styles dynamically
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.profile-banner[data-style]').forEach(function(el) {
+      var style = el.getAttribute('data-style');
+      if (style) {
+        el.style.cssText = style;
+      }
+    });
+  });
+</script>

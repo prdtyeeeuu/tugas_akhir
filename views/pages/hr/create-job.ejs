@@ -34,26 +34,32 @@
   
   .form-card {
     background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+    border: 1px solid #f3f4f6;
   }
   
   .form-header {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 2px dashed #f3f4f6;
+    text-align: center;
   }
   
   .form-header h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.75rem;
+    font-weight: 800;
     color: #111827;
+    background: linear-gradient(135deg, #111827 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   
   .form-header p {
     color: #6b7280;
     margin-top: 0.5rem;
+    font-size: 0.95rem;
   }
   
   .form-group {
@@ -75,11 +81,12 @@
   .form-select,
   .form-textarea {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    transition: all 0.2s;
+    padding: 0.875rem 1.25rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: all 0.25s ease;
+    background-color: #f9fafb;
   }
   
   .form-input:focus,
@@ -87,7 +94,8 @@
   .form-textarea:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
   }
   
   .form-textarea {
@@ -120,20 +128,22 @@
   }
   
   .btn-submit {
-    background: #3b82f6;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     color: white;
-    padding: 0.875rem 2rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.05rem;
     border: none;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
     width: 100%;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1);
   }
   
   .btn-submit:hover {
-    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.1);
   }
   
   .btn-back {
@@ -182,18 +192,75 @@
   }
   
   .salary-prefix {
-    padding: 0.75rem 1rem;
+    padding: 0.875rem 1.25rem;
     background: #f3f4f6;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 0.875rem;
+    border: 1.5px solid #e5e7eb;
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    font-size: 0.95rem;
     color: #6b7280;
+    font-weight: 600;
   }
   
-  @media (max-width: 768px) {
-    .form-row {
-      grid-template-columns: 1fr;
-    }
+  .salary-input-group .form-input {
+    border-radius: 0 10px 10px 0;
+  }
+  
+  /* Category Pills Styling */
+  .category-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  
+  .category-checkbox {
+    display: none;
+  }
+  
+  .category-label {
+    padding: 0.6rem 1.25rem;
+    background: #f3f4f6;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4b5563;
+    transition: all 0.2s ease;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .category-label::before {
+    content: '+';
+    font-size: 1rem;
+    font-weight: bold;
+    color: #9ca3af;
+    transition: all 0.2s;
+  }
+  
+  .category-checkbox:checked + .category-label {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+  }
+  
+  .category-checkbox:checked + .category-label::before {
+    content: '✓';
+    color: #3b82f6;
+  }
+  
+  .category-label:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+  }
+  
+  .category-checkbox:checked + .category-label:hover {
+    background: #dbeafe;
   }
 </style>
 
@@ -225,7 +292,7 @@
           </div>
         <% } %>
 
-        <form action="/hr/jobs" method="POST" enctype="multipart/form-data">
+        <form action="/hr/jobs?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="POST" enctype="multipart/form-data">
           <!-- Judul Lowongan -->
           <div class="form-group">
             <label class="form-label">
@@ -287,22 +354,48 @@
             </div>
           </div>
 
-          <!-- Kategori & Tipe -->
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Kategori</label>
-              <select name="category" class="form-select">
-                <option value="">Pilih Kategori</option>
-                <option value="IT" <%= formData.category === 'IT' ? 'selected' : '' %>>IT & Teknologi</option>
-                <option value="Design" <%= formData.category === 'Design' ? 'selected' : '' %>>Design</option>
-                <option value="Marketing" <%= formData.category === 'Marketing' ? 'selected' : '' %>>Marketing</option>
-                <option value="Finance" <%= formData.category === 'Finance' ? 'selected' : '' %>>Finance</option>
-                <option value="HR" <%= formData.category === 'HR' ? 'selected' : '' %>>Human Resources</option>
-                <option value="Sales" <%= formData.category === 'Sales' ? 'selected' : '' %>>Sales</option>
-                <option value="Operations" <%= formData.category === 'Operations' ? 'selected' : '' %>>Operations</option>
-                <option value="Other" <%= formData.category === 'Other' ? 'selected' : '' %>>Lainnya</option>
-              </select>
+          <!-- Kategori -->
+          <div class="form-group">
+            <label class="form-label">
+              Kategori Pekerjaan <span class="required">*</span>
+              <span class="text-xs text-gray-500 font-normal ml-2">(Pilih satu atau lebih kategori yang sesuai)</span>
+            </label>
+            
+            <%
+              const categories = [
+                'Frontend Developer', 'Backend Developer', 'Full Stack Developer',
+                'Mobile Developer', 'UI/UX Designer', 'Data Scientist',
+                'DevOps Engineer', 'QA Tester', 'Product Manager',
+                'Marketing & PR', 'Sales & Business Dev', 'Finance & Accounting',
+                'Administrasi & Operasional', 'Customer Service', 'Legal & Compliance',
+                'Logistik & Supply Chain', 'Hospitality & Tourism', 'Desain Grafis & Kreatif',
+                'Pendidikan & Pelatihan', 'Kesehatan & Medis', 'Teknik & Manufaktur',
+                'Konstruksi & Properti', 'Lainnya'
+              ];
+              
+              // Handle formData.category string or array
+              const selectedCats = formData.category 
+                ? (Array.isArray(formData.category) ? formData.category : formData.category.split(', '))
+                : [];
+            %>
+            
+            <div class="category-grid" id="categoryGrid">
+              <% categories.forEach((cat, idx) => { %>
+                <input 
+                  type="checkbox" 
+                  id="cat-<%= idx %>" 
+                  name="category" 
+                  value="<%= cat %>" 
+                  class="category-checkbox" 
+                  <%= selectedCats.includes(cat) ? 'checked' : '' %>
+                >
+                <label for="cat-<%= idx %>" class="category-label"><%= cat %></label>
+              <% }); %>
             </div>
+          </div>
+
+          <!-- Tipe Pekerjaan -->
+          <div class="form-row">
             <div class="form-group">
               <label class="form-label">Tipe Pekerjaan</label>
               <select name="type" class="form-select">
@@ -312,6 +405,17 @@
                 <option value="Contract" <%= formData.type === 'Contract' ? 'selected' : '' %>>Contract</option>
                 <option value="Internship" <%= formData.type === 'Internship' ? 'selected' : '' %>>Internship</option>
               </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Tenggat Waktu / Deadline (Opsional)</label>
+              <input 
+                type="date" 
+                name="deadline" 
+                class="form-input"
+                value="<%= formData.deadline || '' %>"
+              >
+              <p class="form-hint">Kosongkan jika lowongan tidak memiliki batas waktu</p>
             </div>
           </div>
 
@@ -361,14 +465,49 @@
           </div>
 
           <!-- Submit Button -->
-          <button type="submit" class="btn-submit">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="display: inline; margin-right: 8px; vertical-align: middle;">
+          <button type="submit" class="btn-submit" id="btnSubmitForm">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="display: inline; margin-right: 8px; vertical-align: middle; margin-top: -2px;">
               <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
             </svg>
-            Pasang Lowongan
+            Publikasikan Lowongan
           </button>
         </form>
       </div>
     </div>
   </div>
-</div>
+
+<script>
+  // Validasi agar setidaknya 1 kategori dipilih
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const checkedCategories = document.querySelectorAll('.category-checkbox:checked');
+    if (checkedCategories.length === 0) {
+      e.preventDefault();
+      
+      // Tambahkan efek shake dan outline merah ke grid kategori
+      const grid = document.getElementById('categoryGrid');
+      grid.style.padding = '0.5rem';
+      grid.style.border = '1px solid #ef4444';
+      grid.style.borderRadius = '12px';
+      grid.style.backgroundColor = '#fef2f2';
+      
+      // Scroll ke bagian kategori
+      grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Tampilkan notifikasi
+      if (typeof lokerinAlert !== 'undefined') {
+        lokerinAlert('Mohon pilih minimal satu kategori pekerjaan!', 'warning');
+      } else {
+        alert('Mohon pilih minimal satu kategori pekerjaan!');
+      }
+      
+      // Kembalikan style setelah 3 detik
+      setTimeout(() => {
+        grid.style.padding = '';
+        grid.style.border = '';
+        grid.style.borderRadius = '';
+        grid.style.backgroundColor = '';
+      }, 3000);
+    }
+  });
+</script>
+

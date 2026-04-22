@@ -3,16 +3,12 @@
  * Middleware untuk memverifikasi user adalah HR
  */
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'lokerin-secret-key-2024';
+const config = require('../config/config');
 
 /**
  * Middleware untuk memastikan user adalah HR
- * Harus digunakan setelah requireAuth
  */
 const requireHR = (req, res, next) => {
-  // Cek token dari session
   const token = req.session?.token;
 
   if (!token) {
@@ -20,12 +16,11 @@ const requireHR = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, config.JWT_SECRET);
     req.user = decoded;
 
-    // Cek apakah user adalah HR
     if (decoded.role !== 'hr') {
-      return res.redirect('/'); // Bukan HR, redirect ke dashboard job seeker
+      return res.redirect('/');
     }
 
     next();
@@ -37,7 +32,6 @@ const requireHR = (req, res, next) => {
 
 /**
  * Middleware untuk memastikan user adalah job seeker
- * Harus digunakan setelah requireAuth
  */
 const requireJobSeeker = (req, res, next) => {
   const token = req.session?.token;
@@ -47,11 +41,11 @@ const requireJobSeeker = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, config.JWT_SECRET);
     req.user = decoded;
 
     if (decoded.role !== 'job_seeker') {
-      return res.redirect('/hr/dashboard'); // Bukan job seeker, redirect ke dashboard HR
+      return res.redirect('/hr/dashboard');
     }
 
     next();
@@ -61,7 +55,4 @@ const requireJobSeeker = (req, res, next) => {
   }
 };
 
-module.exports = {
-  requireHR,
-  requireJobSeeker
-};
+module.exports = { requireHR, requireJobSeeker };

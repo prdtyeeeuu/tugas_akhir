@@ -45,30 +45,29 @@
         </div>
         <div class="stat-info">
           <span class="stat-number"><%= typeof stats !== 'undefined' ? stats.interview : 0 %></span>
-          <span class="stat-label">Wawancara</span>
+          <span class="stat-label">Panggilan Wawancara</span>
         </div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon green">
+        <div class="stat-icon red">
           <svg fill="currentColor" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05Z"/>
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0ZM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646Z"/>
           </svg>
         </div>
         <div class="stat-info">
-          <span class="stat-number"><%= typeof stats !== 'undefined' ? stats.accepted : 0 %></span>
-          <span class="stat-label">Diterima (Offer)</span>
+          <span class="stat-number"><%= typeof stats !== 'undefined' ? stats.rejected : 0 %></span>
+          <span class="stat-label">Ditolak</span>
         </div>
       </div>
     </div>
 
     <!-- Tab Filters -->
     <div class="tab-filters">
-      <button class="tab-btn active" onclick="filterApps('all')">Semua</button>
-      <button class="tab-btn" onclick="filterApps('pending')">Sedang Direview</button>
-      <button class="tab-btn" onclick="filterApps('interview')">Jadwal Wawancara</button>
-      <button class="tab-btn" onclick="filterApps('accepted')">Diterima</button>
-      <button class="tab-btn" onclick="filterApps('rejected')">Ditolak</button>
+      <button class="tab-btn active" onclick="filterApps('all', this)">Semua</button>
+      <button class="tab-btn" onclick="filterApps('pending', this)">Sedang Direview</button>
+      <button class="tab-btn" onclick="filterApps('interview', this)">Panggilan Wawancara</button>
+      <button class="tab-btn" onclick="filterApps('ditolak', this)">Ditolak</button>
     </div>
 
     <!-- Applications List -->
@@ -77,8 +76,14 @@
         <% applications.forEach(function(app) { %>
         <div class="app-card" data-status="<%= app.status %>">
           
-          <!-- Logo -->
-          <div class="app-logo"></div>
+          <!-- Logo with Link to Job/Company -->
+          <a href="/user/<%= app.hr_id || app.job_id %>" class="app-logo company-logo-img" data-logo="<%= app.company_logo || '' %>">
+            <% if (!app.company_logo) {
+              var initials = (app.company || 'XX').substring(0, 2).toUpperCase();
+            %>
+            <span style="font-size: 16px; font-weight: 600; color: #2563eb;"><%= initials %></span>
+            <% } %>
+          </a>
 
           <!-- Info -->
           <div class="app-info">
@@ -109,7 +114,7 @@
             <!-- Actions -->
             <div class="app-actions">
               <a href="/jobs/<%= app.job_id %>" class="action-link">Lihat Detail</a>
-              <button onclick="startChat(<%= app.job_id %>)" class="action-link chat-btn">
+              <button onclick="startChat('<%= app.job_id %>')" class="action-link chat-btn">
                 <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                   <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2zm5 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
                 </svg>
@@ -118,7 +123,7 @@
               <% if (app.status === 'interview') { %>
                 <a href="#" class="action-link">Lihat Jadwal</a>
               <% } %>
-              <% if (app.status === 'pending' || app.status === 'interview') { %>
+              <% if (app.status === 'pending') { %>
                 <button type="button" class="action-link danger"
                   onclick="tarikLamaran('<%= app.id %>')">Tarik Lamaran</button>
                 <form id="form-cancel-<%= app.id %>" action="/applications/cancel/<%= app.id %>" method="POST" style="display:none"></form>
@@ -146,7 +151,7 @@
                 statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0ZM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646Z"/></svg>';
               } else if (app.status === 'interview') {
                 statusClass = 'interview';
-                statusLabel = 'Wawancara Tahap 2';
+                statusLabel = 'Panggilan Wawancara';
                 statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M10.748 11.007a.5.5 0 0 1-.748.446l-2.5-1.5a.5.5 0 0 1 0-.854l2.5-1.5a.5.5 0 0 1 .748.446v2.962Z"/></svg>';
               }
             %>
@@ -174,12 +179,26 @@
 
 <!-- JavaScript for Tab Filtering -->
 <script>
-  function filterApps(status) {
+  // Apply company logo backgrounds dynamically
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.company-logo-img[data-logo]').forEach(function(el) {
+      var logo = el.getAttribute('data-logo');
+      if (logo) {
+        el.style.backgroundImage = 'url(/images/companies/' + logo + ')';
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
+      }
+    });
+  });
+
+  function filterApps(status, element) {
     // Update active tab
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    if (element) {
+      element.classList.add('active');
+    }
 
     // Filter applications
     document.querySelectorAll('.app-card').forEach(card => {

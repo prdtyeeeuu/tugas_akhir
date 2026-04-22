@@ -43,6 +43,8 @@
       <% } %>
 
       <form action="/login" method="POST" class="space-y-6">
+        <!-- CSRF Token -->
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' && csrfToken ? csrfToken : '' %>">
         <!-- Hidden field untuk return URL -->
         <input type="hidden" name="returnUrl" value="<%= typeof returnUrl !== 'undefined' ? returnUrl : '/' %>">
         

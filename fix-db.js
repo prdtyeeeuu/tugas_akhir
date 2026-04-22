@@ -90,6 +90,9 @@ async function fix() {
     `ALTER TABLE users ADD COLUMN work_preferences TEXT DEFAULT NULL`,
     // Add gpa to educations
     `ALTER TABLE educations ADD COLUMN gpa VARCHAR(10) DEFAULT NULL`,
+    
+    // Add deadline to jobs
+    `ALTER TABLE jobs ADD COLUMN deadline DATE DEFAULT NULL`,
   ];
 
   let ok = 0, skip = 0, fail = 0;

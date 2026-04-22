@@ -27,27 +27,44 @@
       </form>
     </div>
 
-    <!-- Category Filter Buttons -->
-    <div class="category-filters">
-      <a href="/jobs" class="category-btn <%= typeof selectedCategory === 'undefined' || !selectedCategory ? 'active' : '' %>">Semua</a>
-      <% if (typeof categories !== 'undefined' && categories) { %>
-        <% categories.forEach(function(cat) { %>
-          <a
-            href="/jobs?category=<%= cat.category %><%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + searchQuery : '' %>"
-            class="category-btn <%= typeof selectedCategory !== 'undefined' && selectedCategory === cat.category ? 'active' : '' %>"
-          >
-            <%= cat.category %>
-          </a>
-        <% }); %>
-      <% } %>
+    <!-- Job Category Sorting Grid (only shown when logged in) -->
+    <% if (isLoggedIn) { %>
+    <div class="job-sorting-container">
+      <h2 class="sorting-title">Jelajahi Kategori Pekerjaan</h2>
+      <div class="job-category-pills" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2rem;">
+        <a href="/jobs" class="badge <%= typeof selectedCategory === 'undefined' || !selectedCategory ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Semua Kategori</a>
+        <a href="/jobs?category=Frontend Developer" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Frontend Developer' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Frontend Developer</a>
+        <a href="/jobs?category=Backend Developer" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Backend Developer' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Backend Developer</a>
+        <a href="/jobs?category=Full Stack Developer" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Full Stack Developer' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Full Stack Developer</a>
+        <a href="/jobs?category=Mobile Developer" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Mobile Developer' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Mobile Developer</a>
+        <a href="/jobs?category=UI/UX Designer" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'UI/UX Designer' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">UI/UX Designer</a>
+        <a href="/jobs?category=Data Scientist" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Data Scientist' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Data Scientist</a>
+        <a href="/jobs?category=DevOps Engineer" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'DevOps Engineer' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">DevOps Engineer</a>
+        <a href="/jobs?category=Product Manager" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Product Manager' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Product Manager</a>
+        <a href="/jobs?category=Marketing & PR" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Marketing & PR' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Marketing & PR</a>
+        <a href="/jobs?category=Sales & Business Dev" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Sales & Business Dev' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Sales & Business Dev</a>
+        <a href="/jobs?category=Finance & Accounting" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Finance & Accounting' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Finance & Accounting</a>
+        <a href="/jobs?category=Administrasi & Operasional" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Administrasi & Operasional' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Administrasi & Operasional</a>
+        <a href="/jobs?category=Customer Service" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Customer Service' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Customer Service</a>
+        <a href="/jobs?category=Legal & Compliance" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Legal & Compliance' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Legal & Compliance</a>
+        <a href="/jobs?category=Logistik & Supply Chain" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Logistik & Supply Chain' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Logistik & Supply Chain</a>
+        <a href="/jobs?category=Hospitality & Tourism" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Hospitality & Tourism' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Hospitality & Tourism</a>
+        <a href="/jobs?category=Desain Grafis & Kreatif" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Desain Grafis & Kreatif' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Desain Grafis & Kreatif</a>
+        <a href="/jobs?category=Pendidikan & Pelatihan" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Pendidikan & Pelatihan' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Pendidikan & Pelatihan</a>
+        <a href="/jobs?category=Kesehatan & Medis" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Kesehatan & Medis' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Kesehatan & Medis</a>
+        <a href="/jobs?category=Teknik & Manufaktur" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Teknik & Manufaktur' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Teknik & Manufaktur</a>
+        <a href="/jobs?category=Konstruksi & Properti" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Konstruksi & Properti' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Konstruksi & Properti</a>
+        <a href="/jobs?category=Lainnya" class="badge <%= typeof selectedCategory !== 'undefined' && selectedCategory === 'Lainnya' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' %> px-4 py-2 rounded-full text-sm font-medium transition-colors">Lainnya</a>
+      </div>
     </div>
+    <% } %>
 
     <!-- Jobs Grid -->
-    <% if (typeof jobs !== 'undefined' && jobs && jobs.length > 0) { %>
+    <% if (isLoggedIn && typeof jobs !== 'undefined' && jobs && jobs.length > 0) { %>
       <div class="jobs-grid">
         <% jobs.forEach(function(job) { %>
-        <div class="job-card">
-          
+        <div class="job-card" onclick="if(!event.target.closest('a') && !event.target.closest('button')) window.location.href='/jobs/<%= job.id %>';" style="cursor:pointer;" title="Klik untuk melihat detail pekerjaan">
+
           <!-- Card Header -->
           <div class="job-card-header">
             <% if (job.company_logo) { %>
@@ -62,8 +79,9 @@
 
           <!-- Job Info -->
           <div class="job-info">
-            <h3 class="job-title"><%= job.title %></h3>
-            
+            <h3 class="job-title"><a href="/jobs/<%= job.id %>" style="text-decoration:none; color:inherit; display:block; cursor:pointer;" class="hover-text-blue"><%= job.title %></a></h3>
+            <style>.hover-text-blue:hover { color: #2563eb !important; transition: color 0.2s; }</style>
+
             <div class="company-info">
               <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M6.5 1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V2h2a.5.5 0 0 1 .5.5v2h1a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V5.5a.5.5 0 0 1 .5-.5h1V2h2v-.5z"/>
@@ -98,29 +116,77 @@
               <% } %>
             </div>
             <% } %>
+            
+            <% if (job.deadline) { 
+                 const now = new Date();
+                 const isClosed = new Date(job.deadline) < now;
+            %>
+            <div class="deadline-info" style="display:flex; align-items:center; gap:0.5rem; font-size:0.75rem; color:<%= isClosed ? '#ef4444' : '#d97706' %>; margin-top:0.5rem; font-weight: 500;">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+              </svg>
+              <span><%= isClosed ? 'Ditutup' : 'Ditutup pada' %> <%= new Date(job.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+            </div>
+            <% } %>
           </div>
 
           <!-- Card Footer -->
           <div class="job-card-footer">
-            <div class="recruiter-info">
-              <div class="recruiter-avatar"></div>
-              <div class="recruiter-details">
-                <span class="recruiter-name"><%= job.hr_name || 'HR Team' %></span>
-                <span class="recruiter-role">Recruiter</span>
+            <a href="/user/<%= job.hr_id %>" class="recruiter-info group" style="text-decoration:none; display:flex; gap:12px; align-items:center; cursor:pointer;" title="Lihat Profil">
+              <% if (job.hr_image) { %>
+                <img src="/images/profiles/<%= job.hr_image %>" class="recruiter-avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid #e5e7eb;" alt="HR">
+              <% } else { %>
+                <div class="recruiter-avatar flex items-center justify-center bg-gray-100 text-gray-500 font-bold" style="width:36px; height:36px; border-radius:50%; font-size:14px; border:1px solid #e5e7eb;">
+                  <%= (job.hr_name || 'HR').charAt(0).toUpperCase() %>
+                </div>
+              <% } %>
+              <div class="recruiter-details" style="display:flex; flex-direction:column;">
+                <span class="recruiter-name group-hover:text-blue-600 transition-colors duration-200" style="font-size:14px; font-weight:600;"><%= job.hr_name || 'HR Team' %></span>
+                <span class="recruiter-role" style="font-size:12px; color:#6b7280;">Recruiter</span>
               </div>
-            </div>
+            </a>
 
             <% if (typeof user !== 'undefined' && user) { %>
-              <form action="/jobs/apply/<%= job.id %>" method="POST" class="inline">
-                <button type="submit" class="btn-apply">Lamar</button>
-              </form>
+              <% 
+                 const now = new Date();
+                 const deadlinePassed = job.deadline && new Date(job.deadline) < now;
+              %>
+              <% if (typeof appliedJobIds !== 'undefined' && appliedJobIds.includes(job.id)) { %>
+                <button type="button" class="btn-apply" style="background-color: #9ca3af; color: white; cursor: not-allowed; border:none;" disabled title="Anda sudah terdaftar di pekerjaan ini">Dilamar</button>
+              <% } else if (deadlinePassed) { %>
+                <button type="button" class="btn-apply" style="background-color: #ef4444; color: white; cursor: not-allowed; border:none;" disabled title="Lowongan sudah ditutup">Ditutup</button>
+              <% } else { %>
+                <button type="button" class="btn-apply" onclick="openLamarModal('<%= job.id %>', '<%= job.title.replace(/'/g, "\\'") %>')">Lamar</button>
+              <% } %>
             <% } else { %>
-              <a href="/login?returnUrl=/jobs/<%= job.id %>" class="btn-apply">Lamar</a>
+              <% 
+                 const now = new Date();
+                 const deadlinePassed = job.deadline && new Date(job.deadline) < now;
+              %>
+              <% if (deadlinePassed) { %>
+                <button type="button" class="btn-apply" style="background-color: #ef4444; color: white; cursor: not-allowed; border:none;" disabled title="Lowongan sudah ditutup">Ditutup</button>
+              <% } else { %>
+                <a href="/login?returnUrl=/jobs/<%= job.id %>" class="btn-apply">Lamar</a>
+              <% } %>
             <% } %>
           </div>
 
         </div>
         <% }); %>
+      </div>
+    <% } else if (!isLoggedIn) { %>
+      <!-- Login Required CTA -->
+      <div class="login-cta-card">
+        <svg width="80" height="80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0H6m8 0a2 2 0 012 2v6M6 6a2 2 0 012-2m0 0V2m0 2H6a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2z"/>
+        </svg>
+        <h3>Masuk untuk Melihat Lowongan</h3>
+        <p>Login untuk menjelajahi semua lowongan pekerjaan yang tersedia. Temukan pekerjaan yang cocok dengan keahlian dan pengalamanmu.</p>
+        <div class="login-cta-buttons">
+          <a href="/login" class="cta-btn-login primary">Masuk Sekarang</a>
+          <a href="/register" class="cta-btn-login outline">Daftar Gratis</a>
+        </div>
       </div>
     <% } else { %>
       <!-- Empty State -->
@@ -134,7 +200,67 @@
   </div>
 </div>
 
+<!-- Upload CV Modal -->
+<div id="lamarModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 transition-opacity">
+  <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 transform scale-95 transition-transform" style="font-family: 'Inter', sans-serif;">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-gray-900">Upload CV Foto</h3>
+      <button type="button" onclick="closeLamarModal()" class="text-gray-400 hover:text-gray-600">
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <form id="lamarForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+      
+      <div>
+        <p class="text-sm text-gray-600 mb-2">Melamar posisi: <strong id="modalJobTitle" class="text-gray-900"></strong></p>
+        <p class="text-xs text-red-500 mb-4">* Anda diwajibkan melampirkan CV berupa foto (Image).</p>
+        
+        <label for="cv_image" class="block text-sm font-medium text-gray-700 mb-1">Pilih Foto CV</label>
+        <input type="file" name="cv_image" id="cv_image" accept="image/jpeg, image/png, image/webp" required
+               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div class="flex justify-end gap-3 mt-6">
+        <button type="button" onclick="closeLamarModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Batal</button>
+        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-md">Kirim Lamaran</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
+  // Modal functions
+  function openLamarModal(jobId, jobTitle) {
+    const modal = document.getElementById('lamarModal');
+    const form = document.getElementById('lamarForm');
+    const jobTitleSpan = document.getElementById('modalJobTitle');
+    
+    // Set form action and job title
+    form.action = `/jobs/apply/${jobId}?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>`;
+    jobTitleSpan.textContent = jobTitle;
+    
+    // Reset inputs
+    document.getElementById('cv_image').value = '';
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+      modal.firstElementChild.classList.remove('scale-95');
+      modal.firstElementChild.classList.add('scale-100');
+    }, 10);
+  }
+
+  function closeLamarModal() {
+    const modal = document.getElementById('lamarModal');
+    modal.firstElementChild.classList.remove('scale-100');
+    modal.firstElementChild.classList.add('scale-95');
+    setTimeout(() => {
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
+    }, 200);
+  }
+
   // Helper function to format salary
   function formatSalary(amount) {
     if (!amount) return '';

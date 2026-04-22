@@ -462,7 +462,11 @@ html {
 
 .job-card-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
 }
 
 .btn-apply {
@@ -657,4 +661,238 @@ html {
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #3b82f6 100%);
   background-size: 200% 200%;
   animation: gradientShift 8s ease infinite;
+}
+
+/* =============================================
+   Login CTA Section & Card (shown when not logged in)
+   ============================================= */
+.login-cta-section {
+  padding: 5rem 0 5.5rem;
+  background: #f9fafb;
+}
+
+.login-cta-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3.5rem 2.5rem 3rem;
+  background: #ffffff;
+  border-radius: 1.25rem;
+  border: 2px dashed #d1d5db;
+  gap: 1.5rem;
+  max-width: 560px;
+  margin: 0 auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.login-cta-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #eef2ff 0%, #ede9fe 100%);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.login-cta-icon svg {
+  color: #6366f1;
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
+.login-cta-card h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.login-cta-card p {
+  font-size: 0.93rem;
+  color: #6b7280;
+  max-width: 420px;
+  margin: 0;
+  line-height: 1.65;
+}
+
+.login-cta-buttons {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  padding-top: 0.5rem;
+}
+
+.login-cta-buttons .cta-btn-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-width: 150px;
+  line-height: 1;
+}
+
+.login-cta-buttons .cta-btn-login.primary {
+  background: #4f46e5;
+  color: #ffffff;
+  border: 2px solid #4f46e5;
+}
+
+.login-cta-buttons .cta-btn-login.primary:hover {
+  background: #4338ca;
+  border-color: #4338ca;
+}
+
+.login-cta-buttons .cta-btn-login.outline {
+  background: #ffffff;
+  color: #4f46e5;
+  border: 2px solid #4f46e5;
+}
+
+.login-cta-buttons .cta-btn-login.outline:hover {
+  background: #f0f4ff;
+}
+
+/* =============================================
+   Guest Alert Modal
+   ============================================= */
+#guest-alert-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#guest-alert-modal.hidden {
+  display: none !important;
+}
+
+#guest-alert-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.guest-alert-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  max-width: 380px;
+  width: 100%;
+  margin: 1rem;
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  animation: guestAlertScaleIn 0.2s ease-out;
+}
+
+@keyframes guestAlertScaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.guest-alert-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #9ca3af;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.guest-alert-close:hover {
+  color: #4b5563;
+  background: #f3f4f6;
+}
+
+.guest-alert-icon {
+  margin: 0 auto 1rem;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #eff6ff, #eef2ff);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guest-alert-icon svg {
+  color: #6366f1;
+  width: 28px;
+  height: 28px;
+}
+
+.guest-alert-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem;
+}
+
+.guest-alert-card p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 1.5rem;
+  line-height: 1.6;
+}
+
+.guest-alert-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.guest-alert-buttons a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.guest-alert-buttons .btn-primary {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.guest-alert-buttons .btn-primary:hover {
+  background: #4338ca;
+}
+
+.guest-alert-buttons .btn-outline {
+  background: #ffffff;
+  color: #4f46e5;
+  border: 2px solid #c7d2fe;
+}
+
+.guest-alert-buttons .btn-outline:hover {
+  background: #f0f4ff;
+  border-color: #4f46e5;
 }

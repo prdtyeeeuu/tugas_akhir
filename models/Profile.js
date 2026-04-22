@@ -1,12 +1,13 @@
 /**
  * Profile Model
  * Mengelola semua operasi database terkait structured profile
+ * All operations include ownership verification via user_id parameter
  */
 const { query } = require('../config/db');
 
 const Profile = {
   // ==================== SKILLS ====================
-  
+
   getSkills: async (userId) => {
     const sql = 'SELECT * FROM skills WHERE user_id = ? ORDER BY created_at DESC';
     return await query(sql, [userId]);
@@ -18,16 +19,16 @@ const Profile = {
     return result.insertId;
   },
 
-  updateSkill: async (skillId, name, level) => {
-    const sql = 'UPDATE skills SET name = ?, level = ? WHERE id = ?';
-    await query(sql, [name, level, skillId]);
-    return true;
+  updateSkill: async (skillId, userId, name, level) => {
+    const sql = 'UPDATE skills SET name = ?, level = ? WHERE id = ? AND user_id = ?';
+    const result = await query(sql, [name, level, skillId, userId]);
+    return result.affectedRows > 0;
   },
 
-  deleteSkill: async (skillId) => {
-    const sql = 'DELETE FROM skills WHERE id = ?';
-    await query(sql, [skillId]);
-    return true;
+  deleteSkill: async (skillId, userId) => {
+    const sql = 'DELETE FROM skills WHERE id = ? AND user_id = ?';
+    const result = await query(sql, [skillId, userId]);
+    return result.affectedRows > 0;
   },
 
   // ==================== EXPERIENCES ====================
@@ -39,7 +40,6 @@ const Profile = {
 
   addExperience: async (userId, data) => {
     const { position, company, start_date, end_date, is_current, description } = data;
-    // Allow nullable start_date — use null if empty string or undefined
     const safeStart = (start_date && start_date.trim && start_date.trim() !== '') ? start_date : null;
     const safeEnd   = (end_date   && end_date.trim   && end_date.trim()   !== '') ? end_date   : null;
     try {
@@ -47,7 +47,6 @@ const Profile = {
       const result = await query(sql, [userId, position, company, safeStart, safeEnd, is_current || 0, description || null]);
       return result.insertId;
     } catch(e) {
-      // If start_date column is still NOT NULL at DB level, try fallback with today's date
       if (e.code === 'ER_NO_DEFAULT_FOR_FIELD' || e.code === 'WARN_DATA_TRUNCATED' || e.message.includes('start_date')) {
         const today = new Date().toISOString().split('T')[0];
         const sql2 = `INSERT INTO experiences (user_id, position, company, start_date, end_date, is_current, description) VALUES (?, ?, ?, ?, ?, ?, ?)`;
@@ -58,21 +57,21 @@ const Profile = {
     }
   },
 
-  updateExperience: async (expId, data) => {
+  updateExperience: async (expId, userId, data) => {
     const { position, company, start_date, end_date, is_current, description } = data;
     const sql = `
-      UPDATE experiences 
+      UPDATE experiences
       SET position = ?, company = ?, start_date = ?, end_date = ?, is_current = ?, description = ?
-      WHERE id = ?
+      WHERE id = ? AND user_id = ?
     `;
-    await query(sql, [position, company, start_date, end_date, is_current, description, expId]);
-    return true;
+    const result = await query(sql, [position, company, start_date, end_date, is_current, description, expId, userId]);
+    return result.affectedRows > 0;
   },
 
-  deleteExperience: async (expId) => {
-    const sql = 'DELETE FROM experiences WHERE id = ?';
-    await query(sql, [expId]);
-    return true;
+  deleteExperience: async (expId, userId) => {
+    const sql = 'DELETE FROM experiences WHERE id = ? AND user_id = ?';
+    const result = await query(sql, [expId, userId]);
+    return result.affectedRows > 0;
   },
 
   // ==================== EDUCATIONS ====================
@@ -92,28 +91,27 @@ const Profile = {
       const result = await query(sql, [userId, school, degree, field_of_study, start_year, end_year, gpa || null]);
       return result.insertId;
     } catch(e) {
-      // Fallback if gpa column doesn't exist yet
       const fallbackSql = 'INSERT INTO educations (user_id, school, degree, field_of_study, start_year, end_year) VALUES (?, ?, ?, ?, ?, ?)';
       const result = await query(fallbackSql, [userId, school, degree, field_of_study, start_year, end_year]);
       return result.insertId;
     }
   },
 
-  updateEducation: async (eduId, data) => {
+  updateEducation: async (eduId, userId, data) => {
     const { school, degree, field_of_study, start_year, end_year } = data;
     const sql = `
-      UPDATE educations 
+      UPDATE educations
       SET school = ?, degree = ?, field_of_study = ?, start_year = ?, end_year = ?
-      WHERE id = ?
+      WHERE id = ? AND user_id = ?
     `;
-    await query(sql, [school, degree, field_of_study, start_year, end_year, eduId]);
-    return true;
+    const result = await query(sql, [school, degree, field_of_study, start_year, end_year, eduId, userId]);
+    return result.affectedRows > 0;
   },
 
-  deleteEducation: async (eduId) => {
-    const sql = 'DELETE FROM educations WHERE id = ?';
-    await query(sql, [eduId]);
-    return true;
+  deleteEducation: async (eduId, userId) => {
+    const sql = 'DELETE FROM educations WHERE id = ? AND user_id = ?';
+    const result = await query(sql, [eduId, userId]);
+    return result.affectedRows > 0;
   },
 
   // ==================== PORTFOLIOS ====================
@@ -133,21 +131,28 @@ const Profile = {
     return result.insertId;
   },
 
-  updatePortfolio: async (portfolioId, data) => {
+  updatePortfolio: async (portfolioId, userId, data) => {
     const { title, description, url, github_url, image_url } = data;
     const sql = `
-      UPDATE portfolios 
+      UPDATE portfolios
       SET title = ?, description = ?, url = ?, github_url = ?, image_url = ?
-      WHERE id = ?
+      WHERE id = ? AND user_id = ?
     `;
-    await query(sql, [title, description, url, github_url, image_url, portfolioId]);
-    return true;
+    const result = await query(sql, [title, description, url, github_url, image_url, portfolioId, userId]);
+    return result.affectedRows > 0;
   },
 
-  deletePortfolio: async (portfolioId) => {
-    const sql = 'DELETE FROM portfolios WHERE id = ?';
-    await query(sql, [portfolioId]);
-    return true;
+  deletePortfolio: async (portfolioId, userId) => {
+    const sql = 'DELETE FROM portfolios WHERE id = ? AND user_id = ?';
+    const result = await query(sql, [portfolioId, userId]);
+    return result.affectedRows > 0;
+  },
+
+  // Check if a portfolio belongs to a user
+  getPortfolioById: async (portfolioId, userId) => {
+    const sql = 'SELECT * FROM portfolios WHERE id = ? AND user_id = ?';
+    const results = await query(sql, [portfolioId, userId]);
+    return results[0] || null;
   },
 
   // ==================== PRIVACY SETTINGS ====================
@@ -155,9 +160,8 @@ const Profile = {
   getPrivacySettings: async (userId) => {
     const sql = 'SELECT * FROM user_privacy_settings WHERE user_id = ?';
     const results = await query(sql, [userId]);
-    
+
     if (results.length === 0) {
-      // Create default settings
       const insertSql = `
         INSERT INTO user_privacy_settings (user_id, hide_email_from_hr, hide_phone_from_hr, require_approval_for_contact)
         VALUES (?, TRUE, TRUE, TRUE)
@@ -165,7 +169,7 @@ const Profile = {
       await query(insertSql, [userId]);
       return { hide_email_from_hr: true, hide_phone_from_hr: true, require_approval_for_contact: true };
     }
-    
+
     return results[0];
   },
 
@@ -174,7 +178,7 @@ const Profile = {
     const sql = `
       INSERT INTO user_privacy_settings (user_id, hide_email_from_hr, hide_phone_from_hr, require_approval_for_contact)
       VALUES (?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE 
+      ON DUPLICATE KEY UPDATE
         hide_email_from_hr = VALUES(hide_email_from_hr),
         hide_phone_from_hr = VALUES(hide_phone_from_hr),
         require_approval_for_contact = VALUES(require_approval_for_contact)
@@ -189,28 +193,25 @@ const Profile = {
     const user = await query('SELECT profile_image, banner_image, banner_color, bio FROM users WHERE id = ?', [userId]);
     if (!user[0]) return 0;
 
-    let completeness = 10; // Base for registration
+    let completeness = 10;
 
-    // Basic info (30 points)
     if (user[0].profile_image) completeness += 10;
     if (user[0].banner_image || user[0].banner_color) completeness += 10;
     if (user[0].bio) completeness += 10;
 
-    // Skills (15 points)
-    const skills = await query('SELECT COUNT(*) as count FROM skills WHERE user_id = ?', [userId]);
-    if (skills[0].count > 0) completeness += 15;
+    // Combined query for better performance
+    const counts = await query(`
+      SELECT
+        (SELECT COUNT(*) FROM skills WHERE user_id = ?) as skill_count,
+        (SELECT COUNT(*) FROM experiences WHERE user_id = ?) as exp_count,
+        (SELECT COUNT(*) FROM educations WHERE user_id = ?) as edu_count,
+        (SELECT COUNT(*) FROM portfolios WHERE user_id = ?) as portfolio_count
+    `, [userId, userId, userId, userId]);
 
-    // Experience (20 points)
-    const experiences = await query('SELECT COUNT(*) as count FROM experiences WHERE user_id = ?', [userId]);
-    if (experiences[0].count > 0) completeness += 20;
-
-    // Education (15 points)
-    const educations = await query('SELECT COUNT(*) as count FROM educations WHERE user_id = ?', [userId]);
-    if (educations[0].count > 0) completeness += 15;
-
-    // Portfolio (10 points)
-    const portfolios = await query('SELECT COUNT(*) as count FROM portfolios WHERE user_id = ?', [userId]);
-    if (portfolios[0].count > 0) completeness += 10;
+    if (counts[0].skill_count > 0) completeness += 15;
+    if (counts[0].exp_count > 0) completeness += 20;
+    if (counts[0].edu_count > 0) completeness += 15;
+    if (counts[0].portfolio_count > 0) completeness += 10;
 
     return Math.min(completeness, 100);
   }

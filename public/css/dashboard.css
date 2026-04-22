@@ -226,6 +226,24 @@
   color: #6b7280;
 }
 
+/* Activity icon type variations */
+.activity-icon-view {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.activity-icon-success {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.activity-icon-warning,
+.activity-icon-error,
+.activity-icon-default {
+  background: #fef3c7;
+  color: #d97706;
+}
+
 .activity-content h4 {
   font-size: 14px;
   color: #374151;

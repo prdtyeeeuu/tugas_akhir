@@ -120,9 +120,9 @@
         <button onclick="document.getElementById('modal-banner-color').classList.add('active')" class="px-2.5 py-1.5 bg-white/25 backdrop-blur-sm text-white text-xs font-semibold rounded-lg hover:bg-white/40 transition-all">
           <span class="iconify inline -mt-0.5" data-icon="lucide:palette"></span> Warna
         </button>
-        <% if (user.banner_image) { %>
-        <button onclick="removeBanner()" class="px-2.5 py-1.5 bg-red-500/80 backdrop-blur-sm text-white text-xs font-semibold rounded-lg hover:bg-red-600/80 transition-all">
-          <span class="iconify inline -mt-0.5" data-icon="lucide:trash-2"></span>
+        <% if (user.banner_image || user.banner_color) { %>
+        <button type="button" onclick="removeBanner()" class="px-2.5 py-1.5 bg-red-500/80 backdrop-blur-sm text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition-all" title="Hapus Banner">
+          <span class="iconify inline -mt-0.5" data-icon="lucide:trash-2"></span> Hapus
         </button>
         <% } %>
       </div>
@@ -153,7 +153,7 @@
           <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
             <div>
               <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight"><%= user.name %></h1>
-              <p class="text-slate-500 text-sm mt-1"><%= user.bio || 'Belum ada deskripsi singkat' %></p>
+              <p class="text-slate-500 text-sm mt-1" id="ui-bio"><%= user.bio || 'Belum ada deskripsi singkat' %></p>
               <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
                 <span class="flex items-center gap-1.5">
                   <span class="iconify text-brand-500" data-icon="lucide:map-pin"></span>
@@ -197,7 +197,7 @@
       <!-- Tentang Saya -->
       <div class="bg-white rounded-2xl border border-slate-200 p-6">
         <h2 class="text-base font-bold text-slate-900 mb-3">Tentang Saya</h2>
-        <p class="text-slate-600 leading-relaxed text-sm" id="ui-about"><%= user.bio || 'Belum ada deskripsi profil.' %></p>
+        <p class="text-slate-600 leading-relaxed text-sm" id="ui-about"><%= user.about_me || 'Belum ada deskripsi profil.' %></p>
         <div class="mt-4 flex flex-wrap gap-2" id="ui-work-prefs-container">
           <% workPrefs.forEach(function(pref) { %>
           <span class="px-3 py-1 bg-brand-50 text-brand-600 border border-brand-100 text-xs font-medium rounded-lg"><%= pref %></span>
@@ -407,10 +407,15 @@
       <button onclick="document.getElementById('modal-edit-profile').classList.remove('active')" class="text-slate-400 hover:text-slate-600"><span class="iconify text-xl" data-icon="lucide:x"></span></button>
     </div>
     <div class="p-6 overflow-y-auto space-y-4">
-      <!-- Bio -->
+      <!-- Bio Singkat -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Bio Singkat (Di bawah nama)</label>
+        <input type="text" id="inp-bio" value="<%= user.bio || '' %>" placeholder="Contoh: Frontend Developer..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+      </div>
+      <!-- Tentang Saya -->
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Tentang Saya</label>
-        <textarea id="inp-bio" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"><%= user.bio || '' %></textarea>
+        <textarea id="inp-about" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"><%= user.about_me || '' %></textarea>
       </div>
       <!-- Kontak -->
       <div class="grid grid-cols-2 gap-3">
@@ -689,6 +694,7 @@
   // ====== PROFILE DETAILS SAVE ======
   async function saveProfileDetails() {
     const bio = document.getElementById('inp-bio').value;
+    const about_me = document.getElementById('inp-about').value;
     const address = document.getElementById('inp-address').value;
     const phone = document.getElementById('inp-phone').value;
     const salaryMin = document.getElementById('inp-salary-min').value;
@@ -701,12 +707,13 @@
       const res = await fetch('/profile/update-details', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bio, address, phone, expected_salary_min: salaryMin, expected_salary_max: salaryMax, open_to_work: openWork, work_preferences: JSON.stringify(prefs) })
+        body: JSON.stringify({ bio, about_me, address, phone, expected_salary_min: salaryMin, expected_salary_max: salaryMax, open_to_work: openWork, work_preferences: JSON.stringify(prefs) })
       });
       const data = await res.json();
       if (data.success) {
         // Update UI
-        document.getElementById('ui-about').innerText = bio;
+        document.getElementById('ui-bio').innerText = bio || 'Belum ada deskripsi singkat';
+        document.getElementById('ui-about').innerText = about_me || 'Belum ada deskripsi profil.';
         document.getElementById('ui-address').innerText = address || 'Lokasi belum diatur';
         document.getElementById('ui-phone').innerText = phone || 'Nomor belum diatur';
         if (salaryMin && salaryMax) document.getElementById('ui-salary').innerText = `Rp ${salaryMin} — ${salaryMax} Jt`;
@@ -758,7 +765,7 @@
   async function deleteSkill(id, name, el) {
     try {
       if (id) {
-        const res = await fetch(`/profile/skills/remove/${id}`, { method:'POST' });
+        const res = await fetch(`/profile/skills/remove/${id}`, { method:'DELETE' });
         const data = await res.json();
         if (!data.success) { showToast('Gagal hapus','error'); return; }
       }
@@ -801,7 +808,7 @@
     });
     if (!ok) return;
     try {
-      const res = await fetch(`/profile/experiences/remove/${id}`, { method:'POST' });
+      const res = await fetch(`/profile/experiences/remove/${id}`, { method:'DELETE' });
       const data = await res.json();
       if (data.success) { btn.closest('[data-exp-id]').remove(); showToast('Pengalaman dihapus','success'); }
       else showToast(data.error||'Gagal','error');
@@ -834,7 +841,7 @@
     });
     if (!ok) return;
     try {
-      const res = await fetch(`/profile/educations/remove/${id}`, { method:'POST' });
+      const res = await fetch(`/profile/educations/remove/${id}`, { method:'DELETE' });
       const data = await res.json();
       if (data.success) { btn.closest('[data-edu-id]').remove(); showToast('Pendidikan dihapus','success'); }
       else showToast(data.error||'Gagal','error');
@@ -884,17 +891,32 @@
   });
 
   async function removeBanner() {
-    const ok = await lokerinConfirm('Banner profil Anda akan dihapus.', {
-      title: 'Hapus Banner', confirmText: 'Ya, Hapus', cancelText: 'Batal', danger: true
-    });
+    // Use native confirm if lokerinConfirm not available
+    let ok = false;
+    if (typeof lokerinConfirm === 'function') {
+      ok = await lokerinConfirm('Banner profil Anda akan dihapus.', {
+        title: 'Hapus Banner', confirmText: 'Ya, Hapus', cancelText: 'Batal', danger: true
+      });
+    } else {
+      ok = confirm('Banner profil Anda akan dihapus. Lanjutkan?');
+    }
     if (!ok) return;
+
     // Visually reset immediately
     const banner = document.getElementById('profile-banner-preview');
-    banner.setAttribute('style', '');
+    banner.style.backgroundImage = '';
+    banner.style.background = '';
     banner.className = banner.className.replace(/banner-gradient-\S+/g, '').trim() + ' banner-gradient-2';
-    showToast('Banner dihapus', 'success');
-    await fetch('/profile/remove-banner', { method: 'POST' });
-    setTimeout(() => location.href = '/profile?v=' + Date.now(), 600);
+
+    try {
+      await fetch('/profile/remove-banner', { method: 'POST' });
+      // Reload page to reflect changes
+      setTimeout(() => { window.location.href = '/profile?v=' + Date.now(); }, 300);
+    } catch (err) {
+      alert('Gagal menghapus banner. Silakan coba lagi.');
+      // Revert visual change on failure
+      window.location.reload();
+    }
   }
 
   // ====== BANNER GRADIENT ======

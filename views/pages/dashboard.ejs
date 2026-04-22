@@ -47,7 +47,7 @@
     <div class="stat-card fade-in-up delay-300">
       <div class="stat-info">
         <h3><%= typeof stats !== 'undefined' ? stats.interviews : 0 %></h3>
-        <p>Jadwal Wawancara</p>
+        <p>Panggilan Wawancara</p>
       </div>
       <div class="stat-icon green">
         <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
@@ -71,16 +71,27 @@
         
         <div class="jobs-list">
           <% if (typeof jobs !== 'undefined' && jobs && jobs.length > 0) { %>
-            <% jobs.forEach(function(job) { %>
+            <% jobs.forEach(function(job) {
+              var initials = (job.company || 'XX').substring(0, 2).toUpperCase();
+            %>
             <div class="job-list-item">
-              <div class="job-mini-logo"></div>
+              <div class="job-mini-logo company-logo-small" data-logo="<%= job.company_logo || '' %>">
+                <% if (!job.company_logo) { %>
+                <span style="font-size: 14px; font-weight: 600; color: #2563eb;"><%= initials %></span>
+                <% } %>
+              </div>
               <div class="job-mini-info">
                 <h4><%= job.title %></h4>
                 <p><%= job.company %> • <%= job.location %></p>
               </div>
-              <form action="/jobs/apply/<%= job.id %>" method="POST">
-                <button type="submit" class="btn-apply-sm">Lamar</button>
-              </form>
+              <% if (typeof appliedJobIds !== 'undefined' && appliedJobIds.includes(job.id)) { %>
+                <button type="button" class="btn-apply-sm" style="background-color: #9ca3af; color: white; cursor: not-allowed;" disabled title="Anda sudah melamar pekerjaan ini">Dilamar</button>
+              <% } else { %>
+                <form action="/jobs/apply/<%= job.id %>" method="POST">
+                  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                  <button type="submit" class="btn-apply-sm">Lamar</button>
+                </form>
+              <% } %>
             </div>
             <% }); %>
           <% } else { %>
@@ -118,7 +129,7 @@
           <span style="font-weight: 600;"><%= completenessScore %>% Lengkap</span>
         </div>
         <div class="progress-bar-bg">
-          <div class="progress-bar-fill" style="width: <%= completenessScore %>%"></div>
+          <div class="progress-bar-fill" data-progress="<%= completenessScore %>"></div>
         </div>
         <span class="progress-text"><%= completenessText %></span>
       </div>
@@ -133,7 +144,7 @@
           <% if (typeof activity !== 'undefined' && activity && activity.length > 0) { %>
             <% activity.forEach(function(act) { %>
             <div class="activity-item">
-              <div class="activity-icon" style="<%= act.type === 'view' ? 'background: #dbeafe; color: #2563eb;' : (act.type === 'success' ? 'background: #d1fae5; color: #059669;' : 'background: #fef3c7; color: #d97706;') %>">
+              <div class="activity-icon activity-icon-<%= act.type %>">
                 <% if (act.type === 'view') { %>
                   <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"/></svg>
                 <% } else if (act.type === 'success') { %>
@@ -157,3 +168,26 @@
     </div>
   </div>
 </div>
+
+<!-- JavaScript for Company Logos -->
+<script>
+  // Apply company logo backgrounds dynamically
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.company-logo-small[data-logo]').forEach(function(el) {
+      var logo = el.getAttribute('data-logo');
+      if (logo) {
+        el.style.backgroundImage = 'url(/images/companies/' + logo + ')';
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
+      }
+    });
+
+    // Apply progress bar widths dynamically
+    document.querySelectorAll('.progress-bar-fill[data-progress]').forEach(function(el) {
+      var progress = el.getAttribute('data-progress');
+      if (progress) {
+        el.style.width = progress + '%';
+      }
+    });
+  });
+</script>

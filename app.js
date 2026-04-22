@@ -1,7 +1,7 @@
 /**
  * Lokerin - Main Application Entry Point
  * Platform pencarian kerja yang menghubungkan pencari kerja dan HR
- * 
+ *
  * Cara menjalankan:
  * 1. Pastikan MySQL sudah berjalan
  * 2. Copy .env.example ke .env dan sesuaikan konfigurasi
@@ -14,11 +14,15 @@ const cors = require('cors');
 const session = require('express-session');
 const methodOverride = require('method-override');
 const expressLayouts = require('express-ejs-layouts');
+const helmet = require('helmet');
 const path = require('path');
-require('dotenv').config();
+const config = require('./config/config');
+const logger = require('./utils/logger');
 
 // Import middleware
 const { setLocalUser, requireAuth } = require('./middleware/auth');
+const csrfProtection = require('./middleware/csrf');
+const { limiters } = require('./middleware/rateLimiter');
 
 // Import models
 const Chat = require('./models/Chat');
@@ -36,14 +40,23 @@ const hrRoutes = require('./routes/hrRoutes');
 
 // Inisialisasi Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.PORT;
 
 // ======================================
 // MIDDLEWARE SETUP
 // ======================================
 
-// CORS - Mengizinkan cross-origin requests
-app.use(cors());
+// Security headers (XSS protection, clickjacking, content-type sniffing, etc.)
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable for EJS compatibility
+  crossOriginEmbedderPolicy: false
+}));
+
+// CORS - Restrict to configured origins
+app.use(cors({
+  origin: config.ALLOWED_ORIGINS,
+  credentials: true
+}));
 
 // Parse JSON bodies
 app.use(express.json());
@@ -51,19 +64,28 @@ app.use(express.json());
 // Parse URL-encoded bodies (dari form)
 app.use(express.urlencoded({ extended: true }));
 
-// Method override untuk PUT/DELETE dari form
+// Method override for PUT/DELETE from form
 app.use(methodOverride('_method'));
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'lokerin-session-secret-2024',
+  secret: config.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: false, // Set true jika menggunakan HTTPS
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 hari
-  }
+    httpOnly: true, // Prevent XSS access to cookie
+    maxAge: config.SESSION_MAX_AGE, // 7 hari
+    sameSite: 'lax' // CSRF protection via cookie
+  },
+  name: 'lokerin.sid' // Don't expose default session cookie name
 }));
+
+// CSRF Protection (must be after session)
+app.use(csrfProtection);
+
+// General rate limiting
+app.use(limiters.general);
 
 // Static files - Public folder
 app.use(express.static(path.join(__dirname, 'public')));
@@ -90,7 +112,6 @@ app.use(async (req, res, next) => {
 // VIEW ENGINE SETUP
 // ======================================
 
-// Set EJS sebagai template engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -104,7 +125,7 @@ app.set('layout extractStyles', true);
 // ROUTES
 // ======================================
 
-// Auth routes (login, register, logout)
+// Auth routes (login, register, logout) - with strict rate limiting
 app.use(authRoutes);
 
 // Home Route (Public)
@@ -122,8 +143,8 @@ app.use(profileRoutes);
 // Profile Structured routes (skills, experiences, etc)
 app.use(profileStructuredRoutes);
 
-// Chat routes (messaging)
-app.use(chatRoutes);
+// Chat routes (messaging) - with chat rate limiting
+app.use('/chat', limiters.chat, chatRoutes);
 
 // HR routes (dashboard, manage jobs, etc) - mounted at /hr
 app.use('/hr', hrRoutes);
@@ -135,14 +156,20 @@ app.use('/hr', hrRoutes);
 // 404 Handler
 app.use((req, res) => {
   res.status(404).render('pages/404', {
-    title: '404 - Page Not Found'
+    title: '404 - Page Not Found',
+    user: req.user || null
   });
 });
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  
+  logger.error('Unhandled error', {
+    message: err.message,
+    stack: err.stack,
+    url: req.originalUrl,
+    method: req.method
+  });
+
   // Handle multer errors
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(400).render('pages/error', {
@@ -150,11 +177,18 @@ app.use((err, req, res, next) => {
       error: 'Ukuran file terlalu besar. Maksimal 5MB'
     });
   }
-  
-  res.status(500).render('pages/error', {
+
+  if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+    return res.status(400).render('pages/error', {
+      title: 'Error',
+      error: 'File upload tidak valid'
+    });
+  }
+
+  res.status(err.status || 500).render('pages/error', {
     title: 'Error',
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Terjadi kesalahan pada server' 
+    error: config.NODE_ENV === 'production'
+      ? 'Terjadi kesalahan pada server. Silakan coba lagi nanti.'
       : err.message
   });
 });
@@ -164,6 +198,7 @@ app.use((err, req, res, next) => {
 // ======================================
 
 app.listen(PORT, () => {
+  logger.info(`Lokerin server started`, { port: PORT, env: config.NODE_ENV });
   console.log(`
 ╔══════════════════════════════════════════════╗
 ║                                              ║
@@ -175,6 +210,7 @@ app.listen(PORT, () => {
 ║   Database: MySQL                            ║
 ║   Template Engine: EJS                       ║
 ║   Styling: Tailwind CSS                      ║
+║   Security: Helmet + CSRF + Rate Limit       ║
 ║                                              ║
 ╚══════════════════════════════════════════════╝
   `);

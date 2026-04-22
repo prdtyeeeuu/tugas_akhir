@@ -8,11 +8,28 @@
     <p class="text-gray-600 mb-8">
       Maaf, halaman yang Anda cari tidak ditemukan atau telah dipindahkan.
     </p>
-    <a 
-      href="/" 
+    
+    <% 
+      // Tentukan redirect URL berdasarkan role user
+      let redirectUrl = '/'; // Default ke homepage
+      if (typeof user !== 'undefined' && user) {
+        if (user.role === 'hr') {
+          redirectUrl = '/hr/dashboard';
+        } else {
+          redirectUrl = '/dashboard';
+        }
+      }
+    %>
+    
+    <a
+      href="<%= redirectUrl %>"
       class="px-8 py-3 bg-secondary hover:bg-opacity-80 text-gray-800 rounded-xl font-medium transition inline-block"
     >
-      Kembali ke Dashboard
+      <% if (typeof user !== 'undefined' && user && user.role === 'hr') { %>
+        Kembali ke Dashboard HR
+      <% } else { %>
+        Kembali ke Dashboard
+      <% } %>
     </a>
   </div>
 </div>

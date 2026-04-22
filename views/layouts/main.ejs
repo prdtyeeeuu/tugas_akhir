@@ -23,13 +23,36 @@
     }
   </script>
 
+  <!-- Global Fetch CSRF Token Interceptor -->
+  <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+  <script>
+    (function() {
+      const origFetch = window.fetch;
+      const csrfToken = "<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>";
+      window.fetch = async function(...args) {
+        let resource = args[0];
+        let config = args[1];
+        
+        if (config && config.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method.toUpperCase())) {
+          if (!config.headers) {
+            config.headers = {};
+          }
+          if (config.headers instanceof Headers) {
+            if (!config.headers.has('x-csrf-token')) config.headers.append('x-csrf-token', csrfToken);
+          } else {
+            config.headers['x-csrf-token'] = csrfToken;
+          }
+          args[1] = config;
+        }
+        return origFetch.apply(window, args);
+      };
+    })();
+  </script>
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- SweetAlert2 for Alerts -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <!-- Profile Page Styles -->
   <link rel="stylesheet" href="/css/profile.css">
@@ -131,38 +154,21 @@
   <%- include('../partials/footer') %>
 
   <!-- Scripts -->
-  <script src="/js/lokerin-dialog.js"></script>
+  <script src="/js/lokerin-modal.js"></script>
   <script src="/js/main.js"></script>
 
-  <!-- Global Logout Confirmation -->
+  <!-- Global Logout Confirmation (Custom Modal) -->
   <script>
-    function confirmLogout() {
-      Swal.fire({
+    async function confirmLogout() {
+      const ok = await lokerinConfirm('Anda akan keluar dari akun dan perlu login kembali', {
         title: 'Yakin ingin logout?',
-        text: 'Anda akan keluar dari akun dan perlu login kembali',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Ya, Logout',
-        cancelButtonText: 'Batal',
-        reverseButtons: true
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Show loading
-          Swal.fire({
-            title: 'Logging out...',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            didOpen: () => {
-              Swal.showLoading();
-            }
-          });
-          
-          // Redirect to logout
-          window.location.href = '/logout';
-        }
+        confirmText: 'Ya, Logout',
+        cancelText: 'Batal',
+        danger: true
       });
+      if (ok) {
+        window.location.href = '/logout';
+      }
     }
 
     // Toggle Password Visibility

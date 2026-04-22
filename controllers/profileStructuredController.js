@@ -67,9 +67,12 @@ const addSkill = async (req, res) => {
 const updateSkill = async (req, res) => {
   try {
     const skillId = req.params.id;
+    const userId = req.user.id;
     const { name, level } = req.body;
-
-    await Profile.updateSkill(skillId, name, level);
+    const updated = await Profile.updateSkill(skillId, userId, name, level);
+    if (!updated) {
+      return res.status(404).json({ error: 'Skill tidak ditemukan' });
+    }
     res.json({ success: true });
   } catch (error) {
     console.error('Update skill error:', error);
@@ -80,7 +83,11 @@ const updateSkill = async (req, res) => {
 const deleteSkill = async (req, res) => {
   try {
     const skillId = req.params.id;
-    await Profile.deleteSkill(skillId);
+    const userId = req.user.id;
+    const deleted = await Profile.deleteSkill(skillId, userId);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Skill tidak ditemukan' });
+    }
     res.redirect('/profile?success=Skill+berhasil+dihapus');
   } catch (error) {
     console.error('Delete skill error:', error);
@@ -118,9 +125,10 @@ const addExperience = async (req, res) => {
 const updateExperience = async (req, res) => {
   try {
     const expId = req.params.id;
+    const userId = req.user.id;
     const { position, company, start_date, end_date, is_current, description } = req.body;
 
-    await Profile.updateExperience(expId, {
+    const updated = await Profile.updateExperience(expId, userId, {
       position,
       company,
       start_date,
@@ -128,7 +136,9 @@ const updateExperience = async (req, res) => {
       is_current: is_current === 'on',
       description
     });
-
+    if (!updated) {
+      return res.status(404).json({ error: 'Pengalaman tidak ditemukan' });
+    }
     res.json({ success: true });
   } catch (error) {
     console.error('Update experience error:', error);
@@ -139,7 +149,11 @@ const updateExperience = async (req, res) => {
 const deleteExperience = async (req, res) => {
   try {
     const expId = req.params.id;
-    await Profile.deleteExperience(expId);
+    const userId = req.user.id;
+    const deleted = await Profile.deleteExperience(expId, userId);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Pengalaman tidak ditemukan' });
+    }
     res.redirect('/profile?success=Pengalaman+kerja+berhasil+dihapus');
   } catch (error) {
     console.error('Delete experience error:', error);
@@ -176,16 +190,19 @@ const addEducation = async (req, res) => {
 const updateEducation = async (req, res) => {
   try {
     const eduId = req.params.id;
+    const userId = req.user.id;
     const { school, degree, field_of_study, start_year, end_year } = req.body;
 
-    await Profile.updateEducation(eduId, {
+    const updated = await Profile.updateEducation(eduId, userId, {
       school,
       degree,
       field_of_study,
       start_year,
       end_year
     });
-
+    if (!updated) {
+      return res.status(404).json({ error: 'Pendidikan tidak ditemukan' });
+    }
     res.json({ success: true });
   } catch (error) {
     console.error('Update education error:', error);
@@ -196,7 +213,11 @@ const updateEducation = async (req, res) => {
 const deleteEducation = async (req, res) => {
   try {
     const eduId = req.params.id;
-    await Profile.deleteEducation(eduId);
+    const userId = req.user.id;
+    const deleted = await Profile.deleteEducation(eduId, userId);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Pendidikan tidak ditemukan' });
+    }
     res.redirect('/profile?success=Pendidikan+berhasil+dihapus');
   } catch (error) {
     console.error('Delete education error:', error);
@@ -237,20 +258,27 @@ const addPortfolio = async (req, res) => {
 const updatePortfolio = async (req, res) => {
   try {
     const portfolioId = req.params.id;
+    const userId = req.user.id;
     const { title, description, url, github_url } = req.body;
-    
-    // Default to existing data
-    // Would normally fetch previous if we have conditional image updates, omitting here for brevity 
-    // unless you want full file replacement logic. Let's assume we can optionally send file.
-    let image_url = null;
-    if (req.file) {
-      image_url = req.file.filename;
-      // Ideally delete old image here if we implement full updates
+
+    const existing = await Profile.getPortfolioById(portfolioId, userId);
+    if (!existing) {
+      return res.status(404).json({ error: 'Portofolio tidak ditemukan' });
     }
 
-    // In a robust implementation, you need to query the existing portfolio to not overwrite image_url with null.
-    // For now we just implement the ADD and DELETE as per user plan.
-    await Profile.updatePortfolio(portfolioId, {
+    let image_url = existing.image_url;
+    if (req.file) {
+      image_url = req.file.filename;
+      // Delete old image file if exists
+      if (existing.image_url) {
+        const oldPath = path.join(__dirname, '../public/images/portfolios', existing.image_url);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+    }
+
+    await Profile.updatePortfolio(portfolioId, userId, {
       title,
       description,
       url,
@@ -269,19 +297,21 @@ const deletePortfolio = async (req, res) => {
   try {
     const portfolioId = req.params.id;
     const userId = req.user.id;
-    
-    // Find the portfolio first to get image_url
-    const portfolios = await Profile.getPortfolios(userId);
-    const portfolio = portfolios.find(p => p.id == portfolioId);
-    
-    if (portfolio && portfolio.image_url) {
+
+    const portfolio = await Profile.getPortfolioById(portfolioId, userId);
+
+    if (!portfolio) {
+      return res.status(404).json({ error: 'Portofolio tidak ditemukan' });
+    }
+
+    if (portfolio.image_url) {
       const filePath = path.join(__dirname, '../public/images/portfolios', portfolio.image_url);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
     }
 
-    await Profile.deletePortfolio(portfolioId);
+    await Profile.deletePortfolio(portfolioId, userId);
     res.json({ success: true, message: 'Portofolio berhasil dihapus' });
   } catch (error) {
     console.error('Delete portfolio error:', error);

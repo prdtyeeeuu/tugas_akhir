@@ -120,12 +120,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
   }
   
   .applicant-info {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
   }
   
   .applicant-avatar {
@@ -165,6 +168,7 @@
   .action-buttons {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
   
   .btn-sm {
@@ -359,11 +363,21 @@
               <div class="applicant-card">
                 <div class="applicant-info">
                   <div class="applicant-avatar">
-                    <%= app.applicant ? app.applicant.name.charAt(0) : '?' %>
+                    <% if (app.profile_image) { %>
+                      <img
+                        src="/images/profiles/<%= app.profile_image %>"
+                        alt="<%= app.name %>"
+                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                        onerror="this.style.display='none'; this.parentElement.textContent=this.dataset.initials"
+                        data-initials="<%= app.name ? app.name.charAt(0).toUpperCase() : '?' %>"
+                      >
+                    <% } else { %>
+                      <%= app.name ? app.name.charAt(0).toUpperCase() : '?' %>
+                    <% } %>
                   </div>
                   <div>
-                    <div class="applicant-name"><%= app.applicant ? app.applicant.name : 'Unknown' %></div>
-                    <div class="applicant-email"><%= app.applicant ? app.applicant.email : '-' %></div>
+                    <div class="applicant-name"><%= app.name ? app.name : 'Unknown' %></div>
+                    <div class="applicant-email"><%= app.email ? app.email : '-' %></div>
                     <span class="status-badge status-<%= app.status %>">
                       <%= app.status.charAt(0).toUpperCase() + app.status.slice(1) %>
                     </span>
@@ -372,19 +386,34 @@
                 <div class="action-buttons">
                   <% if (app.status === 'pending') { %>
                     <form action="/hr/applications/<%= app.id %>" method="POST" style="display: inline;">
-                      <input type="hidden" name="_method" value="PUT">
-                      <input type="hidden" name="status" value="diterima">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <input type="hidden" name="status" value="interview">
                       <input type="hidden" name="returnUrl" value="/hr/jobs/<%= job.id %>">
-                      <button type="submit" class="btn-sm btn-accept">Terima</button>
+                      <button type="submit" class="btn-sm btn-accept">Panggil Wawancara</button>
                     </form>
                     <form action="/hr/applications/<%= app.id %>" method="POST" style="display: inline;">
-                      <input type="hidden" name="_method" value="PUT">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                       <input type="hidden" name="status" value="ditolak">
                       <input type="hidden" name="returnUrl" value="/hr/jobs/<%= job.id %>">
                       <button type="submit" class="btn-sm btn-reject">Tolak</button>
                     </form>
+                  <% } else if (app.status === 'ditolak') { %>
+                    <span class="btn-sm btn-reject opacity-60 cursor-not-allowed" title="Pelamar sudah ditolak" style="background: #ef4444; color: white; border: none;">Ditolak</span>
+                  <% } else if (app.status === 'interview') { %>
+                    <span class="btn-sm btn-accept opacity-60 cursor-not-allowed" title="Pelamar sudah dipanggil untuk wawancara" style="background: #10b981; color: white; border: none;">Panggilan Wawancara</span>
                   <% } %>
-                  <a href="/profile/<%= app.user_id %>" class="btn-sm btn-view">Lihat Profil</a>
+                  <% if (app.cv_image) { %>
+                    <% if (!app.cv_is_viewed) { %>
+                      <button type="button" class="btn-sm bg-purple-600 hover:bg-purple-700 text-white border-0 transition-colors" 
+                              onclick="viewCvOnce('<%= app.id %>', '<%= app.cv_image %>')" 
+                              id="btn-cv-<%= app.id %>">
+                        Lihat CV (1x)
+                      </button>
+                    <% } else { %>
+                      <span class="btn-sm bg-gray-400 text-white cursor-not-allowed inline-block border-0 text-center" title="CV sudah dilihat">CV Dilihat</span>
+                    <% } %>
+                  <% } %>
+                  <a href="/user/<%= app.user_id %>" class="btn-sm btn-view">Lihat Profil</a>
                 </div>
               </div>
             <% }); %>
@@ -402,3 +431,80 @@
     </div>
   </div>
 </div>
+
+<!-- Modal View CV -->
+<div id="cvModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-75 transition-opacity">
+  <div class="bg-white rounded-xl shadow-2xl p-4 w-full max-w-4xl mx-4 transform scale-95 transition-transform" style="font-family: 'Inter', sans-serif; height: 90vh; display: flex; flex-direction: column;">
+    <div class="flex justify-between items-center mb-4 flex-shrink-0">
+      <h3 class="text-lg font-bold text-gray-900">Melihat CV (Sekali Lihat)</h3>
+      <button type="button" onclick="closeCvModal()" class="text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-1">
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    
+    <div class="bg-gray-100 flex-1 rounded-lg overflow-hidden flex items-center justify-center relative">
+      <img id="cvViewerImage" src="" alt="CV" class="max-w-full max-h-full object-contain">
+    </div>
+    
+    <div class="mt-4 flex justify-between items-center flex-shrink-0">
+      <p class="text-xs text-red-500 font-medium flex items-center gap-1">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        Peringatan: Jika Anda menutup window ini, foto CV tidak dapat dilihat lagi.
+      </p>
+      <button type="button" onclick="closeCvModal()" class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Fitur View Once CV
+  async function viewCvOnce(appId, cvImage) {
+    const modal = document.getElementById('cvModal');
+    const imageEl = document.getElementById('cvViewerImage');
+    const btn = document.getElementById(`btn-cv-${appId}`);
+    
+    // Set image source
+    imageEl.src = `/images/cvs/${cvImage}`;
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+      modal.firstElementChild.classList.remove('scale-95');
+      modal.firstElementChild.classList.add('scale-100');
+    }, 10);
+    
+    // Hit API to mark as viewed (silent)
+    try {
+      await fetch(`/hr/applications/${appId}/mark-cv-viewed`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-csrf-token': '<%= csrfToken %>'
+        }
+      });
+      
+      // Update the button visually so it can't be clicked again
+      if (btn) {
+        btn.outerHTML = '<span class="btn-sm bg-gray-400 text-white cursor-not-allowed inline-block border-0 text-center" title="CV sudah dilihat">CV Dilihat</span>';
+      }
+    } catch (e) {
+      console.error('Failed to mark CV as viewed:', e);
+    }
+  }
+  
+  function closeCvModal() {
+    const modal = document.getElementById('cvModal');
+    const imageEl = document.getElementById('cvViewerImage');
+    
+    modal.firstElementChild.classList.remove('scale-100');
+    modal.firstElementChild.classList.add('scale-95');
+    
+    setTimeout(() => {
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
+      // Clear image src for security
+      imageEl.src = '';
+    }, 200);
+  }
+</script>

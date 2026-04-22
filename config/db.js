@@ -3,14 +3,14 @@
  * Mengelola koneksi ke MySQL menggunakan connection pool
  */
 const mysql = require('mysql2');
-require('dotenv').config();
+const config = require('./config');
 
 // Membuat connection pool untuk performa lebih baik
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'lokerin_db',
+  host: config.DB_HOST,
+  user: config.DB_USER,
+  password: config.DB_PASSWORD,
+  database: config.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -18,8 +18,6 @@ const pool = mysql.createPool({
 
 // Export promise-based connection
 const promisePool = pool.promise();
-
-module.exports = promisePool;
 
 /**
  * Fungsi untuk menjalankan query
@@ -32,7 +30,8 @@ const query = async (sql, params = []) => {
     const [results] = await promisePool.execute(sql, params);
     return results;
   } catch (error) {
-    console.error('Database error:', error);
+    const logger = require('../utils/logger');
+    logger.error('Database query error', { sql: sql.substring(0, 100), error: error.message });
     throw error;
   }
 };

@@ -125,17 +125,27 @@ async function createTables(conn) {
   console.log('📋 Membuat tabel-tabel...');
 
   const queries = [
-    // Tabel Users
+    // Tabel Users (with role and all profile columns from the start)
     `CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
       email VARCHAR(255) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL,
+      role ENUM('job_seeker', 'hr') DEFAULT 'job_seeker',
       profile_image VARCHAR(255) DEFAULT NULL,
       banner_image VARCHAR(255) DEFAULT NULL,
+      banner_color VARCHAR(7) DEFAULT NULL,
       bio TEXT DEFAULT NULL,
+      phone VARCHAR(20) DEFAULT NULL,
+      address VARCHAR(255) DEFAULT NULL,
+      expected_salary_min INT DEFAULT NULL,
+      expected_salary_max INT DEFAULT NULL,
+      open_to_work TINYINT(1) DEFAULT 0,
+      work_preferences VARCHAR(255) DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_email (email),
+      INDEX idx_role (role)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 
     // Tabel Jobs
@@ -147,12 +157,16 @@ async function createTables(conn) {
       category VARCHAR(100) DEFAULT NULL,
       type ENUM('Full-time', 'Part-time', 'Remote', 'Contract', 'Internship') DEFAULT 'Full-time',
       description TEXT DEFAULT NULL,
+      salary_min INT DEFAULT NULL,
+      salary_max INT DEFAULT NULL,
       hr_id INT DEFAULT NULL,
+      company_logo VARCHAR(255) DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (hr_id) REFERENCES users(id) ON DELETE SET NULL,
       INDEX idx_category (category),
-      INDEX idx_created_at (created_at DESC)
+      INDEX idx_created_at (created_at DESC),
+      INDEX idx_hr_id (hr_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 
     // Tabel Applications
@@ -160,14 +174,116 @@ async function createTables(conn) {
       id INT AUTO_INCREMENT PRIMARY KEY,
       user_id INT NOT NULL,
       job_id INT NOT NULL,
-      status ENUM('pending', 'diterima', 'ditolak') DEFAULT 'pending',
+      status ENUM('pending', 'diterima', 'ditolak', 'interview') DEFAULT 'pending',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
       UNIQUE KEY unique_user_job (user_id, job_id),
       INDEX idx_user_id (user_id),
-      INDEX idx_job_id (job_id)
+      INDEX idx_job_id (job_id),
+      INDEX idx_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    // Tabel Chat Conversations
+    `CREATE TABLE IF NOT EXISTS chat_conversations (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      applicant_id INT NOT NULL,
+      hr_id INT NOT NULL,
+      job_id INT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY unique_conversation (applicant_id, hr_id, job_id),
+      INDEX idx_applicant (applicant_id),
+      INDEX idx_hr (hr_id),
+      INDEX idx_job (job_id),
+      FOREIGN KEY (applicant_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (hr_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    // Tabel Chat Messages
+    `CREATE TABLE IF NOT EXISTS chat_messages (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      conversation_id INT NOT NULL,
+      sender_id INT NOT NULL,
+      receiver_id INT NOT NULL,
+      message TEXT NOT NULL,
+      is_read TINYINT(1) DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_conversation (conversation_id),
+      INDEX idx_receiver (receiver_id),
+      INDEX idx_is_read (is_read),
+      INDEX idx_conversation_read (conversation_id, receiver_id, is_read),
+      FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
+      FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    // Tabel Skills
+    `CREATE TABLE IF NOT EXISTS skills (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      level ENUM('Beginner', 'Intermediate', 'Advanced', 'Expert') DEFAULT 'Intermediate',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_user_id (user_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    // Tabel Experiences
+    `CREATE TABLE IF NOT EXISTS experiences (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      position VARCHAR(255) NOT NULL,
+      company VARCHAR(255) NOT NULL,
+      start_date DATE DEFAULT NULL,
+      end_date DATE DEFAULT NULL,
+      is_current TINYINT(1) DEFAULT 0,
+      description TEXT DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_user_id (user_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    // Tabel Educations
+    `CREATE TABLE IF NOT EXISTS educations (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      school VARCHAR(255) NOT NULL,
+      degree VARCHAR(255) DEFAULT NULL,
+      field_of_study VARCHAR(255) DEFAULT NULL,
+      start_year INT DEFAULT NULL,
+      end_year INT DEFAULT NULL,
+      gpa DECIMAL(3,2) DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_user_id (user_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    // Tabel Portfolios
+    `CREATE TABLE IF NOT EXISTS portfolios (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      description TEXT DEFAULT NULL,
+      url VARCHAR(500) DEFAULT NULL,
+      github_url VARCHAR(500) DEFAULT NULL,
+      image_url VARCHAR(255) DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_user_id (user_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    // Tabel User Privacy Settings
+    `CREATE TABLE IF NOT EXISTS user_privacy_settings (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL UNIQUE,
+      hide_email_from_hr TINYINT(1) DEFAULT TRUE,
+      hide_phone_from_hr TINYINT(1) DEFAULT TRUE,
+      require_approval_for_contact TINYINT(1) DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
   ];
 
@@ -197,10 +313,10 @@ async function seedData(conn) {
   const hashedPassword = await bcrypt.hash('password123', 10);
   
   console.log('   👤 Membuat user dummy...');
-  const userId = await insertUser(conn, ['Test User', 'user@test.com', hashedPassword]);
-  
+  const userId = await insertUser(conn, ['Test User', 'user@test.com', hashedPassword, 'job_seeker']);
+
   console.log('   👤 Membuat HR user...');
-  const hrId = await insertUser(conn, ['HR Company', 'hr@test.com', hashedPassword]);
+  const hrId = await insertUser(conn, ['HR Company', 'hr@test.com', hashedPassword, 'hr']);
 
   // 2. Buat jobs dummy
   const jobs = [
@@ -229,14 +345,19 @@ async function seedData(conn) {
  */
 async function insertUser(conn, userData) {
   return new Promise((resolve, reject) => {
+    const role = userData[3] || 'job_seeker';
     conn.query(
-      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-      userData,
+      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+      [userData[0], userData[1], userData[2], role],
       (err, result) => {
         if (err) {
           if (err.code === 'ER_DUP_ENTRY') {
             console.log('   ⚠️  User sudah ada, skip...');
-            resolve(null);
+            // Fetch existing user to return ID
+            conn.query('SELECT id FROM users WHERE email = ?', [userData[1]], (err2, rows) => {
+              if (err2) reject(err2);
+              else resolve(rows[0] ? rows[0].id : null);
+            });
           } else {
             reject(err);
           }

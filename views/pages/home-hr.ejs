@@ -109,7 +109,7 @@
                     </div>
                     <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-auto group-hover:text-brand-400 group-hover:translate-x-1 transition-all"></i>
                 </a>
-                <a href="/hr/applications" class="group flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 text-left">
+                <a href="/hr/jobs" class="group flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 text-left">
                     <div class="flex-shrink-0 w-12 h-12 bg-blue-600 group-hover:bg-blue-700 rounded-2xl flex items-center justify-center transition-colors shadow-lg shadow-blue-600/20">
                         <i data-lucide="inbox" class="w-6 h-6 text-white"></i>
                     </div>
@@ -161,8 +161,15 @@
                 <div class="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-brand-100 transition-all duration-300">
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 bg-<%= bgColor %>-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <span class="text-sm font-bold text-<%= bgColor %>-700"><%= initials %></span>
+                            <!-- Company Logo/Image -->
+                            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden bg-gray-50 border border-gray-100">
+                                <% if (job.company_logo) { %>
+                                <img src="/images/companies/<%= job.company_logo %>" alt="<%= job.company %>" class="w-full h-full object-cover">
+                                <% } else { %>
+                                <div class="w-full h-full bg-<%= bgColor %>-50 flex items-center justify-center">
+                                    <span class="text-sm font-bold text-<%= bgColor %>-700"><%= initials %></span>
+                                </div>
+                                <% } %>
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors"><%= job.title %></h3>
@@ -225,7 +232,7 @@
                     <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Kandidat Terbaru</h2>
                     <p class="text-sm text-gray-500 mt-1">Pelamar yang baru mendaftar dalam 24 jam terakhir</p>
                 </div>
-                <a href="/hr/applications" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+                <a href="/hr/jobs" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
                     Lihat Semua
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </a>
@@ -243,18 +250,29 @@
                 </div>
 
                 <% recentApplicants.forEach(function(applicant) {
-                    var initials = (applicant.name || 'XX').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                    var initials = (applicant.name || applicant.applicant_name || 'XX').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                     var bgColor = ['brand', 'violet', 'emerald', 'rose', 'amber', 'blue'][Math.floor(Math.random() * 6)];
+                    var profileImage = applicant.profile_image || applicant.applicant_image || null;
+                    var userId = applicant.user_id || applicant.id;
                 %>
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 border-b border-gray-50 hover:bg-brand-50/30 transition-colors items-center">
                     <div class="col-span-4 flex items-center gap-3">
-                        <div class="w-10 h-10 bg-<%= bgColor %>-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <span class="text-xs font-bold text-<%= bgColor %>-700"><%= initials %></span>
+                        <!-- Candidate Profile Image with Link -->
+                        <a href="/user/<%= userId %>" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-gray-100 border-2 border-white shadow-sm">
+                            <% if (profileImage) { %>
+                            <img src="/images/profiles/<%= profileImage %>" alt="<%= applicant.name || applicant.applicant_name %>" class="w-full h-full object-cover">
+                            <% } else { %>
+                            <div class="w-full h-full bg-<%= bgColor %>-100 flex items-center justify-center">
+                                <span class="text-xs font-bold text-<%= bgColor %>-700"><%= initials %></span>
+                            </div>
+                            <% } %>
                         </div>
                         <div>
-                            <p class="text-sm font-semibold text-gray-900"><%= applicant.name %></p>
-                            <p class="text-xs text-gray-500"><%= applicant.email %></p>
+                            <p class="text-sm font-semibold text-gray-900 hover:text-brand-600 transition-colors"><%= applicant.name || applicant.applicant_name %></p>
+                            <p class="text-xs text-gray-500"><%= applicant.email || applicant.applicant_email %></p>
                         </div>
+                        </a>
                     </div>
                     <div class="col-span-3 text-sm text-gray-600"><%= applicant.job_title %></div>
                     <div class="col-span-2 text-sm text-gray-600">
@@ -386,3 +404,12 @@
     </section>
 
 </div>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // Initialize Lucide Icons
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+  });
+</script>

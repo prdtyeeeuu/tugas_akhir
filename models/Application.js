@@ -11,7 +11,7 @@ const Application = {
    * @returns {Promise} - ID lamaran yang baru dibuat
    */
   create: async (appData) => {
-    const { user_id, job_id } = appData;
+    const { user_id, job_id, cv_image } = appData;
     
     // Cek apakah user sudah melamar job ini sebelumnya
     const existing = await Application.findByUserAndJob(user_id, job_id);
@@ -20,11 +20,11 @@ const Application = {
     }
 
     const sql = `
-      INSERT INTO applications (user_id, job_id, status) 
-      VALUES (?, ?, 'pending')
+      INSERT INTO applications (user_id, job_id, status, cv_image) 
+      VALUES (?, ?, 'pending', ?)
     `;
     
-    const result = await query(sql, [user_id, job_id]);
+    const result = await query(sql, [user_id, job_id, cv_image || null]);
     return result.insertId;
   },
 
@@ -35,7 +35,7 @@ const Application = {
    */
   findByUserId: async (userId) => {
     const sql = `
-      SELECT a.*, j.title as job_title, j.company, j.location, j.type,
+      SELECT a.*, j.title as job_title, j.company, j.location, j.type, j.company_logo, j.hr_id,
              a.created_at as applied_at
       FROM applications a
       JOIN jobs j ON a.job_id = j.id
@@ -58,13 +58,30 @@ const Application = {
   },
 
   /**
+   * Mengambil semua lamaran untuk sebuah job (dengan user details JOIN)
+   * @param {number} jobId - ID job
+   * @returns {Promise} - Array of applications with user details
+   */
+  findByJobIdWithDetails: async (jobId) => {
+    const sql = `
+      SELECT a.*, u.id as user_id, u.name, u.email, u.profile_image, u.bio, u.phone, u.address,
+             u.expected_salary_min, u.expected_salary_max, u.open_to_work, u.work_preferences
+      FROM applications a
+      JOIN users u ON a.user_id = u.id
+      WHERE a.job_id = ?
+      ORDER BY a.created_at DESC
+    `;
+    return await query(sql, [jobId]);
+  },
+
+  /**
    * Mengambil semua lamaran untuk sebuah job
    * @param {number} jobId - ID job
    * @returns {Promise} - Array of applications
    */
   findByJobId: async (jobId) => {
     const sql = `
-      SELECT a.*, u.name, u.email
+      SELECT a.*, u.name, u.email, u.profile_image as applicant_image
       FROM applications a
       JOIN users u ON a.user_id = u.id
       WHERE a.job_id = ?
@@ -80,13 +97,35 @@ const Application = {
    * @returns {Promise} - Hasil update
    */
   updateStatus: async (id, status) => {
-    const validStatuses = ['pending', 'diterima', 'ditolak'];
+    const validStatuses = ['pending', 'review', 'interview', 'diterima', 'ditolak'];
     if (!validStatuses.includes(status)) {
       throw new Error('Status tidak valid');
     }
 
+    // Ambil data aplikasi saat ini
+    const currentApp = await Application.findById(id);
+    if (!currentApp) {
+      throw new Error('Aplikasi tidak ditemukan');
+    }
+
+    // Jika aplikasi sudah ditolak, tidak bisa diubah
+    if (currentApp.status === 'ditolak') {
+      throw new Error('Tidak dapat mengubah status pelamar yang sudah ditolak');
+    }
+
     const sql = 'UPDATE applications SET status = ? WHERE id = ?';
     await query(sql, [status, id]);
+    return true;
+  },
+
+  /**
+   * Mengubah status CV menjadi sudah dilihat
+   * @param {number} id - ID lamaran
+   * @returns {Promise}
+   */
+  markCvAsViewed: async (id) => {
+    const sql = 'UPDATE applications SET cv_is_viewed = 1 WHERE id = ?';
+    await query(sql, [id]);
     return true;
   },
 
@@ -105,6 +144,18 @@ const Application = {
     `;
     const results = await query(sql, [id]);
     return results[0] || null;
+  },
+
+  /**
+   * Cancel/membatalkan lamaran (dengan ownership check)
+   * @param {number} id - ID lamaran
+   * @param {number} userId - ID user yang membatalkan
+   * @returns {Promise<boolean>} - True jika berhasil
+   */
+  cancel: async (id, userId) => {
+    const sql = 'DELETE FROM applications WHERE id = ? AND user_id = ?';
+    const result = await query(sql, [id, userId]);
+    return result.affectedRows > 0;
   },
 
   /**
