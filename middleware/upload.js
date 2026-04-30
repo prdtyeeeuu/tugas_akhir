@@ -65,13 +65,39 @@ function createUpload(destination, maxSize = config.MAX_FILE_SIZE) {
   });
 }
 
+/**
+ * File filter for documents & images
+ */
+function docFileFilter(req, file, cb) {
+  const allowedTypes = /pdf|doc|docx|png|jpg|jpeg|webp|gif/i;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  
+  if (extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Hanya file dokumen (pdf, doc, docx) atau gambar yang diperbolehkan'));
+  }
+}
+
+/**
+ * Create multer upload instance for docs
+ */
+function createDocUpload(destination, maxSize = config.MAX_FILE_SIZE) {
+  return multer({
+    storage: createStorage(destination),
+    limits: { fileSize: maxSize },
+    fileFilter: docFileFilter
+  });
+}
+
 // Pre-configured upload instances
 const uploadPaths = {
   profiles: path.join(__dirname, '../public/images/profiles'),
   banners: path.join(__dirname, '../public/images/banners'),
   portfolios: path.join(__dirname, '../public/images/portfolios'),
   companies: path.join(__dirname, '../public/images/companies'),
-  cvs: path.join(__dirname, '../public/images/cvs')
+  cvs: path.join(__dirname, '../public/images/cvs'),
+  offerings: path.join(__dirname, '../public/documents/offerings')
 };
 
 // Ensure all upload directories exist
@@ -84,6 +110,7 @@ module.exports = {
   portfolioImage: createUpload(uploadPaths.portfolios),
   companyLogo: createUpload(uploadPaths.companies),
   cvImage: createUpload(uploadPaths.cvs),
+  offeringDoc: createDocUpload(uploadPaths.offerings),
 
   // Generic uploader for custom destinations
   createUpload,

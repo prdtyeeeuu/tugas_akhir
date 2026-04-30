@@ -73,6 +73,16 @@
   }
   try { if (user.work_preferences) workPrefs = JSON.parse(user.work_preferences); } catch(e){}
   parsedSkills = skills || [];
+
+  function formatSalary(amount) {
+    if (!amount) return '';
+    if (amount >= 1000000) {
+      return (amount / 1000000).toFixed(amount % 1000000 === 0 ? 0 : 1) + ' Jt';
+    } else if (amount >= 1000) {
+      return (amount / 1000).toFixed(0) + ' Rb';
+    }
+    return amount.toString();
+  }
 %>
 
 <!-- Hidden Upload Forms -->
@@ -377,7 +387,7 @@
         <h2 class="text-sm font-bold text-slate-900 mb-3">Ekspektasi Gaji</h2>
         <div class="bg-brand-50 border border-brand-100 rounded-xl p-4 text-center">
           <p class="text-xl font-bold text-brand-700" id="ui-salary">
-            <% if (salaryMin && salaryMax) { %>Rp <%= salaryMin %> — <%= salaryMax %> Jt<% } else { %>Belum diatur<% } %>
+            <% if (salaryMin && salaryMax) { %>Rp <%= formatSalary(salaryMin) %> — <%= formatSalary(salaryMax) %><% } else { %>Belum diatur<% } %>
           </p>
           <p class="text-xs text-brand-500 mt-1">per bulan</p>
         </div>
@@ -430,12 +440,11 @@
       </div>
       <!-- Gaji -->
       <div>
-        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Ekspektasi Gaji (Juta/bulan)</label>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Ekspektasi Gaji (Nominal Angka Asli)</label>
         <div class="flex items-center gap-2">
           <input type="number" id="inp-salary-min" value="<%= salaryMin %>" placeholder="Min" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <span class="text-slate-400 font-medium">-</span>
           <input type="number" id="inp-salary-max" value="<%= salaryMax %>" placeholder="Max" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-          <span class="text-slate-500 text-sm font-medium">Jt</span>
         </div>
       </div>
       <% if (user.role !== 'hr') { %>
@@ -699,7 +708,8 @@
     const phone = document.getElementById('inp-phone').value;
     const salaryMin = document.getElementById('inp-salary-min').value;
     const salaryMax = document.getElementById('inp-salary-max').value;
-    const openWork = document.getElementById('inp-open-work').checked;
+    const openWorkEl = document.getElementById('inp-open-work');
+    const openWork = openWorkEl ? openWorkEl.checked : false;
     const prefs = Array.from(document.querySelectorAll('.pref-checkbox:checked')).map(c => c.value);
 
     showToast('Menyimpan profil...');
@@ -716,7 +726,15 @@
         document.getElementById('ui-about').innerText = about_me || 'Belum ada deskripsi profil.';
         document.getElementById('ui-address').innerText = address || 'Lokasi belum diatur';
         document.getElementById('ui-phone').innerText = phone || 'Nomor belum diatur';
-        if (salaryMin && salaryMax) document.getElementById('ui-salary').innerText = `Rp ${salaryMin} — ${salaryMax} Jt`;
+        if (salaryMin && salaryMax) {
+          const formatSal = (amount) => {
+            if (!amount) return '';
+            if (amount >= 1000000) return (amount / 1000000).toFixed(amount % 1000000 === 0 ? 0 : 1) + ' Jt';
+            if (amount >= 1000) return (amount / 1000).toFixed(0) + ' Rb';
+            return amount.toString();
+          };
+          document.getElementById('ui-salary').innerText = `Rp ${formatSal(salaryMin)} — ${formatSal(salaryMax)}`;
+        }
         // Open to work
         const badge = document.getElementById('ui-open-badge');
         badge.classList.toggle('hidden', !openWork);

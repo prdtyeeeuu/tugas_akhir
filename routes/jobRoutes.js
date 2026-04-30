@@ -26,4 +26,7 @@ router.post('/jobs/apply/:id', requireAuth, upload.cvImage.single('cv_image'), j
 // POST /applications/cancel/:id - Tarik lamaran (require auth)
 router.post('/applications/cancel/:id', requireAuth, jobController.cancelApplication);
 
+// POST /applications/:id/offering-response - Respon offering (require auth)
+router.post('/applications/:id/offering-response', requireAuth, jobController.respondOffering);
+
 module.exports = router;

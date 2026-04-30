@@ -28,8 +28,18 @@ const requireAuth = (req, res, next) => {
       return res.redirect('/login');
     }
 
-    const allowedForHR = ['/', '/profile', '/chat'];
-    const isAllowed = allowedForHR.some(p => req.path === p || req.path.startsWith(p + '/') || req.path.startsWith('/hr/'));
+    // Gunakan req.originalUrl (full path) bukan req.path (relatif dalam mounted router)
+    // Contoh: ketika router di-mount di /chat, req.path untuk /chat/1 menjadi /1
+    // tapi req.originalUrl tetap /chat/1
+    const fullPath = req.originalUrl.split('?')[0]; // Hapus query string
+
+    const allowedPrefixesForHR = ['/', '/profile', '/chat', '/hr'];
+    const isAllowed = allowedPrefixesForHR.some(p =>
+      fullPath === p ||
+      fullPath.startsWith(p + '/') ||
+      fullPath === p
+    );
+
     if (decoded.role === 'hr' && !isAllowed) {
       return res.redirect('/hr/home');
     }
@@ -82,6 +92,7 @@ const generateToken = (user) => {
  */
 const setLocalUser = async (req, res, next) => {
   res.locals.user = null;
+  res.locals.isLoggedIn = false;
 
   const token = req.session?.token;
   if (token) {
@@ -94,19 +105,30 @@ const setLocalUser = async (req, res, next) => {
           if (user && user.role) {
             const newToken = generateToken(user);
             req.session.token = newToken;
-            res.locals.user = jwt.verify(newToken, config.JWT_SECRET);
+            req.user = jwt.verify(newToken, config.JWT_SECRET);
+            res.locals.user = req.user;
+            res.locals.isLoggedIn = true;
           } else {
+            req.user = decoded;
             res.locals.user = decoded;
+            res.locals.isLoggedIn = true;
           }
         } catch (err) {
+          req.user = decoded;
           res.locals.user = decoded;
+          res.locals.isLoggedIn = true;
         }
         return next();
       }
 
+      req.user = decoded;
       res.locals.user = decoded;
+      res.locals.isLoggedIn = true;
     } catch (error) {
+      req.user = null;
       res.locals.user = null;
+      res.locals.isLoggedIn = false;
+      req.session.token = null;
     }
   }
 

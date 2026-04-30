@@ -148,6 +148,17 @@ async function createTables(conn) {
       INDEX idx_role (role)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 
+    // Tabel Categories
+    `CREATE TABLE IF NOT EXISTS categories (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      icon_name VARCHAR(100) NOT NULL,
+      is_popular BOOLEAN NOT NULL DEFAULT FALSE,
+      UNIQUE KEY uq_categories_name (name),
+      INDEX idx_categories_popular (is_popular),
+      INDEX idx_categories_name (name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
     // Tabel Jobs
     `CREATE TABLE IF NOT EXISTS jobs (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -318,18 +329,58 @@ async function seedData(conn) {
   console.log('   👤 Membuat HR user...');
   const hrId = await insertUser(conn, ['HR Company', 'hr@test.com', hashedPassword, 'hr']);
 
-  // 2. Buat jobs dummy
+  // 2. Buat kategori pekerjaan
+  const categories = [
+    ['Administrasi & Operasional', 'file-text', true],
+    ['Sales & Business Dev', 'trending-up', true],
+    ['Pemasaran & PR', 'megaphone', true],
+    ['Keuangan & Akuntansi', 'wallet', true],
+    ['Customer Service', 'headset', true],
+    ['Logistik & Supply Chain', 'package', true],
+    ['Sumber Daya Manusia', 'users', true],
+    ['Teknologi Informasi', 'cpu', true],
+    ['Frontend Developer', 'code-xml', false],
+    ['Backend Developer', 'server-cog', false],
+    ['Full Stack Developer', 'layers-3', false],
+    ['Mobile Developer', 'smartphone', false],
+    ['UI/UX Designer', 'figma', false],
+    ['Data Scientist', 'database-zap', false],
+    ['DevOps Engineer', 'terminal', false],
+    ['Cyber Security', 'shield-check', false],
+    ['Quality Assurance', 'test-tube', false],
+    ['Cloud Architect', 'cloud-cog', false],
+    ['Game Developer', 'gamepad-2', false],
+    ['AI & Machine Learning', 'brain-circuit', false],
+    ['Kesehatan & Medis', 'plus-circle', false],
+    ['Pendidikan & Pelatihan', 'book-open', false],
+    ['Desain Grafis & Kreatif', 'palette', false],
+    ['Hukum & Kepatuhan', 'shield', false],
+    ['Konstruksi & Properti', 'home', false],
+    ['Perhotelan & Pariwisata', 'map', false],
+    ['Restoran & Food Service', 'coffee', false],
+    ['Transportasi', 'navigation', false],
+    ['Pertambangan & Energi', 'zap', false],
+    ['E-commerce', 'shopping-cart', false],
+    ['Lainnya', 'more-horizontal', false]
+  ];
+
+  console.log('   🗂️  Membuat kategori pekerjaan...');
+  for (const category of categories) {
+    await insertCategory(conn, category);
+  }
+
+  // 3. Buat jobs dummy
   const jobs = [
-    ['Frontend Developer', 'PT Teknologi Maju', 'Jakarta', 'IT', 'Full-time', 'Bertanggung jawab untuk mengembangkan frontend aplikasi web.', hrId],
-    ['Backend Developer', 'Startup Digital', 'Bandung', 'IT', 'Remote', 'Mengembangkan dan maintain API dan backend services.', hrId],
-    ['UI/UX Designer', 'Creative Agency', 'Surabaya', 'Design', 'Full-time', 'Mendesain user interface dan experience untuk klien.', hrId],
-    ['Data Analyst', 'Finance Corp', 'Jakarta', 'Finance', 'Full-time', 'Menganalisis data bisnis dan membuat laporan.', hrId],
-    ['Marketing Specialist', 'Retail Indo', 'Yogyakarta', 'Marketing', 'Full-time', 'Mengembangkan strategi marketing dan campaign.', hrId],
-    ['HR Manager', 'PT Sukses Bersama', 'Semarang', 'HR', 'Full-time', 'Mengelola dan mengembangkan tim HR.', hrId],
-    ['Project Manager', 'Tech Solutions', 'Jakarta', 'Engineering', 'Full-time', 'Memimpin dan mengelola proyek software.', hrId],
-    ['Content Writer', 'Media Kreatif', 'Remote', 'Marketing', 'Remote', 'Menulis konten untuk blog dan media sosial.', hrId],
-    ['Graphic Designer', 'Design Studio', 'Bandung', 'Design', 'Part-time', 'Membuat desain visual untuk berbagai media.', hrId],
-    ['Sales Executive', 'PT Niaga Jaya', 'Surabaya', 'Sales', 'Full-time', 'Mencari dan mengembangkan klien baru.', hrId]
+    ['Frontend Developer', 'PT Teknologi Maju', 'Jakarta', 'Frontend Developer', 'Full-time', 'Bertanggung jawab untuk mengembangkan frontend aplikasi web.', hrId],
+    ['Backend Developer', 'Startup Digital', 'Bandung', 'Backend Developer', 'Remote', 'Mengembangkan dan maintain API dan backend services.', hrId],
+    ['UI/UX Designer', 'Creative Agency', 'Surabaya', 'UI/UX Designer', 'Full-time', 'Mendesain user interface dan experience untuk klien.', hrId],
+    ['Data Analyst', 'Finance Corp', 'Jakarta', 'Data Scientist', 'Full-time', 'Menganalisis data bisnis dan membuat laporan.', hrId],
+    ['Marketing Specialist', 'Retail Indo', 'Yogyakarta', 'Marketing & PR', 'Full-time', 'Mengembangkan strategi marketing dan campaign.', hrId],
+    ['HR Manager', 'PT Sukses Bersama', 'Semarang', 'Administrasi & Operasional', 'Full-time', 'Mengelola dan mengembangkan tim HR.', hrId],
+    ['Project Manager', 'Tech Solutions', 'Jakarta', 'Product Manager', 'Full-time', 'Memimpin dan mengelola proyek software.', hrId],
+    ['Content Writer', 'Media Kreatif', 'Remote', 'Marketing & PR', 'Remote', 'Menulis konten untuk blog dan media sosial.', hrId],
+    ['Graphic Designer', 'Design Studio', 'Bandung', 'Desain Grafis & Kreatif', 'Part-time', 'Membuat desain visual untuk berbagai media.', hrId],
+    ['Sales Executive', 'PT Niaga Jaya', 'Surabaya', 'Sales & Business Dev', 'Full-time', 'Mencari dan mengembangkan klien baru.', hrId]
   ];
 
   console.log('   💼 Membuat job listings...');
@@ -364,6 +415,26 @@ async function insertUser(conn, userData) {
         } else {
           resolve(result.insertId);
         }
+      }
+    );
+  });
+}
+
+/**
+ * Insert kategori ke database
+ */
+async function insertCategory(conn, categoryData) {
+  return new Promise((resolve, reject) => {
+    conn.query(
+      `INSERT INTO categories (name, icon_name, is_popular)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         icon_name = VALUES(icon_name),
+         is_popular = VALUES(is_popular)`,
+      categoryData,
+      (err) => {
+        if (err) reject(err);
+        else resolve();
       }
     );
   });

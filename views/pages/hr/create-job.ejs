@@ -53,6 +53,7 @@
     color: #111827;
     background: linear-gradient(135deg, #111827 0%, #3b82f6 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   
@@ -262,6 +263,7 @@
   .category-checkbox:checked + .category-label:hover {
     background: #dbeafe;
   }
+.req-group { margin-bottom: 1.25rem; } .req-group-title { font-size: 0.875rem; font-weight: 600; color: #4b5563; margin-bottom: 0.75rem; } .req-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; } .req-checkbox { display: none; } .req-label { padding: 0.5rem 1rem; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 9999px; cursor: pointer; font-size: 0.8125rem; font-weight: 500; color: #4b5563; transition: all 0.2s ease; user-select: none; } .req-label:hover { background: #e5e7eb; } .req-checkbox:checked + .req-label { background: #3b82f6; border-color: #3b82f6; color: white; } .req-checkbox:checked + .req-label:hover { background: #2563eb; }
 </style>
 
 <div class="hr-page">
@@ -363,14 +365,37 @@
             
             <%
               const categories = [
-                'Frontend Developer', 'Backend Developer', 'Full Stack Developer',
-                'Mobile Developer', 'UI/UX Designer', 'Data Scientist',
-                'DevOps Engineer', 'QA Tester', 'Product Manager',
-                'Marketing & PR', 'Sales & Business Dev', 'Finance & Accounting',
-                'Administrasi & Operasional', 'Customer Service', 'Legal & Compliance',
-                'Logistik & Supply Chain', 'Hospitality & Tourism', 'Desain Grafis & Kreatif',
-                'Pendidikan & Pelatihan', 'Kesehatan & Medis', 'Teknik & Manufaktur',
-                'Konstruksi & Properti', 'Lainnya'
+                'Administrasi & Operasional',
+                'Sales & Business Dev',
+                'Pemasaran & PR',
+                'Keuangan & Akuntansi',
+                'Customer Service',
+                'Logistik & Supply Chain',
+                'Sumber Daya Manusia',
+                'Teknologi Informasi',
+                'Frontend Developer',
+                'Backend Developer',
+                'Full Stack Developer',
+                'Mobile Developer',
+                'UI/UX Designer',
+                'Data Scientist',
+                'DevOps Engineer',
+                'Cyber Security',
+                'Quality Assurance',
+                'Cloud Architect',
+                'Game Developer',
+                'AI & Machine Learning',
+                'Kesehatan & Medis',
+                'Pendidikan & Pelatihan',
+                'Desain Grafis & Kreatif',
+                'Hukum & Kepatuhan',
+                'Konstruksi & Properti',
+                'Perhotelan & Pariwisata',
+                'Restoran & Food Service',
+                'Transportasi',
+                'Pertambangan & Energi',
+                'E-commerce',
+                'Lainnya'
               ];
               
               // Handle formData.category string or array
@@ -450,6 +475,51 @@
           </div>
           <p class="form-hint mb-6">Opsional - Kosongkan jika tidak ingin menampilkan range gaji</p>
 
+          <!-- Kualifikasi Pekerjaan -->
+          <div class="form-group">
+            <label class="form-label">
+              Kualifikasi Pekerjaan (Opsional)
+            </label>
+            <p class="form-hint mb-3" style="margin-bottom: 1rem;">Pilih kualifikasi yang relevan dengan posisi ini</p>
+            
+            <%
+              const requirementGroups = {
+                "Identitas Dasar": ["Laki-laki", "Perempuan", "Usia Maksimal 25", "Usia Maksimal 30", "Usia Maksimal 35", "Single/Belum Menikah"],
+                "Pendidikan": ["Minimal SMK/SMA", "Minimal D3", "Minimal S1"],
+                "Pengalaman": ["Fresh Graduate", "> 1 Tahun", "> 3 Tahun", "> 5 Tahun"],
+                "Soft Skills": ["Kerja Tim", "Komunikasi Efektif", "Problem Solving", "Disiplin/Deadline"],
+                "Lokasi & Fisik": ["Bersedia Penempatan Kantor", "Remote/WFH", "Sehat Jasmani", "Memiliki Kendaraan Pribadi"]
+              };
+              
+              const selectedReqs = formData.requirements 
+                ? (Array.isArray(formData.requirements) ? formData.requirements : [formData.requirements])
+                : [];
+              let reqIdx = 0;
+            %>
+            
+            <div id="requirements-container">
+              <% Object.keys(requirementGroups).forEach(groupName => { %>
+                <div class="req-group">
+                  <div class="req-group-title"><%= groupName %></div>
+                  <div class="req-grid">
+                    <% requirementGroups[groupName].forEach(req => { %>
+                      <input 
+                        type="checkbox" 
+                        id="req-<%= reqIdx %>" 
+                        name="requirements" 
+                        value="<%= req %>" 
+                        class="req-checkbox"
+                        <%= selectedReqs.includes(req) ? 'checked' : '' %>
+                      >
+                      <label for="req-<%= reqIdx %>" class="req-label"><%= req %></label>
+                      <% reqIdx++; %>
+                    <% }); %>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+
           <!-- Deskripsi Lowongan -->
           <div class="form-group">
             <label class="form-label">
@@ -510,4 +580,3 @@
     }
   });
 </script>
-

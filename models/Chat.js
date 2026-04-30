@@ -86,6 +86,7 @@ const Chat = {
           j.title as job_title,
           j.company,
           u.name as hr_name,
+          u.profile_image as hr_image,
           lm.last_message,
           lm.last_message_time,
           COALESCE(unread.unread_count, 0) as unread_count
@@ -118,6 +119,7 @@ const Chat = {
           j.title as job_title,
           j.company,
           u.name as applicant_name,
+          u.profile_image as applicant_image,
           lm.last_message,
           lm.last_message_time,
           COALESCE(unread.unread_count, 0) as unread_count

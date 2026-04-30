@@ -70,17 +70,17 @@ const limiters = {
     max: 1000
   }),
 
-  // Strict limit for authentication endpoints
+  // Limit for authentication endpoints
   auth: rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // 10 attempts per 15 minutes
+    max: 50, // 50 attempts per 15 minutes
     keyGenerator: (req) => `${req.ip}-auth`
   }),
 
-  // Strict limit for login specifically
+  // Limit for login
   login: rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // 5 login attempts per 15 minutes
+    max: 50, // 50 login attempts per 15 minutes
     keyGenerator: (req) => `${req.ip}-login`
   }),
 

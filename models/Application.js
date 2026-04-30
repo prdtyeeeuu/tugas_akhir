@@ -182,6 +182,44 @@ const Application = {
       pending: 0,
       rejected: 0
     };
+  },
+
+  /**
+   * Mengambil semua lamaran berstatus 'interview' untuk HR tertentu
+   * @param {number} hrId - ID HR
+   * @returns {Promise} - Array of interview applications
+   */
+  findInterviewsByHR: async (hrId) => {
+    const sql = `
+      SELECT
+        a.*,
+        u.name as applicant_name,
+        u.email as applicant_email,
+        u.profile_image as applicant_image,
+        u.phone as applicant_phone,
+        j.title as job_title,
+        j.company,
+        j.location,
+        j.type
+      FROM applications a
+      JOIN users u ON a.user_id = u.id
+      JOIN jobs j ON a.job_id = j.id
+      WHERE j.hr_id = ? AND a.status = 'interview'
+      ORDER BY a.updated_at DESC
+    `;
+    return await query(sql, [hrId]);
+  },
+
+  /**
+   * Mengirim dokumen offering
+   * @param {number} id - ID lamaran
+   * @param {string} offeringDocument - Nama file offering
+   * @returns {Promise}
+   */
+  sendOffering: async (id, offeringDocument) => {
+    const sql = 'UPDATE applications SET status = ?, offering_document = ? WHERE id = ?';
+    const result = await query(sql, ['offering', offeringDocument, id]);
+    return result.affectedRows > 0;
   }
 };
 

@@ -323,8 +323,11 @@
                       <% } %>
                     </div>
                     <div>
-                      <div class="job-title">
+                      <div class="job-title" style="display: flex; align-items: center; gap: 8px;">
                         <a href="/hr/jobs/<%= job.id %>"><%= job.title %></a>
+                        <% if (job.deadline && new Date(job.deadline) < new Date()) { %>
+                          <span class="badge badge-red" style="font-size: 0.65rem; padding: 2px 6px;">Ditutup</span>
+                        <% } %>
                       </div>
                       <div class="text-gray-500 text-sm mt-1"><%= job.company %></div>
                     </div>

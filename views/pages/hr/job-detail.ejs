@@ -334,6 +334,31 @@
           <h2>📄 Deskripsi Lowongan</h2>
           <div class="description-content"><%= job.description %></div>
         </div>
+
+        <% if (job.requirements) { %>
+          <% 
+            let parsedReq = [];
+            try {
+              parsedReq = JSON.parse(job.requirements);
+            } catch(e) {}
+          %>
+          <% if (parsedReq && parsedReq.length > 0) { %>
+            <div class="detail-card" style="margin-top: 1.5rem;">
+              <h2>Kualifikasi Pekerjaan</h2>
+              <div class="req-tags-container" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem;">
+                <% parsedReq.forEach(function(req) { %>
+                  <span class="req-tag" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #eff6ff; color: #1d4ed8; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; border: 1px solid #bfdbfe; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s;">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M2 2v4.586l7 7L13.586 9l-7-7H2zM1 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2z"/>
+                      <path d="M4.5 5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                    </svg>
+                    <%= req %>
+                  </span>
+                <% }); %>
+              </div>
+            </div>
+          <% } %>
+        <% } %>
       </div>
 
       <!-- Right Column - Applicants -->
@@ -403,15 +428,11 @@
                     <span class="btn-sm btn-accept opacity-60 cursor-not-allowed" title="Pelamar sudah dipanggil untuk wawancara" style="background: #10b981; color: white; border: none;">Panggilan Wawancara</span>
                   <% } %>
                   <% if (app.cv_image) { %>
-                    <% if (!app.cv_is_viewed) { %>
-                      <button type="button" class="btn-sm bg-purple-600 hover:bg-purple-700 text-white border-0 transition-colors" 
-                              onclick="viewCvOnce('<%= app.id %>', '<%= app.cv_image %>')" 
-                              id="btn-cv-<%= app.id %>">
-                        Lihat CV (1x)
-                      </button>
-                    <% } else { %>
-                      <span class="btn-sm bg-gray-400 text-white cursor-not-allowed inline-block border-0 text-center" title="CV sudah dilihat">CV Dilihat</span>
-                    <% } %>
+                    <button type="button" class="btn-sm bg-purple-600 hover:bg-purple-700 text-white border-0 transition-colors" 
+                            onclick="viewCv('<%= app.id %>', '<%= app.cv_image %>')" 
+                            id="btn-cv-<%= app.id %>">
+                      Lihat CV
+                    </button>
                   <% } %>
                   <a href="/user/<%= app.user_id %>" class="btn-sm btn-view">Lihat Profil</a>
                 </div>
@@ -436,7 +457,7 @@
 <div id="cvModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-75 transition-opacity">
   <div class="bg-white rounded-xl shadow-2xl p-4 w-full max-w-4xl mx-4 transform scale-95 transition-transform" style="font-family: 'Inter', sans-serif; height: 90vh; display: flex; flex-direction: column;">
     <div class="flex justify-between items-center mb-4 flex-shrink-0">
-      <h3 class="text-lg font-bold text-gray-900">Melihat CV (Sekali Lihat)</h3>
+      <h3 class="text-lg font-bold text-gray-900">Melihat CV</h3>
       <button type="button" onclick="closeCvModal()" class="text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-1">
         <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
       </button>
@@ -446,22 +467,17 @@
       <img id="cvViewerImage" src="" alt="CV" class="max-w-full max-h-full object-contain">
     </div>
     
-    <div class="mt-4 flex justify-between items-center flex-shrink-0">
-      <p class="text-xs text-red-500 font-medium flex items-center gap-1">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-        Peringatan: Jika Anda menutup window ini, foto CV tidak dapat dilihat lagi.
-      </p>
+    <div class="mt-4 flex justify-end items-center flex-shrink-0">
       <button type="button" onclick="closeCvModal()" class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition">Tutup</button>
     </div>
   </div>
 </div>
 
 <script>
-  // Fitur View Once CV
-  async function viewCvOnce(appId, cvImage) {
+  // Fitur View CV
+  async function viewCv(appId, cvImage) {
     const modal = document.getElementById('cvModal');
     const imageEl = document.getElementById('cvViewerImage');
-    const btn = document.getElementById(`btn-cv-${appId}`);
     
     // Set image source
     imageEl.src = `/images/cvs/${cvImage}`;
@@ -483,11 +499,6 @@
           'x-csrf-token': '<%= csrfToken %>'
         }
       });
-      
-      // Update the button visually so it can't be clicked again
-      if (btn) {
-        btn.outerHTML = '<span class="btn-sm bg-gray-400 text-white cursor-not-allowed inline-block border-0 text-center" title="CV sudah dilihat">CV Dilihat</span>';
-      }
     } catch (e) {
       console.error('Failed to mark CV as viewed:', e);
     }

@@ -1,0 +1,45 @@
+CREATE TABLE IF NOT EXISTS categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  icon_name VARCHAR(100) NOT NULL,
+  is_popular BOOLEAN NOT NULL DEFAULT FALSE,
+  UNIQUE KEY uq_categories_name (name),
+  INDEX idx_categories_popular (is_popular),
+  INDEX idx_categories_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO categories (name, icon_name, is_popular) VALUES
+  ('Administrasi & Operasional', 'file-text', TRUE),
+  ('Sales & Business Dev', 'trending-up', TRUE),
+  ('Pemasaran & PR', 'megaphone', TRUE),
+  ('Keuangan & Akuntansi', 'wallet', TRUE),
+  ('Customer Service', 'headset', TRUE),
+  ('Logistik & Supply Chain', 'package', TRUE),
+  ('Sumber Daya Manusia', 'users', TRUE),
+  ('Teknologi Informasi', 'cpu', TRUE),
+  ('Frontend Developer', 'code-xml', FALSE),
+  ('Backend Developer', 'server-cog', FALSE),
+  ('Full Stack Developer', 'layers-3', FALSE),
+  ('Mobile Developer', 'smartphone', FALSE),
+  ('UI/UX Designer', 'figma', FALSE),
+  ('Data Scientist', 'database-zap', FALSE),
+  ('DevOps Engineer', 'terminal', FALSE),
+  ('Cyber Security', 'shield-check', FALSE),
+  ('Quality Assurance', 'test-tube', FALSE),
+  ('Cloud Architect', 'cloud-cog', FALSE),
+  ('Game Developer', 'gamepad-2', FALSE),
+  ('AI & Machine Learning', 'brain-circuit', FALSE),
+  ('Kesehatan & Medis', 'plus-circle', FALSE),
+  ('Pendidikan & Pelatihan', 'book-open', FALSE),
+  ('Desain Grafis & Kreatif', 'palette', FALSE),
+  ('Hukum & Kepatuhan', 'shield', FALSE),
+  ('Konstruksi & Properti', 'home', FALSE),
+  ('Perhotelan & Pariwisata', 'map', FALSE),
+  ('Restoran & Food Service', 'coffee', FALSE),
+  ('Transportasi', 'navigation', FALSE),
+  ('Pertambangan & Energi', 'zap', FALSE),
+  ('E-commerce', 'shopping-cart', FALSE),
+  ('Lainnya', 'more-horizontal', FALSE)
+ON DUPLICATE KEY UPDATE
+  icon_name = VALUES(icon_name),
+  is_popular = VALUES(is_popular);

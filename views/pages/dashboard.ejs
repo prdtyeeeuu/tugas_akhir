@@ -74,23 +74,20 @@
             <% jobs.forEach(function(job) {
               var initials = (job.company || 'XX').substring(0, 2).toUpperCase();
             %>
-            <div class="job-list-item">
+            <div class="job-list-item" onclick="window.location.href='/jobs/<%= job.id %>?ref=dashboard'" style="cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='transparent'">
               <div class="job-mini-logo company-logo-small" data-logo="<%= job.company_logo || '' %>">
                 <% if (!job.company_logo) { %>
                 <span style="font-size: 14px; font-weight: 600; color: #2563eb;"><%= initials %></span>
                 <% } %>
               </div>
               <div class="job-mini-info">
-                <h4><%= job.title %></h4>
+                <h4><a href="/jobs/<%= job.id %>?ref=dashboard" style="color: inherit; text-decoration: none;"><%= job.title %></a></h4>
                 <p><%= job.company %> • <%= job.location %></p>
               </div>
               <% if (typeof appliedJobIds !== 'undefined' && appliedJobIds.includes(job.id)) { %>
-                <button type="button" class="btn-apply-sm" style="background-color: #9ca3af; color: white; cursor: not-allowed;" disabled title="Anda sudah melamar pekerjaan ini">Dilamar</button>
+                <button type="button" class="btn-apply-sm" style="background-color: #9ca3af; color: white; cursor: not-allowed;" disabled title="Anda sudah melamar pekerjaan ini" onclick="event.stopPropagation();">Dilamar</button>
               <% } else { %>
-                <form action="/jobs/apply/<%= job.id %>" method="POST">
-                  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-                  <button type="submit" class="btn-apply-sm">Lamar</button>
-                </form>
+                <a href="/jobs/<%= job.id %>?ref=dashboard" class="btn-apply-sm" style="text-decoration: none; display: inline-flex; justify-content: center; align-items: center; box-sizing: border-box;" onclick="event.stopPropagation();">Lamar</a>
               <% } %>
             </div>
             <% }); %>

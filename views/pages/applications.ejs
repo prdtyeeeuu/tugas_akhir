@@ -22,6 +22,13 @@
     </div>
     <% } %>
 
+    <!-- Error Message -->
+    <% if (typeof req !== 'undefined' && req.query && req.query.error) { %>
+    <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+      ✗ <%= decodeURIComponent(req.query.error) %>
+    </div>
+    <% } %>
+
     <!-- Statistics Cards -->
     <div class="stats-grid">
       <div class="stat-card">
@@ -65,7 +72,8 @@
     <!-- Tab Filters -->
     <div class="tab-filters">
       <button class="tab-btn active" onclick="filterApps('all', this)">Semua</button>
-      <button class="tab-btn" onclick="filterApps('pending', this)">Sedang Direview</button>
+      <button class="tab-btn" onclick="filterApps('terkirim', this)">Terkirim</button>
+      <button class="tab-btn" onclick="filterApps('review', this)">Sedang Di Review</button>
       <button class="tab-btn" onclick="filterApps('interview', this)">Panggilan Wawancara</button>
       <button class="tab-btn" onclick="filterApps('ditolak', this)">Ditolak</button>
     </div>
@@ -74,7 +82,7 @@
     <% if (typeof applications !== 'undefined' && applications && applications.length > 0) { %>
       <div class="applications-list">
         <% applications.forEach(function(app) { %>
-        <div class="app-card" data-status="<%= app.status %>">
+        <div class="app-card" data-status="<%= app.status %>" data-subtype="<%= (app.status === 'pending' && !app.cv_is_viewed) ? 'terkirim' : (app.status === 'pending' && app.cv_is_viewed) ? 'review' : app.status %>">
           
           <!-- Logo with Link to Job/Company -->
           <a href="/user/<%= app.hr_id || app.job_id %>" class="app-logo company-logo-img" data-logo="<%= app.company_logo || '' %>">
@@ -120,16 +128,34 @@
                 </svg>
                 Chat HR
               </button>
-              <% if (app.status === 'interview') { %>
-                <a href="#" class="action-link">Lihat Jadwal</a>
-              <% } %>
-              <% if (app.status === 'pending') { %>
+              <% if (app.status === 'pending' && !app.cv_is_viewed) { %>
                 <button type="button" class="action-link danger"
                   onclick="tarikLamaran('<%= app.id %>')">Tarik Lamaran</button>
-                <form id="form-cancel-<%= app.id %>" action="/applications/cancel/<%= app.id %>" method="POST" style="display:none"></form>
+                <form id="form-cancel-<%= app.id %>" action="/applications/cancel/<%= app.id %>" method="POST" style="display:none">
+                  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                </form>
               <% } %>
               <% if (app.status === 'rejected') { %>
                 <a href="#" class="action-link">Lihat Alasan</a>
+              <% } %>
+              <% if (app.status === 'offering' && app.offering_document) { %>
+                <a href="/documents/offerings/<%= app.offering_document %>" target="_blank" class="action-link primary" title="Unduh dan tinjau dokumen offering">
+                  <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display:inline-block;">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                  </svg>
+                  Lihat Offering
+                </a>
+                <form action="/applications/<%= app.id %>/offering-response" method="POST" style="display:inline;" id="form-accept-<%= app.id %>">
+                  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                  <input type="hidden" name="action" value="accept">
+                  <button type="button" class="action-link success" onclick="terimaOffering('<%= app.id %>')">Terima</button>
+                </form>
+                <form action="/applications/<%= app.id %>/offering-response" method="POST" style="display:inline;" id="form-reject-<%= app.id %>">
+                  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                  <input type="hidden" name="action" value="reject">
+                  <button type="button" class="action-link danger" onclick="tolakOffering('<%= app.id %>')">Tolak</button>
+                </form>
               <% } %>
             </div>
           </div>
@@ -138,10 +164,14 @@
           <div class="app-status">
             <%
               let statusClass = 'pending';
-              let statusLabel = 'Sedang Direview';
-              let statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 1a6 6 0 1 1 0 12A6 6 0 0 1 8 2Z"/></svg>';
+              let statusLabel = 'Terkirim';
+              let statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/></svg>';
 
-              if (app.status === 'diterima') {
+              if (app.status === 'pending' && app.cv_is_viewed) {
+                statusClass = 'review';
+                statusLabel = 'Sedang Di Review';
+                statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>';
+              } else if (app.status === 'diterima') {
                 statusClass = 'accepted';
                 statusLabel = 'Diterima';
                 statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05Z"/></svg>';
@@ -153,6 +183,10 @@
                 statusClass = 'interview';
                 statusLabel = 'Panggilan Wawancara';
                 statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M10.748 11.007a.5.5 0 0 1-.748.446l-2.5-1.5a.5.5 0 0 1 0-.854l2.5-1.5a.5.5 0 0 1 .748.446v2.962Z"/></svg>';
+              } else if (app.status === 'offering') {
+                statusClass = 'interview';
+                statusLabel = 'Offering Diterima';
+                statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>';
               }
             %>
             <span class="status-badge <%= statusClass %>">
@@ -202,10 +236,15 @@
 
     // Filter applications
     document.querySelectorAll('.app-card').forEach(card => {
-      if (status === 'all' || card.dataset.status === status) {
+      const cardSubtype = card.dataset.subtype;
+      const cardStatus = card.dataset.status;
+      if (status === 'all') {
         card.style.display = 'flex';
+      } else if (status === 'terkirim' || status === 'review') {
+        // Sub-status dari pending berdasarkan cv_is_viewed
+        card.style.display = (cardSubtype === status) ? 'flex' : 'none';
       } else {
-        card.style.display = 'none';
+        card.style.display = (cardStatus === status) ? 'flex' : 'none';
       }
     });
   }
@@ -242,5 +281,24 @@
       danger: true
     });
     if (ok) document.getElementById('form-cancel-' + appId).submit();
+  }
+
+  async function terimaOffering(appId) {
+    const ok = await lokerinConfirm('Apakah Anda yakin ingin MENERIMA offering ini?', {
+      title: 'Terima Offering',
+      confirmText: 'Ya, Terima',
+      cancelText: 'Batal'
+    });
+    if (ok) document.getElementById('form-accept-' + appId).submit();
+  }
+
+  async function tolakOffering(appId) {
+    const ok = await lokerinConfirm('Apakah Anda yakin ingin MENOLAK offering ini?', {
+      title: 'Tolak Offering',
+      confirmText: 'Ya, Tolak',
+      cancelText: 'Batal',
+      danger: true
+    });
+    if (ok) document.getElementById('form-reject-' + appId).submit();
   }
 </script>

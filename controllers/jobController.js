@@ -4,11 +4,30 @@
  */
 const Job = require('../models/Job');
 const Application = require('../models/Application');
+const Category = require('../models/Category');
 const Profile = require('../models/Profile');
 const { formatSalary, formatTimeAgo } = require('../utils/helpers');
-const { query } = require('../config/db');
-const jwt = require('jsonwebtoken');
-const config = require('../config/config');
+
+function redirectWithError(res, path, message) {
+  return res.redirect(`${path}?error=${encodeURIComponent(message)}`);
+}
+
+function getRequestUser(req, res) {
+  return req.user || res.locals.user || null;
+}
+
+function parseCategoryIds(value) {
+  if (!value) {
+    return [];
+  }
+
+  const rawIds = Array.isArray(value) ? value : String(value).split(',');
+  const ids = rawIds
+    .map(id => parseInt(id, 10))
+    .filter(Number.isInteger);
+
+  return [...new Set(ids)];
+}
 
 /**
  * Menampilkan halaman Home (Public)
@@ -16,22 +35,11 @@ const config = require('../config/config');
  * Membedakan tampilan untuk HR dan Job Seeker
  */
 const showHome = async (req, res) => {
-  try {
-    const token = req.session?.token;
-    let isHR = false;
-    let isLoggedIn = false;
+  const currentUser = getRequestUser(req, res);
 
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, config.JWT_SECRET);
-        isLoggedIn = true;
-        if (decoded.role === 'hr') {
-          isHR = true;
-        }
-      } catch (e) {
-        // Token tidak valid
-      }
-    }
+  try {
+    const isLoggedIn = Boolean(currentUser);
+    const isHR = currentUser?.role === 'hr';
 
     // Jika user adalah HR, arahkan ke homepage HR
     if (isHR) {
@@ -41,11 +49,14 @@ const showHome = async (req, res) => {
     // Untuk job seeker dan guest
     let recentJobs = [];
     let categories = [];
+    let appliedJobIds = [];
 
     // Hanya ambil jobs jika user sudah login
     if (isLoggedIn) {
       recentJobs = await Job.findRecent(6);
       categories = await Job.findCategories();
+      const userApplications = await require('../models/Application').findByUserId(currentUser.id);
+      appliedJobIds = userApplications.map(app => app.job_id);
     }
 
     res.render('pages/home', {
@@ -54,7 +65,8 @@ const showHome = async (req, res) => {
       categories,
       formatSalary,
       formatTimeAgo,
-      isLoggedIn
+      isLoggedIn,
+      appliedJobIds
     });
   } catch (error) {
     console.error('Home error:', error);
@@ -62,7 +74,9 @@ const showHome = async (req, res) => {
       title: 'Lokerin - Temukan Pekerjaan Impianmu',
       jobs: [],
       categories: [],
-      error: 'Gagal memuat data'
+      error: 'Gagal memuat data',
+      isLoggedIn: Boolean(currentUser),
+      appliedJobIds: []
     });
   }
 };
@@ -149,46 +163,42 @@ const showDashboard = async (req, res) => {
  * Menampilkan halaman find jobs
  */
 const showFindJobs = async (req, res) => {
-  try {
-    const token = req.session?.token;
-    let isLoggedIn = false;
+  const { category, search } = req.query;
+  const selectedCategoryIds = parseCategoryIds(req.query.categories);
+  const currentUser = getRequestUser(req, res);
+  const isLoggedIn = Boolean(currentUser);
 
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, config.JWT_SECRET);
-        isLoggedIn = true;
-        if (decoded.role === 'hr') {
-          return res.redirect('/hr/dashboard');
-        }
-      } catch (e) {
-        // Token tidak valid
-      }
+  try {
+    if (currentUser?.role === 'hr') {
+      return res.redirect('/hr/dashboard');
     }
 
-    const { category, search } = req.query;
     const filters = {};
     if (category) filters.category = category;
     if (search) filters.search = search;
 
     let jobs = [];
     let categories = [];
+    let selectedCategoryNames = [];
     let pagination = null;
 
     let appliedJobIds = [];
 
     if (isLoggedIn) {
+      if (selectedCategoryIds.length > 0) {
+        const selectedCategoryRows = await Category.findByIds(selectedCategoryIds);
+        selectedCategoryNames = selectedCategoryRows.map(item => item.name);
+        filters.categories = selectedCategoryNames;
+      }
+
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 20;
       const result = await Job.findAll(filters, { page, limit });
       jobs = result.jobs;
       categories = await Job.findCategories();
       
-      const token = req.session?.token;
-      if (token) {
-        const decoded = jwt.verify(token, config.JWT_SECRET);
-        const userApplications = await require('../models/Application').findByUserId(decoded.id);
-        appliedJobIds = userApplications.map(app => app.job_id);
-      }
+      const userApplications = await require('../models/Application').findByUserId(currentUser.id);
+      appliedJobIds = userApplications.map(app => app.job_id);
 
       pagination = {
         page: result.page,
@@ -205,12 +215,16 @@ const showFindJobs = async (req, res) => {
       jobs,
       categories,
       selectedCategory: category,
+      selectedCategoryIds,
+      selectedCategoryNames,
       searchQuery: search,
       formatSalary,
       formatTimeAgo,
       isLoggedIn,
       pagination,
-      appliedJobIds
+      appliedJobIds,
+      error: req.query.error,
+      alreadyApplied: req.query.already_applied === 'true'
     });
   } catch (error) {
     console.error('Find jobs error:', error);
@@ -218,7 +232,17 @@ const showFindJobs = async (req, res) => {
       title: 'Find Jobs - Lokerin',
       jobs: [],
       categories: [],
-      error: 'Gagal memuat data pekerjaan'
+      error: req.query.error || 'Gagal memuat data pekerjaan',
+      isLoggedIn,
+      selectedCategory: category,
+      selectedCategoryIds,
+      selectedCategoryNames: [],
+      searchQuery: search,
+      formatSalary,
+      formatTimeAgo,
+      pagination: null,
+      appliedJobIds: [],
+      alreadyApplied: req.query.already_applied === 'true'
     });
   }
 };
@@ -275,21 +299,18 @@ const applyJob = async (req, res) => {
     // Cek apakah job ada
     const job = await Job.findById(jobId);
     if (!job) {
-      req.flash('error', 'Pekerjaan tidak ditemukan');
-      return res.redirect('/jobs');
+      return redirectWithError(res, '/jobs', 'Pekerjaan tidak ditemukan');
     }
 
     // Cek deadline
     if (job.deadline && new Date(job.deadline) < new Date()) {
-      req.flash('error', 'Pekerjaan sudah ditutup');
-      return res.redirect('/jobs');
+      return redirectWithError(res, '/jobs', 'Pekerjaan sudah ditutup');
     }
 
     // Buat lamaran baru
     const cv_image = req.file ? req.file.filename : null;
     if (!cv_image) {
-      req.flash('error', 'CV berupa foto wajib dilampirkan');
-      return res.redirect('/jobs');
+      return redirectWithError(res, '/jobs', 'CV berupa foto wajib dilampirkan');
     }
     
     await Application.create({ user_id: userId, job_id: jobId, cv_image });
@@ -304,8 +325,7 @@ const applyJob = async (req, res) => {
       return res.redirect('/jobs?already_applied=true');
     }
 
-    req.flash('error', 'Gagal melamar pekerjaan');
-    res.redirect('/jobs');
+    redirectWithError(res, '/jobs', 'Gagal melamar pekerjaan');
   }
 };
 
@@ -324,10 +344,18 @@ const showJobDetail = async (req, res) => {
       });
     }
 
+    let hasApplied = false;
+    if (req.user && req.user.role !== 'hr') {
+      const Application = require('../models/Application');
+      const existingApp = await Application.findByUserAndJob(req.user.id, jobId);
+      if (existingApp) hasApplied = true;
+    }
+
     res.render('pages/job-detail', {
       title: `${job.title} - ${job.company}`,
       job,
-      formatSalary
+      formatSalary,
+      hasApplied
     });
   } catch (error) {
     console.error('Job detail error:', error);
@@ -353,8 +381,13 @@ const cancelApplication = async (req, res) => {
       return res.redirect('/applications?error=Lamaran+tidak+ditemukan');
     }
 
-    if (app.status !== 'pending' && app.status !== 'interview') {
+    if (app.status !== 'pending') {
       return res.redirect('/applications?error=Lamaran+tidak+dapat+ditarik');
+    }
+
+    // Tidak bisa tarik jika HR sudah melihat CV (status "Sedang Di Review")
+    if (app.cv_is_viewed) {
+      return res.redirect('/applications?error=Lamaran+tidak+dapat+ditarik+karena+CV+sudah+dilihat+oleh+HR');
     }
 
     await Application.cancel(applicationId, userId);
@@ -365,6 +398,31 @@ const cancelApplication = async (req, res) => {
   }
 };
 
+/**
+ * Merespon offering (terima/tolak)
+ */
+const respondOffering = async (req, res) => {
+  try {
+    const applicationId = req.params.id;
+    const { action } = req.body;
+    const status = action === 'accept' ? 'diterima' : 'ditolak';
+    
+    // Validasi kepemilikan lamaran
+    const app = await require('../models/Application').findById(applicationId);
+    if (!app || app.user_id !== req.user.id || app.status !== 'offering') {
+      return res.redirect('/applications?error=Aksi+tidak+valid');
+    }
+    
+    const sql = 'UPDATE applications SET status = ? WHERE id = ?';
+    await require('../config/db').query(sql, [status, applicationId]);
+    
+    res.redirect('/applications?success=offering_responded');
+  } catch (error) {
+    console.error('Offering response error:', error);
+    res.redirect('/applications?error=Gagal+merespon+offering');
+  }
+};
+
 module.exports = {
   showHome,
   showDashboard,
@@ -372,5 +430,6 @@ module.exports = {
   showApplications,
   applyJob,
   showJobDetail,
-  cancelApplication
+  cancelApplication,
+  respondOffering
 };

@@ -2,7 +2,7 @@
  * Job Model
  * Mengelola semua operasi database terkait lowongan pekerjaan
  */
-const { query } = require('../config/db');
+const { query, rawQuery } = require('../config/db');
 
 const Job = {
   /**
@@ -11,14 +11,14 @@ const Job = {
    * @returns {Promise} - ID job yang baru dibuat
    */
   create: async (jobData) => {
-    const { title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline } = jobData;
+    const { title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline, requirements } = jobData;
 
     const sql = `
-      INSERT INTO jobs (title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO jobs (title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline, requirements)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const result = await query(sql, [title, company, location, category, type, description, salary_min || null, salary_max || null, hr_id, company_logo || null, deadline || null]);
+    const result = await query(sql, [title, company, location, category, type, description, salary_min || null, salary_max || null, hr_id, company_logo || null, deadline || null, requirements || null]);
     return result.insertId;
   },
 
@@ -29,7 +29,7 @@ const Job = {
    * @returns {Promise} - Array of jobs + total count
    */
   findAll: async (filters = {}, pagination = {}) => {
-    let whereClause = '';
+    let whereClause = ' AND (j.deadline IS NULL OR j.deadline > CURDATE())';
     const params = [];
     const countParams = [];
 
@@ -37,6 +37,16 @@ const Job = {
       whereClause += ' AND j.category LIKE ?';
       params.push(`%${filters.category}%`);
       countParams.push(`%${filters.category}%`);
+    }
+
+    if (filters.categories && filters.categories.length > 0) {
+      const categoryConditions = filters.categories.map(() => 'j.category LIKE ?').join(' OR ');
+      whereClause += ` AND (${categoryConditions})`;
+
+      filters.categories.forEach(category => {
+        params.push(`%${category}%`);
+        countParams.push(`%${category}%`);
+      });
     }
 
     if (filters.search) {
@@ -66,7 +76,7 @@ const Job = {
     `;
     params.push(limit, offset);
 
-    const jobs = await query(sql, params);
+    const jobs = await rawQuery(sql, params);
     return { jobs, total, page, limit, totalPages: Math.ceil(total / limit) };
   },
 
@@ -96,10 +106,11 @@ const Job = {
       SELECT j.*, u.name as hr_name, u.profile_image as hr_image 
       FROM jobs j 
       LEFT JOIN users u ON j.hr_id = u.id 
+      WHERE j.deadline IS NULL OR j.deadline > CURDATE()
       ORDER BY j.created_at DESC 
       LIMIT ?
     `;
-    return await query(sql, [limit]);
+    return await rawQuery(sql, [parseInt(limit)]);
   },
 
   /**
@@ -222,7 +233,7 @@ const Job = {
       ORDER BY a.created_at DESC
       LIMIT ?
     `;
-    return await query(sql, [hrId, limit]);
+    return await rawQuery(sql, [parseInt(hrId), parseInt(limit)]);
   },
 
   /**
@@ -243,7 +254,7 @@ const Job = {
       ORDER BY applicant_count DESC
       LIMIT 10
     `;
-    return await query(sql, [hrId]);
+    return await rawQuery(sql, [parseInt(hrId)]);
   },
 
   /**
@@ -282,7 +293,7 @@ const Job = {
       ORDER BY a.updated_at DESC
       LIMIT 5
     `;
-    return await query(sql, [hrId]);
+    return await rawQuery(sql, [parseInt(hrId)]);
   }
 };
 

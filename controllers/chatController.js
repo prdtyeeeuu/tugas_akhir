@@ -5,6 +5,7 @@
 const Chat = require('../models/Chat');
 const Job = require('../models/Job');
 const Application = require('../models/Application');
+const { formatTimeAgo } = require('../utils/helpers');
 
 /**
  * Middleware: Cek apakah user sudah melamar pekerjaan
@@ -46,8 +47,8 @@ const showInbox = async (req, res) => {
     const userId = req.user.id;
     const isApplicant = req.user.role === 'job_seeker';
 
-    // Get conversations
-    const conversations = await Chat.getConversations(userId, true);
+    // Get conversations sesuai role user
+    const conversations = await Chat.getConversations(userId, isApplicant);
 
     // Get unread count
     const unreadCount = await Chat.getUnreadCount(userId);
@@ -56,7 +57,9 @@ const showInbox = async (req, res) => {
       title: 'Pesan - Lokerin',
       conversations,
       unreadCount,
-      isApplicant
+      isApplicant,
+      formatTimeAgo,
+      hideFooter: true
     });
   } catch (error) {
     console.error('Inbox error:', error);
@@ -65,6 +68,8 @@ const showInbox = async (req, res) => {
       conversations: [],
       unreadCount: 0,
       isApplicant: false,
+      formatTimeAgo,
+      hideFooter: true,
       error: 'Gagal memuat pesan'
     });
   }
@@ -107,7 +112,8 @@ const showChatRoom = async (req, res) => {
       messages,
       otherParty,
       isApplicant,
-      currentUserId: userId
+      currentUserId: userId,
+      hideFooter: true
     });
   } catch (error) {
     console.error('Chat room error:', error);
