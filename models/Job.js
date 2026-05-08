@@ -114,11 +114,17 @@ const Job = {
   },
 
   /**
-   * Mengambil semua kategori job yang unik
-   * @returns {Promise} - Array of categories
+   * Mengambil semua kategori job yang unik beserta jumlah lowongannya
+   * @returns {Promise} - Array of categories { name, count }
    */
   findCategories: async () => {
-    const sql = 'SELECT DISTINCT category FROM jobs WHERE category IS NOT NULL ORDER BY category';
+    const sql = `
+      SELECT category as name, COUNT(*) as count 
+      FROM jobs 
+      WHERE category IS NOT NULL 
+      GROUP BY category 
+      ORDER BY count DESC
+    `;
     return await query(sql);
   },
 
@@ -271,6 +277,33 @@ const Job = {
     `;
     const results = await query(sql, [hrId, hrId]);
     return results[0]?.count || 0;
+  },
+
+  /**
+   * Mengambil statistik global untuk homepage
+   * @returns {Promise} - Statistik { jobs, companies, workers }
+   */
+  getGlobalStats: async () => {
+    try {
+      const jobsSql = 'SELECT COUNT(*) as total FROM jobs';
+      // Menghitung perusahaan berdasarkan jumlah HR unik yang memposting lowongan
+      const companiesSql = 'SELECT COUNT(DISTINCT hr_id) as total FROM jobs';
+      // Menghitung pekerja yang sudah diterima
+      const workersSql = "SELECT COUNT(DISTINCT user_id) as total FROM applications WHERE status = 'diterima'";
+
+      const [jobsRes] = await query(jobsSql);
+      const [compRes] = await query(companiesSql);
+      const [workRes] = await query(workersSql);
+
+      return {
+        jobs: jobsRes?.total || 0,
+        companies: compRes?.total || 0,
+        workers: workRes?.total || 0
+      };
+    } catch (error) {
+      console.error('Error fetching global stats:', error);
+      return { jobs: 0, companies: 0, workers: 0 };
+    }
   },
 
   /**

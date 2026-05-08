@@ -46,16 +46,14 @@ const showHome = async (req, res) => {
       return res.redirect('/hr/home');
     }
 
-    // Untuk job seeker dan guest
-    let recentJobs = [];
-    let categories = [];
-    let appliedJobIds = [];
+    // Fetch dynamic data for homepage (available for both guest and logged-in)
+    const recentJobs = await Job.findRecent(6);
+    const categories = await Job.findCategories();
+    const stats = await Job.getGlobalStats();
 
-    // Hanya ambil jobs jika user sudah login
+    let appliedJobIds = [];
     if (isLoggedIn) {
-      recentJobs = await Job.findRecent(6);
-      categories = await Job.findCategories();
-      const userApplications = await require('../models/Application').findByUserId(currentUser.id);
+      const userApplications = await Application.findByUserId(currentUser.id);
       appliedJobIds = userApplications.map(app => app.job_id);
     }
 
@@ -63,10 +61,12 @@ const showHome = async (req, res) => {
       title: 'Lokerin - Temukan Pekerjaan Impianmu',
       jobs: recentJobs,
       categories,
+      stats,
       formatSalary,
       formatTimeAgo,
       isLoggedIn,
-      appliedJobIds
+      appliedJobIds,
+      user: currentUser
     });
   } catch (error) {
     console.error('Home error:', error);
@@ -74,6 +74,7 @@ const showHome = async (req, res) => {
       title: 'Lokerin - Temukan Pekerjaan Impianmu',
       jobs: [],
       categories: [],
+      stats: { jobs: 0, companies: 0, workers: 0 },
       error: 'Gagal memuat data',
       isLoggedIn: Boolean(currentUser),
       appliedJobIds: []

@@ -79,57 +79,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Hero visual -->
-    <div class="mt-16 relative max-w-4xl mx-auto">
-      <div class="bg-slate-50 rounded-2xl border border-slate-200 p-2 shadow-2xl shadow-slate-200/60">
-        <div class="bg-white rounded-xl overflow-hidden">
-          <!-- Fake browser bar -->
-          <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-            <div class="flex gap-1.5">
-              <div class="w-2.5 h-2.5 rounded-full bg-red-300"></div>
-              <div class="w-2.5 h-2.5 rounded-full bg-amber-300"></div>
-              <div class="w-2.5 h-2.5 rounded-full bg-green-300"></div>
-            </div>
-            <div class="flex-1 mx-4">
-              <div class="bg-slate-50 rounded-md px-3 py-1.5 text-[11px] text-slate-400 text-center max-w-xs mx-auto">lokerin.id/lowongan</div>
-            </div>
-          </div>
-          <!-- Fake content -->
-          <div class="p-4 sm:p-6 space-y-4">
-            <!-- Search bar -->
-            <form action="/jobs" method="GET" class="flex flex-col sm:row gap-2">
-              <div class="flex-1 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                <span class="iconify text-slate-400" data-icon="lucide:search"></span>
-                <input type="text" name="search" placeholder="Cari pekerjaan..." class="bg-transparent border-none focus:ring-0 text-sm w-full p-0">
-              </div>
-              <button type="submit" class="bg-brand-600 text-white text-sm font-semibold rounded-lg px-5 py-2.5 text-center hover:bg-brand-700 transition-colors">Cari</button>
-            </form>
-            <!-- Job cards -->
-            <div class="grid sm:grid-cols-2 gap-3">
-              <div class="p-3.5 border border-slate-100 rounded-xl hover:border-brand-200 transition-colors float-slow">
-                <div class="flex items-start gap-3">
-                  <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-blue-700">TK</span></div>
-                  <div class="min-w-0 flex-1">
-                    <p class="text-xs font-bold text-slate-800 truncate">Frontend Developer</p>
-                    <p class="text-[11px] text-slate-400">Tokopedia · Jakarta</p>
-                  </div>
-                </div>
-              </div>
-              <div class="p-3.5 border border-slate-100 rounded-xl hover:border-brand-200 transition-colors float-fast">
-                <div class="flex items-start gap-3">
-                  <div class="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-green-700">BD</span></div>
-                  <div class="min-w-0 flex-1">
-                    <p class="text-xs font-bold text-slate-800 truncate">UI/UX Designer</p>
-                    <p class="text-[11px] text-slate-400">Bukalapak · Remote</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -150,7 +99,7 @@
     <% if (typeof jobs !== 'undefined' && jobs && jobs.length > 0) { %>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <% jobs.slice(0, 6).forEach(function(job) { %>
-          <div class="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-100/40 transition-all duration-300 flex flex-col h-full guest-guard" style="cursor:pointer;" onclick="window.location.href='/jobs/<%= job.id %>'">
+          <div class="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-100/40 transition-all duration-300 flex flex-col h-full guest-guard" style="cursor:pointer;" data-href="/jobs/<%= job.id %>">
             <div class="flex items-start justify-between mb-4">
               <div class="w-12 h-12 rounded-xl border border-slate-100 flex items-center justify-center bg-white overflow-hidden shrink-0">
                 <% if (job.company_logo) { %>
@@ -191,7 +140,7 @@
                   Kompetitif
                 <% } %>
               </div>
-              <a href="/jobs/<%= job.id %>" class="text-sm font-bold text-brand-600 hover:text-brand-700">Lamar Cepat</a>
+              <a href="/jobs/<%= job.id %>" class="text-sm font-bold text-brand-600 hover:text-brand-700 guest-guard">Lamar Cepat</a>
             </div>
           </div>
         <% }) %>
@@ -384,38 +333,51 @@
     document.querySelectorAll('.fade-up, .fade-in-up, .scale-in').forEach(el => {
       observer.observe(el);
     });
-  });
 
-  // Guest guard logic
-  const isLoggedInStr = "<%= typeof isLoggedIn !== 'undefined' && isLoggedIn ? 'true' : 'false' %>";
-  const isLoggedIn = isLoggedInStr === "true";
-  
-  if (!isLoggedIn) {
-    const guestOnlyLinks = document.querySelectorAll('.guest-guard');
-    const guestAlert = document.getElementById('guest-alert-modal');
+    // Guest guard logic
+    const isLoggedInStr = "<%= typeof isLoggedIn !== 'undefined' && isLoggedIn ? 'true' : 'false' %>";
+    const isLoggedIn = isLoggedInStr === "true";
+    
+    // Handle job card clicks for logged in users
+    if (isLoggedIn) {
+      document.querySelectorAll('.group[data-href]').forEach(function(card) {
+        card.addEventListener('click', function(e) {
+          if (e.target.tagName !== 'A') {
+            window.location.href = this.getAttribute('data-href');
+          }
+        });
+      });
+    }
 
-    guestOnlyLinks.forEach(function(link) {
-      link.addEventListener('click', function(e) {
-        // Only prevent default if it's not a direct link to login/register
-        if (!this.href.includes('/login') && !this.href.includes('/register')) {
+    if (!isLoggedIn) {
+      const guestOnlyLinks = document.querySelectorAll('.guest-guard');
+      const guestAlert = document.getElementById('guest-alert-modal');
+
+      guestOnlyLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
           e.preventDefault();
+          e.stopPropagation();
+
+          // Show the specific guest alert modal with Login, Register and Close buttons
           if (guestAlert) {
             guestAlert.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
           }
-        }
+        });
       });
-    });
 
-    // Close modal logic
-    const closeModal = () => {
-      guestAlert.classList.add('hidden');
-      document.body.style.overflow = '';
-    };
+      // Close modal logic
+      const closeModal = () => {
+        if (guestAlert) {
+          guestAlert.classList.add('hidden');
+          document.body.style.overflow = '';
+        }
+      };
 
-    if (guestAlert) {
-      document.getElementById('guest-alert-close').addEventListener('click', closeModal);
-      document.getElementById('guest-alert-backdrop').addEventListener('click', closeModal);
+      if (guestAlert) {
+        document.getElementById('guest-alert-close').addEventListener('click', closeModal);
+        document.getElementById('guest-alert-backdrop').addEventListener('click', closeModal);
+      }
     }
-  }
+  });
 </script>
