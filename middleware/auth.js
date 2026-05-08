@@ -11,7 +11,7 @@ const User = require('../models/User');
  * Middleware untuk memverifikasi JWT token dari session
  * Mengecek apakah user sudah login
  */
-const requireAuth = (req, res, next) => {
+const requireAuth = async (req, res, next) => {
   const token = req.session?.token;
 
   if (!token) {
@@ -21,17 +21,30 @@ const requireAuth = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, config.JWT_SECRET);
-    req.user = decoded;
+    
+    // Check if user exists and is not suspended
+    const user = await User.findById(decoded.id);
+    if (!user || user.status === 'suspended') {
+      req.session.token = null;
+      return res.redirect('/login?error=' + encodeURIComponent('Akun Anda telah ditangguhkan.'));
+    }
 
-    if (!decoded.role) {
+    req.user = user;
+
+    if (!user.role) {
       req.session.token = null;
       return res.redirect('/login');
     }
 
     const allowedForHR = ['/', '/profile', '/chat'];
-    const isAllowed = allowedForHR.some(p => req.path === p || req.path.startsWith(p + '/') || req.path.startsWith('/hr/'));
-    if (decoded.role === 'hr' && !isAllowed) {
+    const isAllowedHR = allowedForHR.some(p => req.originalUrl === p || req.originalUrl.startsWith(p + '?') || req.originalUrl.startsWith(p + '/') || req.originalUrl.startsWith('/hr/'));
+    
+    if (user.role === 'hr' && !isAllowedHR) {
       return res.redirect('/hr/home');
+    }
+
+    if (user.role === 'admin' && !req.originalUrl.startsWith('/admin') && req.originalUrl.split('?')[0] !== '/profile') {
+        return res.redirect('/admin/dashboard');
     }
 
     next();
@@ -39,6 +52,22 @@ const requireAuth = (req, res, next) => {
     req.session.token = null;
     return res.redirect('/login');
   }
+};
+
+/**
+ * Middleware untuk memastikan user adalah admin
+ */
+const requireAdmin = (req, res, next) => {
+  requireAuth(req, res, () => {
+    if (req.user && req.user.role === 'admin') {
+      next();
+    } else {
+      res.status(403).render('pages/error', {
+        title: 'Forbidden',
+        error: 'Anda tidak memiliki akses ke halaman ini.'
+      });
+    }
+  });
 };
 
 /**
@@ -51,6 +80,9 @@ const redirectIfAuthenticated = (req, res, next) => {
   if (token) {
     try {
       const decoded = jwt.verify(token, config.JWT_SECRET);
+      if (decoded.role === 'admin') {
+        return res.redirect('/admin/dashboard');
+      }
       if (decoded.role === 'hr') {
         return res.redirect('/hr/home');
       }
@@ -115,6 +147,7 @@ const setLocalUser = async (req, res, next) => {
 
 module.exports = {
   requireAuth,
+  requireAdmin,
   redirectIfAuthenticated,
   generateToken,
   setLocalUser,

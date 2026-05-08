@@ -891,32 +891,23 @@
   });
 
   async function removeBanner() {
-    // Use native confirm if lokerinConfirm not available
-    let ok = false;
-    if (typeof lokerinConfirm === 'function') {
-      ok = await lokerinConfirm('Banner profil Anda akan dihapus.', {
-        title: 'Hapus Banner', confirmText: 'Ya, Hapus', cancelText: 'Batal', danger: true
-      });
-    } else {
-      ok = confirm('Banner profil Anda akan dihapus. Lanjutkan?');
-    }
-    if (!ok) return;
+    customConfirm('Banner profil Anda akan dihapus. Lanjutkan?', async function() {
+      // Visually reset immediately
+      const banner = document.getElementById('profile-banner-preview');
+      banner.style.backgroundImage = '';
+      banner.style.background = '';
+      banner.className = banner.className.replace(/banner-gradient-\S+/g, '').trim() + ' banner-gradient-2';
 
-    // Visually reset immediately
-    const banner = document.getElementById('profile-banner-preview');
-    banner.style.backgroundImage = '';
-    banner.style.background = '';
-    banner.className = banner.className.replace(/banner-gradient-\S+/g, '').trim() + ' banner-gradient-2';
-
-    try {
-      await fetch('/profile/remove-banner', { method: 'POST' });
-      // Reload page to reflect changes
-      setTimeout(() => { window.location.href = '/profile?v=' + Date.now(); }, 300);
-    } catch (err) {
-      alert('Gagal menghapus banner. Silakan coba lagi.');
-      // Revert visual change on failure
-      window.location.reload();
-    }
+      try {
+        await fetch('/profile/remove-banner', { method: 'POST' });
+        // Reload page to reflect changes
+        setTimeout(() => { window.location.href = '/profile?v=' + Date.now(); }, 300);
+      } catch (err) {
+        customAlert('Gagal menghapus banner. Silakan coba lagi.');
+        // Revert visual change on failure
+        window.location.reload();
+      }
+    });
   }
 
   // ====== BANNER GRADIENT ======

@@ -21,7 +21,21 @@
         if (loggedInUser) {
       %>
         <div class="hidden md:flex items-center space-x-1">
-          <% if (loggedInUser.role === 'hr') { %>
+          <% if (loggedInUser.role === 'admin') { %>
+            <!-- Admin Navigation -->
+            <a href="/admin/dashboard" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-secondary hover:text-gray-900 transition <%= typeof active !== 'undefined' && active === 'admin-dashboard' ? 'bg-secondary text-gray-900' : '' %>">
+              Dashboard
+            </a>
+            <a href="/admin/users" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-secondary hover:text-gray-900 transition <%= typeof active !== 'undefined' && active === 'admin-users' ? 'bg-secondary text-gray-900' : '' %>">
+              Users
+            </a>
+            <a href="/admin/jobs" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-secondary hover:text-gray-900 transition <%= typeof active !== 'undefined' && active === 'admin-jobs' ? 'bg-secondary text-gray-900' : '' %>">
+              Jobs
+            </a>
+            <a href="/admin/images" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-secondary hover:text-gray-900 transition <%= typeof active !== 'undefined' && active === 'admin-images' ? 'bg-secondary text-gray-900' : '' %>">
+              Images
+            </a>
+          <% } else if (loggedInUser.role === 'hr') { %>
             <!-- HR Navigation -->
             <a href="/hr/dashboard" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-secondary hover:text-gray-900 transition <%= typeof active !== 'undefined' && active === 'hr-dashboard' ? 'bg-secondary text-gray-900' : '' %>">
               Dashboard
@@ -66,8 +80,8 @@
                  class="w-7 h-7 rounded-full object-cover border border-gray-200 bg-white">
             <div class="flex flex-col">
               <span class="leading-none"><%= loggedInUser.name %></span>
-              <span class="text-[10px] font-bold tracking-wide <%= loggedInUser.role === 'hr' ? 'text-indigo-600' : 'text-blue-500' %> uppercase mt-0.5">
-                <%= loggedInUser.role === 'hr' ? 'Recruiter' : 'Job Seeker' %>
+              <span class="text-[10px] font-bold tracking-wide <%= loggedInUser.role === 'admin' ? 'text-purple-600' : loggedInUser.role === 'hr' ? 'text-indigo-600' : 'text-blue-500' %> uppercase mt-0.5">
+                <%= loggedInUser.role === 'admin' ? 'Administrator' : loggedInUser.role === 'hr' ? 'Recruiter' : 'Job Seeker' %>
               </span>
             </div>
           </a>

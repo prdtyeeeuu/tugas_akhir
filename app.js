@@ -37,6 +37,7 @@ const profileRoutes = require('./routes/profileRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const profileStructuredRoutes = require('./routes/profileStructuredRoutes');
 const hrRoutes = require('./routes/hrRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // Inisialisasi Express app
 const app = express();
@@ -148,6 +149,9 @@ app.use('/chat', limiters.chat, chatRoutes);
 
 // HR routes (dashboard, manage jobs, etc) - mounted at /hr
 app.use('/hr', hrRoutes);
+
+// Admin routes
+app.use('/admin', adminRoutes);
 
 // ======================================
 // ERROR HANDLING

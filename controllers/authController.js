@@ -74,6 +74,9 @@ const login = async (req, res) => {
     req.session.token = token;
 
     // Redirect berdasarkan role
+    if (user.role === 'admin') {
+      return res.redirect('/admin/dashboard');
+    }
     if (user.role === 'hr') {
       return res.redirect('/hr/home');
     }

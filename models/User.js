@@ -47,12 +47,12 @@ const User = {
     try {
       const sql = `SELECT id, name, email, role, profile_image, banner_image, banner_color, bio, about_me,
                    phone, address, expected_salary_min, expected_salary_max, open_to_work,
-                   work_preferences, created_at FROM users WHERE id = ?`;
+                   work_preferences, created_at, status FROM users WHERE id = ?`;
       const results = await query(sql, [id]);
       return results[0] || null;
     } catch(e) {
       // Fallback to basic columns if migration hasn't run yet
-      const sql = 'SELECT id, name, email, role, profile_image, banner_image, banner_color, bio, about_me, created_at FROM users WHERE id = ?';
+      const sql = 'SELECT id, name, email, role, profile_image, banner_image, banner_color, bio, about_me, created_at, status FROM users WHERE id = ?';
       const results = await query(sql, [id]);
       return results[0] || null;
     }

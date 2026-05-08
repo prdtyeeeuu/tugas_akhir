@@ -494,11 +494,7 @@
       grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
       
       // Tampilkan notifikasi
-      if (typeof lokerinAlert !== 'undefined') {
-        lokerinAlert('Mohon pilih minimal satu kategori pekerjaan!', 'warning');
-      } else {
-        alert('Mohon pilih minimal satu kategori pekerjaan!');
-      }
+      customAlert('Mohon pilih minimal satu kategori pekerjaan!', 'Perhatian');
       
       // Kembalikan style setelah 3 detik
       setTimeout(() => {

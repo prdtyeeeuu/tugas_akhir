@@ -1,0 +1,124 @@
+<!-- Alert Modal -->
+<div id="customAlertModal" class="fixed inset-0 z-[100] hidden bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 transition-opacity duration-300">
+  <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all max-w-sm w-full">
+    <div class="px-6 py-4">
+      <div class="flex items-center justify-center w-12 h-12 mx-auto bg-blue-100 rounded-full mb-4">
+        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div class="mt-3 text-center sm:mt-5">
+        <h3 class="text-lg leading-6 font-medium text-gray-900" id="customAlertTitle">Informasi</h3>
+        <div class="mt-2">
+          <p class="text-sm text-gray-500" id="customAlertMessage">Pesan informasi di sini.</p>
+        </div>
+      </div>
+    </div>
+    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+      <button type="button" onclick="closeCustomAlert()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+        Tutup
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="customConfirmModal" class="fixed inset-0 z-[100] hidden bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 transition-opacity duration-300">
+  <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all max-w-md w-full">
+    <div class="px-6 py-4">
+      <div class="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full mb-4">
+        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+      </div>
+      <div class="mt-3 text-center sm:mt-5">
+        <h3 class="text-lg leading-6 font-medium text-gray-900" id="customConfirmTitle">Konfirmasi</h3>
+        <div class="mt-2">
+          <p class="text-sm text-gray-500" id="customConfirmMessage">Apakah Anda yakin?</p>
+        </div>
+      </div>
+    </div>
+    <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse space-x-2 space-x-reverse">
+      <button type="button" id="btnConfirmYes" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm">
+        Ya, Lanjutkan
+      </button>
+      <button type="button" onclick="closeCustomConfirm()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm mt-3 sm:mt-0">
+        Batal
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let confirmCallback = null;
+
+  // Custom Alert function
+  function customAlert(message, title = 'Perhatian') {
+    document.getElementById('customAlertTitle').textContent = title;
+    document.getElementById('customAlertMessage').textContent = message;
+    document.getElementById('customAlertModal').classList.remove('hidden');
+  }
+
+  function closeCustomAlert() {
+    document.getElementById('customAlertModal').classList.add('hidden');
+  }
+
+  // Helper for forms with onsubmit="return handleConfirm(this, event, '...')"
+  function handleConfirm(formElement, event, message) {
+    // If form has already been confirmed, let it submit normally
+    if (formElement.dataset.confirmed === "true") {
+      return true;
+    }
+    
+    // Prevent default form submission
+    event.preventDefault();
+    
+    // Open custom modal
+    document.getElementById('customConfirmMessage').textContent = message;
+    document.getElementById('customConfirmModal').classList.remove('hidden');
+    
+    // Set callback for Yes button
+    confirmCallback = function() {
+      formElement.dataset.confirmed = "true";
+      closeCustomConfirm();
+      // Submit form programmatically
+      if (typeof formElement.submit === 'function') {
+        formElement.submit();
+      } else {
+        // Fallback for forms where 'submit' is overridden by an input named 'submit'
+        HTMLFormElement.prototype.submit.call(formElement);
+      }
+    };
+    
+    return false;
+  }
+
+  // Handle generic confirmation with callback
+  function customConfirm(message, callback) {
+    document.getElementById('customConfirmMessage').textContent = message;
+    document.getElementById('customConfirmModal').classList.remove('hidden');
+    confirmCallback = function() {
+      closeCustomConfirm();
+      if (typeof callback === 'function') {
+        callback();
+      }
+    };
+  }
+
+  function closeCustomConfirm() {
+    document.getElementById('customConfirmModal').classList.add('hidden');
+    confirmCallback = null;
+  }
+
+  // Bind Yes button
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnYes = document.getElementById('btnConfirmYes');
+    if (btnYes) {
+      btnYes.addEventListener('click', () => {
+        if (confirmCallback) {
+          confirmCallback();
+        }
+      });
+    }
+  });
+</script>

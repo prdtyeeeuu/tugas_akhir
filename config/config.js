@@ -24,18 +24,18 @@ module.exports = {
   NODE_ENV: process.env.NODE_ENV || 'development',
 
   // Database
-  DB_HOST: process.env.DB_HOST || 'localhost',
+  DB_HOST: process.env.DB_HOST || '127.0.0.1',
   DB_USER: process.env.DB_USER || 'root',
   DB_PASSWORD: process.env.DB_PASSWORD || '',
-  DB_NAME: process.env.DB_NAME || 'lokerin_db',
-  DB_PORT: parseInt(process.env.DB_PORT) || 3306,
+  DB_NAME: process.env.DB_NAME || 'locker_db',
+  DB_PORT: parseInt(process.env.DB_PORT) || 8889,
 
   // Upload limits
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
   ALLOWED_IMAGE_TYPES: /jpeg|jpg|png|gif|webp/,
 
   // Allowed roles
-  VALID_ROLES: ['job_seeker', 'hr'],
+  VALID_ROLES: ['job_seeker', 'hr', 'admin'],
 
   // CORS
   ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS

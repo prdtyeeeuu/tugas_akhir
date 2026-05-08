@@ -131,7 +131,7 @@ async function createTables(conn) {
       name VARCHAR(255) NOT NULL,
       email VARCHAR(255) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL,
-      role ENUM('job_seeker', 'hr') DEFAULT 'job_seeker',
+      role ENUM('job_seeker', 'hr', 'admin') DEFAULT 'job_seeker',
       profile_image VARCHAR(255) DEFAULT NULL,
       banner_image VARCHAR(255) DEFAULT NULL,
       banner_color VARCHAR(7) DEFAULT NULL,
@@ -317,6 +317,9 @@ async function seedData(conn) {
 
   console.log('   👤 Membuat HR user...');
   const hrId = await insertUser(conn, ['HR Company', 'hr@test.com', hashedPassword, 'hr']);
+
+  console.log('   👤 Membuat Admin user...');
+  await insertUser(conn, ['Admin System', 'admin@test.com', hashedPassword, 'admin']);
 
   // 2. Buat jobs dummy
   const jobs = [
