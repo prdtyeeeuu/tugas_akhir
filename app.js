@@ -37,7 +37,6 @@ const profileRoutes = require('./routes/profileRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const profileStructuredRoutes = require('./routes/profileStructuredRoutes');
 const hrRoutes = require('./routes/hrRoutes');
-const adminRoutes = require('./routes/adminRoutes');
 
 // Inisialisasi Express app
 const app = express();
@@ -137,6 +136,9 @@ app.get('/dashboard', requireAuth, jobController.showDashboard);
 
 // Job routes (find jobs, apply)
 app.use(jobRoutes);
+
+// API routes
+app.use('/api', apiRoutes);
 
 // Profile routes (view, update, upload)
 app.use(profileRoutes);

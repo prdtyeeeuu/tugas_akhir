@@ -11,18 +11,19 @@ const { requireAuth } = require('../middleware/auth');
 router.use(requireAuth);
 
 // GET /chat - Inbox (daftar conversation)
-router.get('/chat', chatController.showInbox);
+router.get('/', chatController.showInbox);
 
-// GET /chat/:id - Chat room
-router.get('/chat/:id', chatController.showChatRoom);
+// PENTING: route spesifik harus sebelum route parameter /:id
+// GET /chat/api/:id/messages - Get new messages (API polling)
+router.get('/api/:id/messages', chatController.getNewMessages);
 
 // POST /chat/start/:jobId - Mulai chat baru (hanya jika sudah melamar)
-router.post('/chat/start/:jobId', chatController.chatAuth.checkApplicationExists, chatController.startChat);
+router.post('/start/:jobId', chatController.chatAuth.checkApplicationExists, chatController.startChat);
 
 // POST /chat/send - Kirim pesan baru
-router.post('/chat/send', chatController.sendMessage);
+router.post('/send', chatController.sendMessage);
 
-// GET /chat/api/:id/messages - Get new messages (API polling)
-router.get('/chat/api/:id/messages', chatController.getNewMessages);
+// GET /chat/:id - Chat room (harus paling akhir karena param generik)
+router.get('/:id', chatController.showChatRoom);
 
 module.exports = router;

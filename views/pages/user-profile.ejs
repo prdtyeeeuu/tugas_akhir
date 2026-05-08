@@ -1,4 +1,15 @@
 <!-- User Public Profile Page -->
+<%
+  function formatSalary(amount) {
+    if (!amount) return '';
+    if (amount >= 1000000) {
+      return (amount / 1000000).toFixed(amount % 1000000 === 0 ? 0 : 1) + ' Jt';
+    } else if (amount >= 1000) {
+      return (amount / 1000).toFixed(0) + ' Rb';
+    }
+    return amount.toString();
+  }
+%>
 <style>
 :root {
   --brand-50: #EFF6FF; --brand-100: #DBEAFE; --brand-200: #BFDBFE;
@@ -240,7 +251,7 @@
         <h2 class="text-sm font-bold text-slate-900 mb-3">Ekspektasi Gaji</h2>
         <div class="bg-brand-50 border border-brand-100 rounded-xl p-4 text-center">
           <p class="text-xl font-bold text-brand-700">
-            Rp <%= profileUser.expected_salary_min %> — <%= profileUser.expected_salary_max %> Jt
+            Rp <%= formatSalary(profileUser.expected_salary_min) %> — <%= formatSalary(profileUser.expected_salary_max) %>
           </p>
           <p class="text-xs text-brand-500 mt-1">per bulan</p>
         </div>

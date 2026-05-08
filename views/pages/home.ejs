@@ -1,315 +1,316 @@
-<!-- Homepage (Public) - Redesigned -->
+<!-- Extracted Styles for Homepage -->
+<style>
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+  }
+  .float-slow { animation: float 6s ease-in-out infinite; }
+  .float-fast { animation: float 4s ease-in-out infinite 1s; }
+  
+  /* Homepage specific style adjustments */
+  .category-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .category-card:hover {
+    transform: translateY(-5px);
+  }
+</style>
 
 <!-- Hero Section -->
-<section class="home-hero">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="home-hero-content">
-      <h1>Temukan Karir Impianmu</h1>
-      <p>Platform #1 yang menghubungkan talenta terbaik dengan perusahaan impian di seluruh Indonesia.</p>
+<section class="relative pt-28 pb-16 sm:pt-36 sm:pb-24 overflow-hidden">
+  <!-- Decorative blobs -->
+  <div class="absolute top-20 -left-40 w-[500px] h-[500px] bg-brand-100/60 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-0 -right-40 w-[400px] h-[400px] bg-blue-100/50 rounded-full blur-3xl pointer-events-none"></div>
 
-      <% if (typeof user === 'undefined' || !user) { %>
-      <div class="role-buttons">
-        <a href="/register?role=job_seeker" class="role-btn primary guest-guard">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-          </svg>
-          Saya Mencari Kerja
-        </a>
-        <a href="/register?role=hr" class="role-btn secondary guest-guard">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781z"/>
-          </svg>
-          Saya Merekrut
-        </a>
-      </div>
-      <% } %>
-
-      <div class="action-buttons">
-        <a href="/jobs" class="action-btn primary guest-guard">Mulai Cari Kerja</a>
-        <a href="#features" class="action-btn outline">Pelajari Lebih Lanjut</a>
+  <div class="relative max-w-6xl mx-auto px-5 sm:px-6">
+    <div class="max-w-3xl mx-auto text-center">
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-brand-50 border border-brand-100 rounded-full mb-6">
+        <span class="w-1.5 h-1.5 bg-brand-500 rounded-full animate-pulse"></span>
+        <span class="text-xs font-semibold text-brand-700"><%= typeof badgeText !== 'undefined' ? badgeText : "2,400+ lowongan baru minggu ini" %></span>
       </div>
 
-      <div class="hero-image">
-        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&h=450&fit=crop" alt="Tim Profesional Bekerja Sama">
-      </div>
-    </div>
-  </div>
-</section>
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
+        Temukan Pekerjaan
+        <span class="text-brand-600"> Impianmu</span>
+      </h1>
+      <p class="mt-5 text-base sm:text-lg text-slate-500 leading-relaxed max-w-xl mx-auto">
+        Platform terpercaya yang menghubungkan talenta terbaik dengan perusahaan top di Indonesia. Mulai karirmu sekarang.
+      </p>
 
-<!-- Stats Section -->
-<section class="stats-section">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <h3>10K+</h3>
-        <p>Lowongan Kerja</p>
-      </div>
-      <div class="stat-item">
-        <h3>500+</h3>
-        <p>Perusahaan Top</p>
-      </div>
-      <div class="stat-item">
-        <h3>50K+</h3>
-        <p>Kandidat Terdaftar</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Categories Section -->
-<section class="categories-section">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="categories-header">
-      <h2>Jelajahi Berdasarkan Kategori</h2>
-      <p>Temukan pekerjaan sesuai bidang keahlianmu</p>
-    </div>
-
-    <div class="categories-grid">
-      <a href="/jobs?category=IT" class="category-card fade-in-up delay-50 guest-guard">
-        <div class="category-icon" style="background: #eff6ff; color: #3b82f6;">
-          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275A1.5 1.5 0 0 1 6.936 9.28zM5 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-          </svg>
-        </div>
-        <h3>IT & Teknologi</h3>
-        <p>Developer, Designer, Data Scientist</p>
-      </a>
-
-      <a href="/jobs?category=Finance" class="category-card fade-in-up delay-100 guest-guard">
-        <div class="category-icon" style="background: #f0fdf4; color: #16a34a;">
-          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.078-.153 3.443-1.336 3.591-3.003V3h1.391V1.042h-1.391V3H10.61V1.042H9.218V3H6.978V1.042H5.586V3H4V1.042H2.609V3H1.391v7.781zM10 14.5H6v-2h4v2zm1-4.781c-.068.878-.787 1.532-2.006 1.651l-.494.05V6.15l.494.05c1.219.119 1.938.773 2.006 1.65v2.65z"/>
-          </svg>
-        </div>
-        <h3>Finance</h3>
-        <p>Accounting, Banking, Investment</p>
-      </a>
-
-      <a href="/jobs?category=Marketing" class="category-card fade-in-up delay-150 guest-guard">
-        <div class="category-icon" style="background: #fef3c7; color: #d97706;">
-          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l1.528.965 10.304-5.697Z"/>
-          </svg>
-        </div>
-        <h3>Marketing</h3>
-        <p>Digital Marketing, SEO, Content</p>
-      </a>
-
-      <a href="/jobs?category=Design" class="category-card fade-in-up delay-200 guest-guard">
-        <div class="category-icon" style="background: #fce7f3; color: #db2777;">
-          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z"/>
-          </svg>
-        </div>
-        <h3>Design</h3>
-        <p>UI/UX, Graphic, Motion Design</p>
-      </a>
-
-      <a href="/jobs?category=HR" class="category-card fade-in-up delay-250 guest-guard">
-        <div class="category-icon" style="background: #ede9fe; color: #7c3aed;">
-          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-          </svg>
-        </div>
-        <h3>Human Resources</h3>
-        <p>Recruiter, HR Manager, Training</p>
-      </a>
-
-      <a href="/jobs?category=Sales" class="category-card fade-in-up delay-300 guest-guard">
-        <div class="category-icon" style="background: #fff7ed; color: #ea580c;">
-          <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M6.5 3.024a.5.5 0 0 1 .474.342l1.656 4.977L10.302 5.5a.5.5 0 0 1 .975.16l-1.5 6a.5.5 0 0 1-.966.015L7.139 7.06 5.395 11.72a.5.5 0 0 1-.94-.014l-2-6a.5.5 0 1 1 .948-.312l1.485 4.455 1.875-5.008a.5.5 0 0 1 .737-.277Z"/>
-          </svg>
-        </div>
-        <h3>Sales</h3>
-        <p>Sales Executive, Account Manager</p>
-      </a>
-    </div>
-
-    <div class="categories-cta">
-      <a href="/jobs" class="btn-view-all guest-guard">
-        Lihat Semua Kategori
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-        </svg>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- Features Section -->
-<section class="features-section" id="features">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h2>Mengapa Memilih Kami?</h2>
-    <p>Solusi terbaik untuk kebutuhan karir Anda.</p>
-
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-          </svg>
-        </div>
-        <h3>Pencarian Cerdas</h3>
-        <p>Temukan lowongan yang sesuai dengan skill dan lokasi Anda dalam hitungan detik.</p>
+      <!-- CTA Buttons -->
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
+          <a href="/jobs" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-brand-200 hover:shadow-xl hover:shadow-brand-200 hover:-translate-y-0.5">
+            <span class="iconify text-lg" data-icon="lucide:search"></span>
+            Cari Lowongan
+          </a>
+          <a href="/dashboard" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white border-2 border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-bold rounded-xl transition-all hover:-translate-y-0.5">
+            <span class="iconify text-lg" data-icon="lucide:layout-dashboard"></span>
+            Dashboard
+          </a>
+        <% } else { %>
+          <a href="/register" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-brand-200 hover:shadow-xl hover:shadow-brand-200 hover:-translate-y-0.5">
+            <span class="iconify text-lg" data-icon="lucide:user"></span>
+            Cari Kerja
+          </a>
+          <a href="/register?role=hr" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white border-2 border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-bold rounded-xl transition-all hover:-translate-y-0.5">
+            <span class="iconify text-lg" data-icon="lucide:building-2"></span>
+            Rekrut Karyawan
+          </a>
+        <% } %>
       </div>
 
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-          </svg>
+      <!-- Quick stats -->
+      <div class="mt-12 flex items-center justify-center gap-8 sm:gap-12 text-center">
+        <div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= (typeof stats !== 'undefined' && stats && stats.jobs) ? stats.jobs : "15K+" %></p>
+          <p class="text-xs text-slate-400 mt-0.5">Lowongan</p>
         </div>
-        <h3>Aman & Terpercaya</h3>
-        <p>Semua perusahaan telah diverifikasi untuk memastikan keamanan data Anda.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l1.528.965 10.304-5.697Z"/>
-          </svg>
+        <div class="w-px h-10 bg-slate-200"></div>
+        <div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= (typeof stats !== 'undefined' && stats && stats.companies) ? stats.companies : "3K+" %></p>
+          <p class="text-xs text-slate-400 mt-0.5">Perusahaan</p>
         </div>
-        <h3>Lamar Mudah</h3>
-        <p>Kirim lamaran ke banyak perusahaan hanya dengan satu klik "Apply".</p>
+        <div class="w-px h-10 bg-slate-200"></div>
+        <div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= (typeof stats !== 'undefined' && stats && stats.workers) ? stats.workers : "50K+" %></p>
+          <p class="text-xs text-slate-400 mt-0.5">Pekerja Ditemukan</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- Latest Jobs Section -->
-<% if (isLoggedIn && typeof jobs !== 'undefined' && jobs && jobs.length > 0) { %>
-<section class="jobs-section">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="jobs-section-header">
-      <h2>Lowongan Terbaru</h2>
-      <p>Peluang karir terbaik minggu ini</p>
+<section class="py-20 sm:py-24 bg-white" id="jobs">
+  <div class="max-w-6xl mx-auto px-5 sm:px-6">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div class="fade-up">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Lowongan Terbaru</h2>
+        <p class="mt-3 text-slate-500 text-base max-w-md">Temukan peluang karir terbaik dari perusahaan ternama minggu ini.</p>
+      </div>
+      <a href="/jobs" class="fade-up inline-flex items-center gap-2 text-brand-600 font-bold hover:gap-3 transition-all">
+        Lihat Semua Lowongan
+        <span class="iconify" data-icon="lucide:arrow-right"></span>
+      </a>
     </div>
 
-    <div class="jobs-grid">
-      <% jobs.slice(0, 6).forEach(function(job) { %>
-      <div class="job-card" onclick="if(!event.target.closest('a') && !event.target.closest('button')) window.location.href='/jobs/<%= job.id %>';" style="cursor:pointer;" title="Klik untuk melihat detail pekerjaan">
-        
-        <!-- Card Header -->
-        <div class="job-card-header">
-          <% if (job.company_logo) { %>
-            <img src="/images/companies/<%= job.company_logo %>" alt="Logo <%= job.company %>" class="company-logo">
-          <% } else { %>
-            <div class="company-logo flex items-center justify-center text-blue-600 font-bold text-xl bg-blue-50 border border-blue-100" style="display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 600; color: white; border: none;">
-              <%= job.company ? job.company.charAt(0).toUpperCase() : '?' %>
-            </div>
-          <% } %>
-          <span class="time-posted"><%= formatTimeAgo(job.created_at) %></span>
-        </div>
-
-        <!-- Job Info -->
-        <div class="job-info">
-          <h3 class="job-title"><a href="/jobs/<%= job.id %>" style="text-decoration:none; color:inherit; display:block; cursor:pointer;" class="hover-text-blue"><%= job.title %></a></h3>
-          <style>.hover-text-blue:hover { color: #2563eb !important; transition: color 0.2s; }</style>
-
-          <div class="company-info">
-            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M6.5 1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V2h2a.5.5 0 0 1 .5.5v2h1a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V5.5a.5.5 0 0 1 .5-.5h1V2h2v-.5z"/>
-            </svg>
-            <span><%= job.company %></span>
-          </div>
-
-          <div class="location-info">
-            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
-            </svg>
-            <span><%= job.location %></span>
-          </div>
-
-          <% if (job.category) { %>
-          <span class="category-tag"><%= job.category %></span>
-          <% } %>
-
-          <!-- Salary Range -->
-          <% if (job.salary_min || job.salary_max) { %>
-          <div class="salary-info">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M15 1H1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 15V2h12v13H2z"/>
-              <path d="M4 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
-            </svg>
-            <% if (job.salary_min && job.salary_max) { %>
-              <span>Rp <%= formatSalary(job.salary_min) %> - <%= formatSalary(job.salary_max) %></span>
-            <% } else if (job.salary_min) { %>
-              <span>Mulai dari Rp <%= formatSalary(job.salary_min) %></span>
-            <% } else if (job.salary_max) { %>
-              <span>Hingga Rp <%= formatSalary(job.salary_max) %></span>
-            <% } %>
-          </div>
-          <% } %>
-        </div>
-
-        <!-- Card Footer -->
-        <div class="job-card-footer">
-          <a href="/user/<%= job.hr_id %>" class="recruiter-info group" style="text-decoration:none; display:flex; gap:12px; align-items:center; cursor:pointer;" title="Lihat Profil">
-            <% if (job.hr_image) { %>
-              <img src="/images/profiles/<%= job.hr_image %>" class="recruiter-avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid #e5e7eb;" alt="HR">
-            <% } else { %>
-              <div class="recruiter-avatar flex items-center justify-center bg-gray-100 text-gray-500 font-bold" style="width:36px; height:36px; border-radius:50%; font-size:14px; border:1px solid #e5e7eb;">
-                <%= (job.hr_name || 'HR').charAt(0).toUpperCase() %>
+    <% if (typeof jobs !== 'undefined' && jobs && jobs.length > 0) { %>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% jobs.slice(0, 6).forEach(function(job) { %>
+          <div class="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-100/40 transition-all duration-300 flex flex-col h-full guest-guard" style="cursor:pointer;" data-href="/jobs/<%= job.id %>">
+            <div class="flex items-start justify-between mb-4">
+              <div class="w-12 h-12 rounded-xl border border-slate-100 flex items-center justify-center bg-white overflow-hidden shrink-0">
+                <% if (job.company_logo) { %>
+                  <img src="/images/companies/<%= job.company_logo %>" alt="<%= job.company %>" class="w-full h-full object-contain">
+                <% } else { %>
+                  <span class="text-xl font-bold text-brand-600"><%= job.company.charAt(0) %></span>
+                <% } %>
               </div>
-            <% } %>
-            <div class="recruiter-details" style="display:flex; flex-direction:column;">
-              <span class="recruiter-name group-hover:text-blue-600 transition-colors duration-200" style="font-size:14px; font-weight:600;"><%= job.hr_name || 'HR Team' %></span>
-              <span class="recruiter-role" style="font-size:12px; color:#6b7280;">Recruiter</span>
+              <span class="px-2.5 py-1 bg-slate-50 text-slate-500 text-[10px] font-bold rounded-lg uppercase tracking-wider"><%= formatTimeAgo(job.created_at) %></span>
+            </div>
+            
+            <div class="flex-grow">
+              <h3 class="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors mb-1 line-clamp-1"><%= job.title %></h3>
+              <p class="text-sm text-slate-500 mb-4 flex items-center gap-1.5">
+                <span class="iconify" data-icon="lucide:building-2"></span>
+                <%= job.company %>
+              </p>
+              
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span class="px-2.5 py-1 bg-brand-50 text-brand-700 text-[11px] font-semibold rounded-lg flex items-center gap-1">
+                  <span class="iconify" data-icon="lucide:map-pin"></span>
+                  <%= job.location %>
+                </span>
+                <% if (job.category) { %>
+                  <span class="px-2.5 py-1 bg-slate-50 text-slate-600 text-[11px] font-semibold rounded-lg">
+                    <%= job.category %>
+                  </span>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <div class="text-slate-900 font-bold text-sm">
+                <% if (job.salary_min || job.salary_max) { %>
+                  Rp <%= formatSalary(job.salary_min || job.salary_max) %>
+                  <% if (job.salary_min && job.salary_max) { %>+<% } %>
+                <% } else { %>
+                  Kompetitif
+                <% } %>
+              </div>
+              <a href="/jobs/<%= job.id %>" class="text-sm font-bold text-brand-600 hover:text-brand-700 guest-guard">Lamar Cepat</a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-12 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <span class="iconify text-slate-300 text-3xl" data-icon="lucide:briefcase"></span>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">Belum ada lowongan</h3>
+        <p class="text-slate-500 text-sm">Silakan cek kembali beberapa saat lagi.</p>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<!-- Trusted By Section -->
+<section class="py-12 border-y border-slate-100 bg-slate-50/50">
+  <div class="max-w-6xl mx-auto px-5 sm:px-6">
+    <p class="text-xs font-semibold text-slate-400 text-center uppercase tracking-wider mb-8">Dipercaya oleh perusahaan terkemuka</p>
+    <div class="flex flex-wrap items-center justify-center gap-x-10 gap-y-5 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all">
+      <span class="text-xl font-extrabold text-slate-400 cursor-default">Tokopedia</span>
+      <span class="text-xl font-extrabold text-slate-400 cursor-default">Gojek</span>
+      <span class="text-xl font-extrabold text-slate-400 cursor-default">Traveloka</span>
+      <span class="text-xl font-extrabold text-slate-400 cursor-default">Bukalapak</span>
+      <span class="text-xl font-extrabold text-slate-400 cursor-default">Shopee</span>
+      <span class="text-xl font-extrabold text-slate-400 cursor-default">Grab</span>
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<section id="kategori" class="py-20 sm:py-24">
+  <div class="max-w-6xl mx-auto px-5 sm:px-6">
+    <div class="text-center mb-14 fade-up">
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Kategori Populer</h2>
+      <p class="mt-3 text-slate-500 text-base max-w-md mx-auto">Jelajahi lowongan berdasarkan bidang yang kamu minati</p>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 fade-up">
+      <% if (typeof categories !== 'undefined' && categories && categories.length) { %>
+        <% categories.forEach(function(cat) { %>
+          <a href="/jobs?category=<%= cat.name %>" class="group flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-xl hover:border-brand-300 hover:bg-brand-50 hover:shadow-md hover:shadow-brand-100/40 transition-all duration-200 text-left guest-guard">
+            <div class="w-10 h-10 bg-brand-50 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-brand-100 transition-colors">
+              <span class="iconify text-brand-500 group-hover:text-brand-600 transition-colors" data-icon="lucide:briefcase"></span>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-800 group-hover:text-brand-700 transition-colors"><%= cat.name %></p>
+              <p class="text-[11px] text-slate-400"><%= cat.count || 0 %> lowongan</p>
             </div>
           </a>
+        <% }) %>
+      <% } else { %>
+        <p class="col-span-full text-center text-slate-400">Belum ada kategori.</p>
+      <% } %>
+    </div>
+  </div>
+</section>
 
-          <a href="/jobs/<%= job.id %>" class="btn-apply" style="text-align: center; text-decoration: none;">Lamar</a>
+<!-- How It Works Section -->
+<section class="py-20 sm:py-24 bg-slate-50">
+  <div class="max-w-6xl mx-auto px-5 sm:px-6">
+    <div class="text-center mb-14 fade-up">
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Cara Kerjanya</h2>
+      <p class="mt-3 text-slate-500 text-base max-w-md mx-auto">Tiga langkah sederhana untuk memulai perjalanan karirmu</p>
+    </div>
+    <div class="grid sm:grid-cols-3 gap-6 sm:gap-8">
+      <div class="fade-up text-center">
+        <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-brand-100">
+          <span class="iconify text-brand-600 text-2xl" data-icon="lucide:user-plus"></span>
         </div>
-
+        <div class="inline-flex items-center justify-center w-7 h-7 bg-brand-600 text-white text-xs font-bold rounded-full mb-3">1</div>
+        <h3 class="text-base font-bold text-slate-900 mb-2">Buat Akun</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Daftar gratis sebagai pencari kerja atau perusahaan dalam hitungan detik.</p>
       </div>
-      <% }); %>
-    </div>
-
-    <a href="/jobs" class="view-all-btn">Lihat Semua Lowongan</a>
-  </div>
-</section>
-<% } else if (!isLoggedIn) { %>
-<!-- Login Required CTA -->
-<section class="login-cta-section">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="jobs-section-header" style="margin-bottom: 2rem;">
-      <h2>Lowongan Terbaru</h2>
-      <p>Temukan ribuan peluang karir yang menunggumu</p>
-    </div>
-
-    <div class="login-cta-card">
-      <div class="login-cta-icon">
-        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
+      <div class="fade-up text-center" style="transition-delay:0.1s">
+        <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-brand-100">
+          <span class="iconify text-brand-600 text-2xl" data-icon="lucide:search"></span>
+        </div>
+        <div class="inline-flex items-center justify-center w-7 h-7 bg-brand-600 text-white text-xs font-bold rounded-full mb-3">2</div>
+        <h3 class="text-base font-bold text-slate-900 mb-2">Temukan & Pasang</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Cari lowongan yang cocok atau pasang iklan kerja untuk perusahaanmu.</p>
       </div>
-      <h3>Masuk untuk Melihat Lowongan</h3>
-      <p>Login untuk menjelajahi ribuan lowongan pekerjaan terbaru dan temukan yang cocok untukmu.</p>
-      <div class="login-cta-buttons">
-        <a href="/login" class="cta-btn-login primary">Masuk Sekarang</a>
-        <a href="/register" class="cta-btn-login outline">Daftar Gratis</a>
+      <div class="fade-up text-center" style="transition-delay:0.2s">
+        <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-brand-100">
+          <span class="iconify text-brand-600 text-2xl" data-icon="lucide:handshake"></span>
+        </div>
+        <div class="inline-flex items-center justify-center w-7 h-7 bg-brand-600 text-white text-xs font-bold rounded-full mb-3">3</div>
+        <h3 class="text-base font-bold text-slate-900 mb-2">Dapat Kerja</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Lamar, wawancara, dan mulai karir barumu bersama tim impian.</p>
       </div>
     </div>
   </div>
 </section>
-<% } %>
 
 <!-- CTA Section -->
-<section class="cta-section">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h2>Siap Memulai?</h2>
-    <p>Bergabunglah dengan ribuan profesional yang telah menemukan karir impian mereka.</p>
-    <div class="cta-buttons">
-      <a href="/register" class="cta-btn white">Daftar Sekarang</a>
-      <a href="/login" class="cta-btn outline-white">Masuk</a>
+<section class="py-20 sm:py-24">
+  <div class="max-w-6xl mx-auto px-5 sm:px-6">
+    <div class="fade-up relative bg-gradient-to-br from-brand-600 via-brand-700 to-blue-800 rounded-3xl overflow-hidden">
+      <!-- Pattern -->
+      <div class="absolute inset-0 opacity-10">
+        <svg viewBox="0 0 800 400" class="w-full h-full">
+          <defs>
+            <pattern id="cta-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#cta-grid)"/>
+        </svg>
+      </div>
+      <div class="relative px-6 sm:px-12 py-14 sm:py-20 text-center">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Siap Memulai Karirmu?</h2>
+        <p class="mt-4 text-brand-100 text-base max-w-lg mx-auto leading-relaxed">
+          Bergabung dengan <%= (typeof stats !== 'undefined' && stats && stats.workers) ? stats.workers : "50,000+" %> profesional yang telah menemukan pekerjaan impian mereka melalui lokerin.
+        </p>
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>
+            <a href="/jobs" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-brand-700 text-sm font-bold rounded-xl hover:bg-brand-50 transition-colors shadow-lg">
+              <span class="iconify" data-icon="lucide:briefcase"></span>
+              Cari Lowongan
+            </a>
+          <% } else { %>
+            <a href="/register" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-brand-700 text-sm font-bold rounded-xl hover:bg-brand-50 transition-colors shadow-lg">
+              <span class="iconify" data-icon="lucide:user"></span>
+              Daftar Cari Kerja
+            </a>
+            <a href="/register?role=hr" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white/10 backdrop-blur text-white border border-white/20 text-sm font-bold rounded-xl hover:bg-white/20 transition-colors">
+              <span class="iconify" data-icon="lucide:building-2"></span>
+              Daftar Perusahaan
+            </a>
+          <% } %>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Scroll Animation Script -->
+<!-- Guest Alert Modal -->
+<div id="guest-alert-modal" class="fixed inset-0 z-[100] hidden">
+  <!-- Backdrop -->
+  <div id="guest-alert-backdrop" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+
+  <!-- Modal Card -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-4">
+    <div class="bg-white rounded-3xl shadow-2xl shadow-slate-900/20 p-8 relative overflow-hidden">
+      <!-- Decorative circle -->
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-brand-50 rounded-full"></div>
+      
+      <!-- Close Button -->
+      <button id="guest-alert-close" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 transition-colors">
+        <span class="iconify text-xl" data-icon="lucide:x"></span>
+      </button>
+
+      <!-- Content -->
+      <div class="relative">
+        <div class="w-16 h-16 bg-brand-100 text-brand-600 rounded-2xl flex items-center justify-center mb-6">
+          <span class="iconify text-3xl" data-icon="lucide:lock"></span>
+        </div>
+
+        <h3 class="text-2xl font-extrabold text-slate-900 mb-2">Akses Terbatas</h3>
+        <p class="text-slate-500 leading-relaxed mb-8">Silakan masuk atau daftar terlebih dahulu untuk melihat detail lowongan dan melamar pekerjaan.</p>
+
+        <div class="flex flex-col gap-3">
+          <a href="/login" class="flex-1 py-3.5 bg-brand-600 hover:bg-brand-700 text-white text-center font-bold rounded-xl transition-colors">Masuk Sekarang</a>
+          <a href="/register" class="flex-1 py-3.5 bg-white border-2 border-slate-100 hover:border-brand-200 text-slate-600 text-center font-bold rounded-xl transition-colors">Daftar Gratis</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   // Intersection Observer for scroll animations
   document.addEventListener('DOMContentLoaded', function() {
@@ -323,128 +324,60 @@
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-          // Unobserve after animation triggers (run once)
           observer.unobserve(entry.target);
         }
       });
     }, observerOptions);
 
-    // Add animation classes to elements
-    const heroContent = document.querySelector('.home-hero-content');
-    if (heroContent) {
-      heroContent.classList.add('fade-in-up');
-    }
-
-    const statsGrid = document.querySelector('.stats-grid');
-    if (statsGrid) {
-      statsGrid.classList.add('fade-in-up');
-    }
-
-    const featuresSection = document.querySelector('.features-section');
-    if (featuresSection) {
-      featuresSection.classList.add('fade-in-up');
-    }
-
-    // Add staggered animations to feature cards
-    const featureCards = document.querySelectorAll('.feature-card');
-    featureCards.forEach((card, index) => {
-      card.classList.add('fade-in-up', `delay-${(index + 1) * 100}`);
-      observer.observe(card);
-    });
-
-    // Add animations to job cards
-    const jobCards = document.querySelectorAll('.job-card');
-    jobCards.forEach((card, index) => {
-      card.classList.add('fade-in-up', `delay-${(index % 3 + 1) * 100}`);
-      observer.observe(card);
-    });
-
-    // Add animation to CTA section
-    const ctaSection = document.querySelector('.cta-section');
-    if (ctaSection) {
-      ctaSection.classList.add('fade-in-up');
-      observer.observe(ctaSection);
-    }
-
-    // Observe all fade-in-up elements that aren't already observed
-    document.querySelectorAll('.fade-in-up').forEach(el => {
+    // Observe animated elements
+    document.querySelectorAll('.fade-up, .fade-in-up, .scale-in').forEach(el => {
       observer.observe(el);
     });
 
-    document.querySelectorAll('.fade-in-left').forEach(el => {
-      observer.observe(el);
-    });
+    // Guest guard logic
+    const isLoggedInStr = "<%= typeof isLoggedIn !== 'undefined' && isLoggedIn ? 'true' : 'false' %>";
+    const isLoggedIn = isLoggedInStr === "true";
+    
+    // Handle job card clicks for logged in users
+    if (isLoggedIn) {
+      document.querySelectorAll('.group[data-href]').forEach(function(card) {
+        card.addEventListener('click', function(e) {
+          if (e.target.tagName !== 'A') {
+            window.location.href = this.getAttribute('data-href');
+          }
+        });
+      });
+    }
 
-    document.querySelectorAll('.fade-in-right').forEach(el => {
-      observer.observe(el);
-    });
+    if (!isLoggedIn) {
+      const guestOnlyLinks = document.querySelectorAll('.guest-guard');
+      const guestAlert = document.getElementById('guest-alert-modal');
 
-    document.querySelectorAll('.scale-in').forEach(el => {
-      observer.observe(el);
-    });
-  });
+      guestOnlyLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
 
-  // Guest guard: intercept clicks on job-related links for unauthenticated users
-  const isLoggedIn = <%= typeof isLoggedIn !== 'undefined' && isLoggedIn ? 'true' : 'false' %>;
-  if (!isLoggedIn) {
-    const guestOnlyLinks = document.querySelectorAll('.guest-guard');
-    const guestAlert = document.getElementById('guest-alert-modal');
+          // Show the specific guest alert modal with Login, Register and Close buttons
+          if (guestAlert) {
+            guestAlert.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+          }
+        });
+      });
 
-    guestOnlyLinks.forEach(function(link) {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
+      // Close modal logic
+      const closeModal = () => {
         if (guestAlert) {
-          guestAlert.classList.remove('hidden');
-          document.body.style.overflow = 'hidden';
+          guestAlert.classList.add('hidden');
+          document.body.style.overflow = '';
         }
-      });
-    });
+      };
 
-    // Close modal on button click or backdrop
-    if (guestAlert) {
-      document.getElementById('guest-alert-close').addEventListener('click', function() {
-        guestAlert.classList.add('hidden');
-        document.body.style.overflow = '';
-      });
-      document.getElementById('guest-alert-backdrop').addEventListener('click', function() {
-        guestAlert.classList.add('hidden');
-        document.body.style.overflow = '';
-      });
+      if (guestAlert) {
+        document.getElementById('guest-alert-close').addEventListener('click', closeModal);
+        document.getElementById('guest-alert-backdrop').addEventListener('click', closeModal);
+      }
     }
-  }
+  });
 </script>
-
-<!-- Guest Alert Modal -->
-<div id="guest-alert-modal" class="hidden">
-  <!-- Backdrop -->
-  <div id="guest-alert-backdrop"></div>
-
-  <!-- Modal Card -->
-  <div class="guest-alert-card">
-    <!-- Close Button -->
-    <button id="guest-alert-close" class="guest-alert-close">
-      <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-      </svg>
-    </button>
-
-    <!-- Icon -->
-    <div class="guest-alert-icon">
-      <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-      </svg>
-    </div>
-
-    <!-- Title -->
-    <h3>Akses Terbatas</h3>
-
-    <!-- Message -->
-    <p>Silakan masuk atau daftar terlebih dahulu untuk mengakses fitur ini.</p>
-
-    <!-- Buttons -->
-    <div class="guest-alert-buttons">
-      <a href="/login" class="btn-primary">Masuk Sekarang</a>
-      <a href="/register" class="btn-outline">Daftar Gratis</a>
-    </div>
-  </div>
-</div>

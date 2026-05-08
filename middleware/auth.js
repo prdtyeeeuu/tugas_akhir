@@ -37,9 +37,8 @@ const requireAuth = async (req, res, next) => {
     }
 
     const allowedForHR = ['/', '/profile', '/chat'];
-    const isAllowedHR = allowedForHR.some(p => req.originalUrl === p || req.originalUrl.startsWith(p + '?') || req.originalUrl.startsWith(p + '/') || req.originalUrl.startsWith('/hr/'));
-    
-    if (user.role === 'hr' && !isAllowedHR) {
+    const isAllowed = allowedForHR.some(p => req.path === p || req.path.startsWith(p + '/') || req.path.startsWith('/hr/'));
+    if (decoded.role === 'hr' && !isAllowed) {
       return res.redirect('/hr/home');
     }
 
@@ -114,6 +113,7 @@ const generateToken = (user) => {
  */
 const setLocalUser = async (req, res, next) => {
   res.locals.user = null;
+  res.locals.isLoggedIn = false;
 
   const token = req.session?.token;
   if (token) {
@@ -126,19 +126,30 @@ const setLocalUser = async (req, res, next) => {
           if (user && user.role) {
             const newToken = generateToken(user);
             req.session.token = newToken;
-            res.locals.user = jwt.verify(newToken, config.JWT_SECRET);
+            req.user = jwt.verify(newToken, config.JWT_SECRET);
+            res.locals.user = req.user;
+            res.locals.isLoggedIn = true;
           } else {
+            req.user = decoded;
             res.locals.user = decoded;
+            res.locals.isLoggedIn = true;
           }
         } catch (err) {
+          req.user = decoded;
           res.locals.user = decoded;
+          res.locals.isLoggedIn = true;
         }
         return next();
       }
 
+      req.user = decoded;
       res.locals.user = decoded;
+      res.locals.isLoggedIn = true;
     } catch (error) {
+      req.user = null;
       res.locals.user = null;
+      res.locals.isLoggedIn = false;
+      req.session.token = null;
     }
   }
 

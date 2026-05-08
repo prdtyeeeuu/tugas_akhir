@@ -37,4 +37,19 @@ const query = async (sql, params = []) => {
   }
 };
 
-module.exports = { pool: promisePool, query };
+/**
+ * Fungsi rawQuery menggunakan .query() bukan .execute()
+ * Digunakan untuk query dengan LIMIT/OFFSET dinamis agar tidak error di prepared statement
+ */
+const rawQuery = async (sql, params = []) => {
+  try {
+    const [results] = await promisePool.query(sql, params);
+    return results;
+  } catch (error) {
+    const logger = require('../utils/logger');
+    logger.error('Database rawQuery error', { sql: sql.substring(0, 100), error: error.message });
+    throw error;
+  }
+};
+
+module.exports = { pool: promisePool, query, rawQuery };

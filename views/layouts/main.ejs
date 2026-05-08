@@ -8,6 +8,9 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
+  <!-- Iconify -->
+  <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+
   <!-- Tailwind Config -->
   <script>
     tailwind.config = {
@@ -17,6 +20,14 @@
             primary: '#FFFFFF',
             secondary: '#ADCEFF',
             'secondary-light': '#C3ADFF',
+            brand: {
+              50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD',
+              400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8',
+              800: '#1E40AF', 900: '#1E3A8A',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
           },
         },
       },
@@ -53,6 +64,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Profile Page Styles -->
   <link rel="stylesheet" href="/css/profile.css">
@@ -150,8 +164,10 @@
     <%- body %>
   </main>
 
-  <!-- Footer -->
+  <!-- Footer - disembunyikan di halaman tertentu seperti chat -->
+  <% if (typeof hideFooter === 'undefined' || !hideFooter) { %>
   <%- include('../partials/footer') %>
+  <% } %>
 
   <!-- Scripts -->
   <script src="/js/lokerin-modal.js"></script>

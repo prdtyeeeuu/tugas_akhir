@@ -939,3 +939,229 @@
 .login-cta-buttons .cta-btn-login.outline:hover {
   background: #f0f4ff;
 }
+
+.category-expandable-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 0.75rem;
+}
+
+.category-card-filter {
+  min-height: 92px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.category-card-filter:hover {
+  transform: translateY(-2px);
+  border-color: #93c5fd;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.12);
+}
+
+.category-card-filter.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.16);
+}
+
+.category-card-filter.more {
+  border-style: dashed;
+  background: #f8fafc;
+}
+
+.category-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0f2fe;
+  color: #2563eb;
+  font-weight: 800;
+}
+
+.category-card-filter.active .category-card-icon {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.category-card-icon svg,
+.category-checkbox-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.category-card-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.category-summary {
+  min-height: 20px;
+  margin-bottom: 2rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.category-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.category-modal.hidden {
+  display: none;
+}
+
+.category-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.category-modal-card {
+  position: relative;
+  width: min(880px, 100%);
+  max-height: 86vh;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+  display: flex;
+  flex-direction: column;
+}
+
+.category-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.category-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.category-modal-header p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.category-modal-close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.category-modal-grid {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.category-checkbox-card {
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.category-checkbox-card:hover {
+  transform: translateY(-1px);
+  border-color: #93c5fd;
+  background: #f8fafc;
+}
+
+.category-checkbox-card:has(input:checked) {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.category-checkbox-card input {
+  width: 16px;
+  height: 16px;
+  accent-color: #2563eb;
+}
+
+.category-checkbox-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #e0f2fe;
+  color: #2563eb;
+}
+
+.category-checkbox-name {
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: #1f2937;
+}
+
+.category-modal-actions {
+  padding: 16px 24px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.category-action {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.category-action.primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.category-action.secondary {
+  background: #f1f5f9;
+  color: #334155;
+}

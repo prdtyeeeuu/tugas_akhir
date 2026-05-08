@@ -4,7 +4,7 @@
 <div class="job-detail-page">
   <!-- Back Button -->
   <div class="job-detail-back">
-    <a href="javascript:void(0)" onclick="if(document.referrer.includes(window.location.host) && document.referrer !== window.location.href) { window.history.back(); } else { window.location.href='/jobs'; }" class="back-link">
+    <a href="javascript:void(0)" onclick="const params = new URLSearchParams(window.location.search); if(params.get('ref') === 'dashboard') { window.location.href='/dashboard'; } else if(params.get('ref') === 'home') { window.location.href='/'; } else if(document.referrer.includes(window.location.host) && document.referrer !== window.location.href) { window.history.back(); } else { window.location.href='/jobs'; }" class="back-link">
       <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
       </svg>
@@ -69,7 +69,7 @@
              const now = new Date();
              const isClosed = new Date(job.deadline) < now;
         %>
-        <span class="job-tag" style="color: <%= isClosed ? '#ef4444' : '#d97706' %>;">
+        <span class="job-tag" <%- 'style="color: ' + (isClosed ? '#ef4444' : '#d97706') + ';"' %>>
           <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
             <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
@@ -79,8 +79,32 @@
         <% } %>
       </div>
 
-      <div class="job-actions">
-        <button type="button" data-id="<%- job.id %>" onclick="startChat(this.dataset.id)" class="btn-chat">
+      <div class="job-actions" style="display:flex; gap:10px;">
+        <% if (typeof user !== 'undefined' && user && user.role !== 'hr') { %>
+          <% 
+             const now = new Date();
+             const deadlinePassed = job.deadline && new Date(job.deadline) < now;
+          %>
+          <% if (typeof hasApplied !== 'undefined' && hasApplied) { %>
+            <button type="button" class="btn-apply" style="background-color: #9ca3af; color: white; cursor: not-allowed; border:none; padding: 10px 20px; border-radius: 8px; font-weight: 600;" disabled title="Anda sudah melamar pekerjaan ini">Dilamar</button>
+          <% } else if (deadlinePassed) { %>
+            <button type="button" class="btn-apply" style="background-color: #ef4444; color: white; cursor: not-allowed; border:none; padding: 10px 20px; border-radius: 8px; font-weight: 600;" disabled title="Lowongan sudah ditutup">Ditutup</button>
+          <% } else { %>
+            <button type="button" onclick="openLamarModal('<%= job.id %>', '<%= job.title %>')" style="background-color: #5865F2; color: white; border:none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#4752c4'" onmouseout="this.style.backgroundColor='#5865F2'">Lamar Pekerjaan</button>
+          <% } %>
+        <% } else if (typeof user === 'undefined' || !user) { %>
+          <% 
+             const now = new Date();
+             const deadlinePassed = job.deadline && new Date(job.deadline) < now;
+          %>
+          <% if (deadlinePassed) { %>
+            <button type="button" class="btn-apply" style="background-color: #ef4444; color: white; cursor: not-allowed; border:none; padding: 10px 20px; border-radius: 8px; font-weight: 600;" disabled title="Lowongan sudah ditutup">Ditutup</button>
+          <% } else { %>
+            <a href="/login?returnUrl=/jobs/<%= job.id %>" style="background-color: #5865F2; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; display: inline-block; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#4752c4'" onmouseout="this.style.backgroundColor='#5865F2'">Lamar Pekerjaan</a>
+          <% } %>
+        <% } %>
+
+        <button type="button" data-id="<%- job.id %>" onclick="startChat(this.dataset.id)" class="btn-chat" style="display:flex; align-items:center; gap:6px; background-color: white; color: #5865F2; border: 2px solid #5865F2; padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#5865F2'; this.style.color='white';" onmouseout="this.style.backgroundColor='white'; this.style.color='#5865F2';">
           <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2zm5 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
           </svg>
@@ -95,6 +119,32 @@
       <div class="description-content"><%= job.description %></div>
     </div>
 
+    <!-- Requirements Card -->
+    <% if (job.requirements) { %>
+      <% 
+        let parsedReq = [];
+        try {
+          parsedReq = JSON.parse(job.requirements);
+        } catch(e) {}
+      %>
+      <% if (parsedReq && parsedReq.length > 0) { %>
+        <div class="job-detail-description" style="margin-top: 1.5rem;">
+          <h2>Kualifikasi Pekerjaan</h2>
+          <div class="req-tags-container" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem;">
+            <% parsedReq.forEach(function(req) { %>
+              <span class="req-tag" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #eff6ff; color: #1d4ed8; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; border: 1px solid #bfdbfe; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s;">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M2 2v4.586l7 7L13.586 9l-7-7H2zM1 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2z"/>
+                  <path d="M4.5 5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                </svg>
+                <%= req %>
+              </span>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+    <% } %>
+
     <!-- Posted Date -->
     <div class="job-detail-footer">
       <p>Diposting pada <%= new Date(job.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
@@ -102,7 +152,63 @@
   </div>
 </div>
 
+<!-- Upload CV Modal -->
+<div id="lamarModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 transition-opacity" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; display: none; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.5);">
+  <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 transform scale-95 transition-transform" style="font-family: 'Inter', sans-serif; background: white; padding: 24px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+    <div class="flex justify-between items-center mb-4" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 class="text-lg font-bold text-gray-900" style="margin: 0; font-size: 18px;">Upload CV Foto</h3>
+      <button type="button" onclick="closeLamarModal()" class="text-gray-400 hover:text-gray-600" style="background: none; border: none; cursor: pointer; color: #9ca3af;">
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <form id="lamarForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+      
+      <div style="margin-bottom: 16px;">
+        <p class="text-sm text-gray-600 mb-2" style="font-size: 14px; margin-bottom: 8px;">Melamar posisi: <strong id="modalJobTitle" class="text-gray-900"></strong></p>
+        <p class="text-xs text-red-500 mb-4" style="font-size: 12px; color: #ef4444; margin-bottom: 16px;">* Anda diwajibkan melampirkan CV berupa foto (Image).</p>
+        
+        <label for="cv_image" class="block text-sm font-medium text-gray-700 mb-1" style="display: block; font-size: 14px; margin-bottom: 4px;">Pilih Foto CV</label>
+        <input type="file" name="cv_image" id="cv_image" accept="image/jpeg, image/png, image/webp" required
+               style="display: block; width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 8px;">
+      </div>
+      
+      <div class="flex justify-end gap-3 mt-6" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+        <button type="button" onclick="closeLamarModal()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #f3f4f6; color: #374151; cursor: pointer; font-weight: 500;">Batal</button>
+        <button type="submit" style="padding: 8px 16px; border-radius: 8px; border: none; background: #5865F2; color: white; cursor: pointer; font-weight: 500;">Kirim Lamaran</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
+  // Modal functions
+  function openLamarModal(jobId, jobTitle) {
+    const modal = document.getElementById('lamarModal');
+    const form = document.getElementById('lamarForm');
+    const jobTitleSpan = document.getElementById('modalJobTitle');
+    
+    // Set form action and job title
+    form.action = `/jobs/apply/${jobId}?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>`;
+    jobTitleSpan.textContent = jobTitle;
+    
+    // Reset inputs
+    document.getElementById('cv_image').value = '';
+    
+    // Show modal
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.firstElementChild.style.transform = 'scale(1)';
+    }, 10);
+  }
+
+  function closeLamarModal() {
+    const modal = document.getElementById('lamarModal');
+    modal.firstElementChild.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 200);
+  }
+
   // Start chat with HR
   async function startChat(jobId) {
     try {

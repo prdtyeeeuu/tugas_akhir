@@ -167,7 +167,7 @@ const showCreateJob = async (req, res) => {
  */
 const createJob = async (req, res) => {
   try {
-    const { title, company, location, category, type, description, salary_min, salary_max, deadline } = req.body;
+    const { title, company, location, category, type, description, salary_min, salary_max, deadline, requirements } = req.body;
 
     // Validasi input
     if (!title || !company || !location || !description) {
@@ -191,6 +191,16 @@ const createJob = async (req, res) => {
       }
     }
 
+    // Process requirements (array to JSON string)
+    let requirementsString = null;
+    if (requirements) {
+      if (Array.isArray(requirements)) {
+        requirementsString = JSON.stringify(requirements.filter(r => r && r.trim() !== ''));
+      } else if (typeof requirements === 'string' && requirements.trim() !== '') {
+        requirementsString = JSON.stringify([requirements.trim()]);
+      }
+    }
+
     // Buat lowongan
     await Job.create({
       title,
@@ -203,7 +213,8 @@ const createJob = async (req, res) => {
       salary_max: salary_max ? parseInt(salary_max) : null,
       deadline: deadline || null,
       hr_id: req.user.id,
-      company_logo
+      company_logo,
+      requirements: requirementsString
     });
 
     // Redirect ke halaman kelola lowongan
@@ -314,6 +325,29 @@ const updateApplicationStatus = async (req, res) => {
 };
 
 /**
+ * Menampilkan halaman jadwal interview
+ */
+const showInterviews = async (req, res) => {
+  try {
+    const hrId = req.user.id;
+    const interviews = await Application.findInterviewsByHR(hrId);
+
+    res.render('pages/hr/interviews', {
+      title: 'Jadwal Interview - Lokerin',
+      user: req.user,
+      interviews: interviews || [],
+      active: 'hr-interviews'
+    });
+  } catch (error) {
+    console.error('Interviews error:', error);
+    res.status(500).render('pages/error', {
+      title: 'Error',
+      error: 'Terjadi kesalahan saat memuat data interview'
+    });
+  }
+};
+
+/**
  * Menghapus lowongan
  */
 const deleteJob = async (req, res) => {
@@ -351,6 +385,32 @@ const markCvViewed = async (req, res) => {
   }
 };
 
+/**
+ * Mengirim Offering Letter ke pelamar
+ */
+const sendOffering = async (req, res) => {
+  try {
+    const applicationId = req.params.id;
+    
+    if (!req.file) {
+      const returnUrl = req.body.returnUrl || '/hr/interviews';
+      return res.redirect(`${returnUrl}?error=Dokumen+offering+wajib+diunggah`);
+    }
+
+    const offeringDocument = req.file.filename;
+    
+    // Panggil model untuk merubah status dan update file offering
+    await Application.sendOffering(applicationId, offeringDocument);
+    
+    const returnUrl = req.body.returnUrl || '/hr/interviews';
+    return res.redirect(`${returnUrl}?success=offering_sent`);
+  } catch (error) {
+    console.error('Send Offering error:', error);
+    const returnUrl = req.body.returnUrl || '/hr/interviews';
+    return res.redirect(`${returnUrl}?error=Gagal+mengirim+offering`);
+  }
+};
+
 module.exports = {
   showHomeHR,
   showDashboard,
@@ -359,6 +419,8 @@ module.exports = {
   createJob,
   showJobDetail,
   updateApplicationStatus,
+  showInterviews,
+  deleteJob,
   markCvViewed,
-  deleteJob
+  sendOffering
 };
