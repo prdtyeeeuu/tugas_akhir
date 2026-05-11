@@ -1,0 +1,2 @@
+ALTER TABLE jobs
+  ADD COLUMN work_address TEXT DEFAULT NULL AFTER location;

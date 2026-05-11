@@ -55,8 +55,9 @@ const showProfile = async (req, res) => {
     // Ambil profile data untuk lokasi
     const profile = {
       location: '-',
-      linkedin: null,
-      github: null
+      instagram: req.user.instagram_url || null,
+      github: req.user.github_url || null,
+      twitter: req.user.twitter_url || null
     };
 
     // Daftar warna banner yang tersedia
@@ -116,7 +117,7 @@ const showProfile = async (req, res) => {
  */
 const showUserProfile = async (req, res) => {
   try {
-    const viewUserId = req.params.id;
+    const viewUserId = parseInt(req.params.id, 10);
 
     // Ambil data user yang dilihat
     const user = await User.findById(viewUserId);
@@ -137,11 +138,15 @@ const showUserProfile = async (req, res) => {
     ]);
 
     // Cek apakah yang melihat adalah pemilik profil
-    const isOwner = req.user && req.user.id === viewUserId;
+    const isOwner = req.user && Number(req.user.id) === Number(viewUserId);
 
     // Jika pemilik, redirect ke halaman profil sendiri
     if (isOwner) {
       return res.redirect('/profile');
+    }
+
+    if (req.user && req.user.role === 'hr' && user.role === 'job_seeker') {
+      await Application.markProfileViewedByHR(viewUserId, req.user.id);
     }
 
     // Pastikan salary fields ada di user object (untuk job seeker)
@@ -225,7 +230,10 @@ const updateProfileDetails = async (req, res) => {
       expected_salary_min, 
       expected_salary_max, 
       open_to_work, 
-      work_preferences 
+      work_preferences,
+      instagram_url,
+      github_url,
+      twitter_url
     } = req.body;
 
     // Build update object based on what's provided
@@ -234,6 +242,9 @@ const updateProfileDetails = async (req, res) => {
     if (about_me !== undefined) updateData.about_me = about_me;
     if (phone !== undefined) updateData.phone = phone;
     if (address !== undefined) updateData.address = address;
+    if (instagram_url !== undefined) updateData.instagram_url = instagram_url || null;
+    if (github_url !== undefined) updateData.github_url = github_url || null;
+    if (twitter_url !== undefined) updateData.twitter_url = twitter_url || null;
     if (expected_salary_min !== undefined) updateData.expected_salary_min = expected_salary_min;
     if (expected_salary_max !== undefined) updateData.expected_salary_max = expected_salary_max;
     if (open_to_work !== undefined) updateData.open_to_work = open_to_work ? 1 : 0;

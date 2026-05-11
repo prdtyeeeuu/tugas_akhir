@@ -6,7 +6,9 @@ const Job = require('../models/Job');
 const Application = require('../models/Application');
 const Category = require('../models/Category');
 const Profile = require('../models/Profile');
-const { formatSalary, formatTimeAgo } = require('../utils/helpers');
+const User = require('../models/User');
+const Warning = require('../models/Warning');
+const { formatSalary, formatTimeAgo, validateReturnUrl } = require('../utils/helpers');
 
 function redirectWithError(res, path, message) {
   return res.redirect(`${path}?error=${encodeURIComponent(message)}`);
@@ -102,12 +104,12 @@ const showDashboard = async (req, res) => {
     const appStats = await Application.getStats(userId);
 
     const stats = {
-      applied: appStats.total,
-      views: 0, // TODO: Implement profile views tracking
-      interviews: appStats.interview,
-      accepted: appStats.accepted,
-      pending: appStats.pending,
-      rejected: appStats.rejected
+      applied: Number(appStats.total || 0),
+      views: Number(appStats.profile_views || 0),
+      interviews: Number(appStats.interview || 0),
+      accepted: Number(appStats.accepted || 0),
+      pending: Number(appStats.pending || 0),
+      rejected: Number(appStats.rejected || 0)
     };
 
     // Mock Activity Data
@@ -139,6 +141,7 @@ const showDashboard = async (req, res) => {
     }
 
     const appliedJobIds = applications.map(app => app.job_id);
+    const warnings = await Warning.findByUserId(userId, 3);
 
     res.render('pages/dashboard', {
       title: 'Dashboard - Lokerin',
@@ -146,7 +149,9 @@ const showDashboard = async (req, res) => {
       stats,
       activity,
       completeness,
-      appliedJobIds
+      appliedJobIds,
+      warnings,
+      formatTimeAgo
     });
   } catch (error) {
     console.error('Dashboard error:', error);
@@ -155,6 +160,8 @@ const showDashboard = async (req, res) => {
       jobs: [],
       stats: { applied: 0, views: 0, interviews: 0 },
       activity: [],
+      warnings: [],
+      formatTimeAgo,
       error: 'Gagal memuat dashboard'
     });
   }
@@ -267,10 +274,10 @@ const showApplications = async (req, res) => {
     // Hitung statistik
     const stats = {
       total: applications.length,
-      interview: applications.filter(app => app.status === 'interview').length,
-      accepted: applications.filter(app => app.status === 'diterima').length,
-      pending: applications.filter(app => app.status === 'pending').length,
-      rejected: applications.filter(app => app.status === 'ditolak').length
+      interview: applications.filter(app => app.status === 'interviewing').length,
+      accepted: applications.filter(app => app.status === 'accepted').length,
+      pending: applications.filter(app => app.status === 'applied').length,
+      rejected: applications.filter(app => app.status === 'declined' || app.status === 'rejected').length
     };
 
     res.render('pages/applications', {
@@ -337,6 +344,18 @@ const showJobDetail = async (req, res) => {
   try {
     const jobId = req.params.id;
     const job = await Job.findById(jobId);
+    const requestedReturnUrl = req.query.returnUrl;
+    let returnUrl = requestedReturnUrl ? validateReturnUrl(requestedReturnUrl) : '';
+
+    if (!requestedReturnUrl) {
+      if (req.query.ref === 'dashboard') {
+        returnUrl = '/dashboard';
+      } else if (req.query.ref === 'home') {
+        returnUrl = '/';
+      } else {
+        returnUrl = '/jobs';
+      }
+    }
 
     if (!job) {
       return res.status(404).render('pages/404', {
@@ -356,7 +375,8 @@ const showJobDetail = async (req, res) => {
       title: `${job.title} - ${job.company}`,
       job,
       formatSalary,
-      hasApplied
+      hasApplied,
+      returnUrl
     });
   } catch (error) {
     console.error('Job detail error:', error);
@@ -382,7 +402,7 @@ const cancelApplication = async (req, res) => {
       return res.redirect('/applications?error=Lamaran+tidak+ditemukan');
     }
 
-    if (app.status !== 'pending') {
+    if (app.status !== 'applied') {
       return res.redirect('/applications?error=Lamaran+tidak+dapat+ditarik');
     }
 
@@ -406,17 +426,21 @@ const respondOffering = async (req, res) => {
   try {
     const applicationId = req.params.id;
     const { action } = req.body;
-    const status = action === 'accept' ? 'diterima' : 'ditolak';
-    
-    // Validasi kepemilikan lamaran
-    const app = await require('../models/Application').findById(applicationId);
-    if (!app || app.user_id !== req.user.id || app.status !== 'offering') {
+
+    if (!['accept', 'reject'].includes(action)) {
       return res.redirect('/applications?error=Aksi+tidak+valid');
     }
-    
-    const sql = 'UPDATE applications SET status = ? WHERE id = ?';
-    await require('../config/db').query(sql, [status, applicationId]);
-    
+
+    const updated = await Application.respondOffering(applicationId, req.user.id, action);
+    if (!updated) {
+      return res.redirect('/applications?error=Offering+tidak+ditemukan+atau+sudah+kedaluwarsa');
+    }
+
+    if (action === 'accept') {
+      await User.update(req.user.id, { open_to_work: 0 });
+      req.user.open_to_work = 0;
+    }
+
     res.redirect('/applications?success=offering_responded');
   } catch (error) {
     console.error('Offering response error:', error);

@@ -14,6 +14,7 @@ const showLoginPage = (req, res) => {
   res.render('pages/auth/login', {
     title: 'Login - Lokerin',
     returnUrl,
+    hideFooter: true,
     req: req
   });
 };
@@ -24,6 +25,7 @@ const showLoginPage = (req, res) => {
 const showRegisterPage = (req, res) => {
   res.render('pages/auth/register', {
     title: 'Register - Lokerin',
+    hideFooter: true,
     req: req
   });
 };
@@ -40,6 +42,7 @@ const login = async (req, res) => {
       return res.render('pages/auth/login', {
         title: 'Login - Lokerin',
         error: 'Email dan password wajib diisi',
+        hideFooter: true,
         req: req
       });
     }
@@ -52,6 +55,7 @@ const login = async (req, res) => {
       return res.render('pages/auth/login', {
         title: 'Login - Lokerin',
         error: 'Email atau password salah',
+        hideFooter: true,
         req: req
       });
     }
@@ -63,6 +67,7 @@ const login = async (req, res) => {
       return res.render('pages/auth/login', {
         title: 'Login - Lokerin',
         error: 'Email atau password salah',
+        hideFooter: true,
         req: req
       });
     }
@@ -90,6 +95,7 @@ const login = async (req, res) => {
     res.render('pages/auth/login', {
       title: 'Login - Lokerin',
       error: 'Terjadi kesalahan. Silakan coba lagi.',
+      hideFooter: true,
       req: req
     });
   }
@@ -109,6 +115,7 @@ const register = async (req, res) => {
         title: 'Register - Lokerin',
         error: 'Semua field wajib diisi',
         formData: { name, email, role },
+        hideFooter: true,
         req: req
       });
     }
@@ -119,6 +126,7 @@ const register = async (req, res) => {
         title: 'Register - Lokerin',
         error: 'Password minimal 6 karakter',
         formData: { name, email, role },
+        hideFooter: true,
         req: req
       });
     }
@@ -130,6 +138,7 @@ const register = async (req, res) => {
         title: 'Register - Lokerin',
         error: 'Format email tidak valid',
         formData: { name, email, role },
+        hideFooter: true,
         req: req
       });
     }
@@ -146,6 +155,7 @@ const register = async (req, res) => {
         title: 'Register - Lokerin',
         error: 'Email sudah terdaftar',
         formData: { name, email, role: userRole },
+        hideFooter: true,
         req: req
       });
     }
@@ -173,6 +183,7 @@ const register = async (req, res) => {
       title: 'Register - Lokerin',
       error: 'Terjadi kesalahan. Silakan coba lagi.',
       formData: req.body,
+      hideFooter: true,
       req: req
     });
   }

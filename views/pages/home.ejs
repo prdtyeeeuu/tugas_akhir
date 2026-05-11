@@ -27,7 +27,7 @@
       <!-- Badge -->
       <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-brand-50 border border-brand-100 rounded-full mb-6">
         <span class="w-1.5 h-1.5 bg-brand-500 rounded-full animate-pulse"></span>
-        <span class="text-xs font-semibold text-brand-700"><%= typeof badgeText !== 'undefined' ? badgeText : "2,400+ lowongan baru minggu ini" %></span>
+        <span class="text-xs font-semibold text-brand-700"><%= (typeof stats !== 'undefined' && stats && typeof stats.newJobsThisWeek !== 'undefined') ? stats.newJobsThisWeek : 0 %> lowongan baru minggu ini</span>
       </div>
 
       <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
@@ -64,17 +64,17 @@
       <!-- Quick stats -->
       <div class="mt-12 flex items-center justify-center gap-8 sm:gap-12 text-center">
         <div>
-          <p class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= (typeof stats !== 'undefined' && stats && stats.jobs) ? stats.jobs : "15K+" %></p>
+          <p class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= (typeof stats !== 'undefined' && stats && typeof stats.jobs !== 'undefined') ? stats.jobs : 0 %></p>
           <p class="text-xs text-slate-400 mt-0.5">Lowongan</p>
         </div>
         <div class="w-px h-10 bg-slate-200"></div>
         <div>
-          <p class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= (typeof stats !== 'undefined' && stats && stats.companies) ? stats.companies : "3K+" %></p>
+          <p class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= (typeof stats !== 'undefined' && stats && typeof stats.companies !== 'undefined') ? stats.companies : 0 %></p>
           <p class="text-xs text-slate-400 mt-0.5">Perusahaan</p>
         </div>
         <div class="w-px h-10 bg-slate-200"></div>
         <div>
-          <p class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= (typeof stats !== 'undefined' && stats && stats.workers) ? stats.workers : "50K+" %></p>
+          <p class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= (typeof stats !== 'undefined' && stats && typeof stats.workers !== 'undefined') ? stats.workers : 0 %></p>
           <p class="text-xs text-slate-400 mt-0.5">Pekerja Ditemukan</p>
         </div>
       </div>
@@ -99,11 +99,11 @@
     <% if (typeof jobs !== 'undefined' && jobs && jobs.length > 0) { %>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <% jobs.slice(0, 6).forEach(function(job) { %>
-          <div class="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-100/40 transition-all duration-300 flex flex-col h-full guest-guard" style="cursor:pointer;" data-href="/jobs/<%= job.id %>">
+          <div class="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-100/40 transition-all duration-300 flex flex-col h-full guest-guard" style="cursor:pointer;" data-href="/jobs/<%= job.id %>?returnUrl=<%= encodeURIComponent('/') %>">
             <div class="flex items-start justify-between mb-4">
               <div class="w-12 h-12 rounded-xl border border-slate-100 flex items-center justify-center bg-white overflow-hidden shrink-0">
                 <% if (job.company_logo) { %>
-                  <img src="/images/companies/<%= job.company_logo %>" alt="<%= job.company %>" class="w-full h-full object-contain">
+                  <img src="/images/companies/<%= job.company_logo %>" alt="<%= job.company %>" class="w-full h-full object-contain" data-fullscreen-image title="Klik untuk lihat fullscreen">
                 <% } else { %>
                   <span class="text-xl font-bold text-brand-600"><%= job.company.charAt(0) %></span>
                 <% } %>
@@ -140,7 +140,7 @@
                   Kompetitif
                 <% } %>
               </div>
-              <a href="/jobs/<%= job.id %>" class="text-sm font-bold text-brand-600 hover:text-brand-700 guest-guard">Lamar Cepat</a>
+              <a href="/jobs/<%= job.id %>?returnUrl=<%= encodeURIComponent('/') %>" class="text-sm font-bold text-brand-600 hover:text-brand-700 guest-guard">Lamar Cepat</a>
             </div>
           </div>
         <% }) %>
@@ -253,7 +253,7 @@
       <div class="relative px-6 sm:px-12 py-14 sm:py-20 text-center">
         <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Siap Memulai Karirmu?</h2>
         <p class="mt-4 text-brand-100 text-base max-w-lg mx-auto leading-relaxed">
-          Bergabung dengan <%= (typeof stats !== 'undefined' && stats && stats.workers) ? stats.workers : "50,000+" %> profesional yang telah menemukan pekerjaan impian mereka melalui lokerin.
+          Bergabung dengan <%= (typeof stats !== 'undefined' && stats && typeof stats.workers !== 'undefined') ? stats.workers : 0 %> profesional yang telah menemukan pekerjaan impian mereka melalui lokerin.
         </p>
         <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <% if (typeof isLoggedIn !== 'undefined' && isLoggedIn) { %>

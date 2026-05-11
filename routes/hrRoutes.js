@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const { companyLogo, offeringDoc } = require('../middleware/upload');
+const { companyLogo } = require('../middleware/upload');
 const hrController = require('../controllers/hrController');
 const { requireHR } = require('../middleware/hrAuth');
 
@@ -36,7 +36,7 @@ router.get('/interviews', hrController.showInterviews);
 router.post('/applications/:id', hrController.updateApplicationStatus);
 
 // POST /hr/applications/:id/offering - Kirim Offering Letter
-router.post('/applications/:id/offering', offeringDoc.single('offering_document'), hrController.sendOffering);
+router.post('/applications/:id/offering', hrController.sendOffering);
 
 // POST /hr/applications/:id/mark-cv-viewed - Tandai CV sebagai sudah dilihat
 router.post('/applications/:id/mark-cv-viewed', hrController.markCvViewed);

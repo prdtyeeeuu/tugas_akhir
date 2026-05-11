@@ -1,0 +1,110 @@
+<div id="rejectionModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
+  <div class="absolute inset-0" onclick="closeRejectionModal()"></div>
+  <div class="relative w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl shadow-slate-900/20" style="font-family: Inter, 'Segoe UI', Arial, sans-serif;">
+    <div class="px-8 pt-8 pb-5 text-center">
+      <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-600 ring-8 ring-red-50/60">
+        <svg width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+        </svg>
+      </div>
+      <h3 class="text-2xl font-bold tracking-tight text-slate-950">Berikan Feedback Penolakan</h3>
+      <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+        Alasan ini akan dikirim ke Gmail pelamar dan tampil di dashboard mereka.
+      </p>
+    </div>
+
+    <div class="px-8 pb-8">
+      <label for="rejectionReasonInput" class="mb-2 block text-sm font-semibold text-slate-700">Alasan penolakan</label>
+      <textarea
+        id="rejectionReasonInput"
+        class="min-h-[120px] w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#dc3545] focus:ring-4 focus:ring-red-100"
+        placeholder="Contoh: Kualifikasi teknis belum memenuhi kriteria spesifik posisi ini..."
+      ></textarea>
+
+      <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          id="rejectionCancelButton"
+          onclick="closeRejectionModal()"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-transparent px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Batal
+        </button>
+        <button
+          type="button"
+          id="rejectionSubmitButton"
+          onclick="confirmRejectionSubmit()"
+          class="inline-flex items-center justify-center rounded-xl border border-[#dc3545] bg-[#dc3545] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-red-200 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-80"
+        >
+          <span id="rejectionSubmitSpinner" class="mr-2 hidden h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
+          <span id="rejectionSubmitText">Kirim Penolakan</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.activeRejectionFormId = null;
+
+  function setRejectionLoading(isLoading) {
+    const submitButton = document.getElementById('rejectionSubmitButton');
+    const cancelButton = document.getElementById('rejectionCancelButton');
+    const spinner = document.getElementById('rejectionSubmitSpinner');
+    const text = document.getElementById('rejectionSubmitText');
+
+    if (!submitButton || !cancelButton || !spinner || !text) return;
+
+    submitButton.disabled = isLoading;
+    cancelButton.disabled = isLoading;
+    spinner.classList.toggle('hidden', !isLoading);
+    text.textContent = isLoading ? 'Mengirim...' : 'Kirim Penolakan';
+  }
+
+  function submitRejection(formId) {
+    window.activeRejectionFormId = formId;
+    const input = document.getElementById('rejectionReasonInput');
+    const modal = document.getElementById('rejectionModal');
+
+    if (input) input.value = '';
+    setRejectionLoading(false);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => input && input.focus(), 80);
+  }
+
+  function closeRejectionModal() {
+    const modal = document.getElementById('rejectionModal');
+    if (!modal || document.getElementById('rejectionSubmitButton')?.disabled) return;
+
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+    window.activeRejectionFormId = null;
+  }
+
+  async function confirmRejectionSubmit() {
+    const form = document.getElementById(window.activeRejectionFormId);
+    const input = document.getElementById('rejectionReasonInput');
+    const reason = (input?.value || '').trim();
+
+    if (!form) return;
+
+    if (!reason) {
+      const ok = await lokerinConfirm('Alasan penolakan masih kosong. Apakah yakin ingin mengirim pesan default ke pelamar?', {
+        title: 'Kirim Pesan Default?',
+        confirmText: 'Kirim Default',
+        cancelText: 'Isi Alasan',
+        danger: true
+      });
+
+      if (!ok) {
+        setTimeout(() => input && input.focus(), 80);
+        return;
+      }
+    }
+
+    form.querySelector('input[name="reason"]').value = reason;
+    setRejectionLoading(true);
+    form.submit();
+  }
+</script>

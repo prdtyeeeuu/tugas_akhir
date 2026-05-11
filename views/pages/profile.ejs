@@ -395,11 +395,15 @@
 
       <!-- Sosial Media -->
       <div class="bg-white rounded-2xl border border-slate-200 p-5">
-        <h2 class="text-sm font-bold text-slate-900 mb-3">Sosial Media</h2>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold text-slate-900">Sosial Media</h2>
+          <button onclick="document.getElementById('modal-edit-profile').classList.add('active')" class="text-xs text-brand-600 hover:underline font-semibold">Edit</button>
+        </div>
         <div class="space-y-1">
-          <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors text-slate-600 hover:text-brand-600"><span class="iconify text-lg" data-icon="lucide:linkedin"></span><span class="text-sm font-medium">LinkedIn</span></a>
-          <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors text-slate-600 hover:text-brand-600"><span class="iconify text-lg" data-icon="lucide:github"></span><span class="text-sm font-medium">GitHub</span></a>
-          <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors text-slate-600 hover:text-brand-600"><span class="iconify text-lg" data-icon="lucide:twitter"></span><span class="text-sm font-medium">Twitter</span></a>
+          <a id="ui-instagram-link" href="<%= user.instagram_url || '#' %>" target="_blank" class="<%= user.instagram_url ? '' : 'hidden' %> flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors text-slate-600 hover:text-brand-600"><span class="iconify text-lg" data-icon="lucide:instagram"></span><span class="text-sm font-medium">Instagram</span></a>
+          <a id="ui-github-link" href="<%= user.github_url || '#' %>" target="_blank" class="<%= user.github_url ? '' : 'hidden' %> flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors text-slate-600 hover:text-brand-600"><span class="iconify text-lg" data-icon="lucide:github"></span><span class="text-sm font-medium">GitHub</span></a>
+          <a id="ui-twitter-link" href="<%= user.twitter_url || '#' %>" target="_blank" class="<%= user.twitter_url ? '' : 'hidden' %> flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors text-slate-600 hover:text-brand-600"><span class="iconify text-lg" data-icon="lucide:twitter"></span><span class="text-sm font-medium">Twitter</span></a>
+          <p id="ui-social-empty" class="<%= (user.instagram_url || user.github_url || user.twitter_url) ? 'hidden' : '' %> text-slate-400 text-xs italic p-2">Belum ada sosial media. Klik Edit untuk menambahkan.</p>
         </div>
       </div>
 
@@ -445,6 +449,24 @@
           <input type="number" id="inp-salary-min" value="<%= salaryMin %>" placeholder="Min" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <span class="text-slate-400 font-medium">-</span>
           <input type="number" id="inp-salary-max" value="<%= salaryMax %>" placeholder="Max" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+      </div>
+      <!-- Sosial Media -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">Sosial Media</label>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Instagram</label>
+            <input type="url" id="inp-instagram-url" value="<%= user.instagram_url || '' %>" placeholder="https://instagram.com/username" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">GitHub</label>
+            <input type="url" id="inp-github-url" value="<%= user.github_url || '' %>" placeholder="https://github.com/username" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Twitter / X</label>
+            <input type="url" id="inp-twitter-url" value="<%= user.twitter_url || '' %>" placeholder="https://x.com/username" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
         </div>
       </div>
       <% if (user.role !== 'hr') { %>
@@ -708,6 +730,9 @@
     const phone = document.getElementById('inp-phone').value;
     const salaryMin = document.getElementById('inp-salary-min').value;
     const salaryMax = document.getElementById('inp-salary-max').value;
+    const instagram_url = document.getElementById('inp-instagram-url').value.trim();
+    const github_url = document.getElementById('inp-github-url').value.trim();
+    const twitter_url = document.getElementById('inp-twitter-url').value.trim();
     const openWorkEl = document.getElementById('inp-open-work');
     const openWork = openWorkEl ? openWorkEl.checked : false;
     const prefs = Array.from(document.querySelectorAll('.pref-checkbox:checked')).map(c => c.value);
@@ -717,7 +742,7 @@
       const res = await fetch('/profile/update-details', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bio, about_me, address, phone, expected_salary_min: salaryMin, expected_salary_max: salaryMax, open_to_work: openWork, work_preferences: JSON.stringify(prefs) })
+        body: JSON.stringify({ bio, about_me, address, phone, expected_salary_min: salaryMin, expected_salary_max: salaryMax, instagram_url, github_url, twitter_url, open_to_work: openWork, work_preferences: JSON.stringify(prefs) })
       });
       const data = await res.json();
       if (data.success) {
@@ -726,6 +751,10 @@
         document.getElementById('ui-about').innerText = about_me || 'Belum ada deskripsi profil.';
         document.getElementById('ui-address').innerText = address || 'Lokasi belum diatur';
         document.getElementById('ui-phone').innerText = phone || 'Nomor belum diatur';
+        updateSocialLink('ui-instagram-link', instagram_url);
+        updateSocialLink('ui-github-link', github_url);
+        updateSocialLink('ui-twitter-link', twitter_url);
+        document.getElementById('ui-social-empty').classList.toggle('hidden', Boolean(instagram_url || github_url || twitter_url));
         if (salaryMin && salaryMax) {
           const formatSal = (amount) => {
             if (!amount) return '';
@@ -745,6 +774,18 @@
         showToast('Profil berhasil disimpan!', 'success');
       } else { showToast(data.error || 'Gagal menyimpan', 'error'); }
     } catch(e) { showToast('Koneksi gagal ke server', 'error'); }
+  }
+
+  function updateSocialLink(id, url) {
+    const link = document.getElementById(id);
+    if (!link) return;
+    if (url) {
+      link.href = url;
+      link.classList.remove('hidden');
+    } else {
+      link.href = '#';
+      link.classList.add('hidden');
+    }
   }
 
   // ====== SKILLS ======

@@ -36,9 +36,10 @@ const requireAuth = async (req, res, next) => {
       return res.redirect('/login');
     }
 
-    const allowedForHR = ['/', '/profile', '/chat'];
-    const isAllowed = allowedForHR.some(p => req.path === p || req.path.startsWith(p + '/') || req.path.startsWith('/hr/'));
-    if (decoded.role === 'hr' && !isAllowed) {
+    const currentPath = req.originalUrl.split('?')[0];
+    const allowedForHR = ['/', '/profile', '/chat', '/reports'];
+    const isAllowed = allowedForHR.some(p => currentPath === p || currentPath.startsWith(p + '/') || currentPath.startsWith('/hr/'));
+    if (user.role === 'hr' && !isAllowed) {
       return res.redirect('/hr/home');
     }
 

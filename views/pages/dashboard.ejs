@@ -17,6 +17,31 @@
     </a>
   </div>
 
+  <% if (typeof warnings !== 'undefined' && warnings && warnings.length > 0) { %>
+    <div style="margin-bottom: 24px; background: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #f59e0b; border-radius: 12px; padding: 18px 20px;">
+      <div style="display: flex; align-items: flex-start; gap: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+          </svg>
+        </div>
+        <div style="min-width: 0;">
+          <h3 style="font-size: 16px; font-weight: 700; color: #92400e; margin: 0 0 6px;">Peringatan dari Admin</h3>
+          <p style="font-size: 14px; color: #78350f; margin: 0 0 10px;"><%= warnings[0].message %></p>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <span style="font-size: 12px; color: #a16207;"><%= formatTimeAgo(warnings[0].created_at) %></span>
+            <a href="/chat" style="font-size: 13px; font-weight: 600; color: #2563eb; text-decoration: none;">Lihat semua peringatan</a>
+            <form action="/warnings/<%= warnings[0].id %>/acknowledge" method="POST" style="display: inline;">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+              <input type="hidden" name="returnUrl" value="/dashboard">
+              <button type="submit" style="border: 0; background: transparent; color: #92400e; font-size: 13px; font-weight: 700; cursor: pointer; padding: 0;">Saya mengerti</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
   <!-- Statistics Cards -->
   <div class="stats-grid">
     <div class="stat-card fade-in-up delay-100">
@@ -75,7 +100,7 @@
               var initials = (job.company || 'XX').substring(0, 2).toUpperCase();
             %>
             <div class="job-list-item" onclick="window.location.href='/jobs/<%= job.id %>?ref=dashboard'" style="cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='transparent'">
-              <div class="job-mini-logo company-logo-small" data-logo="<%= job.company_logo || '' %>">
+              <div class="job-mini-logo company-logo-small" data-logo="<%= job.company_logo || '' %>" <%- job.company_logo ? 'data-fullscreen-image-src="/images/companies/' + job.company_logo + '" title="Klik untuk lihat fullscreen"' : '' %>>
                 <% if (!job.company_logo) { %>
                 <span style="font-size: 14px; font-weight: 600; color: #2563eb;"><%= initials %></span>
                 <% } %>
@@ -110,7 +135,7 @@
         
         <% 
           // Use completeness from backend (calculated by Profile.calculateCompleteness)
-          let completenessScore = typeof completeness !== 'undefined' ? completeness : 0;
+          var completenessScore = typeof completeness !== 'undefined' ? completeness : 0;
           // Fallback calculation if backend didn't provide it
           if (!completeness) {
             completenessScore = 20;
@@ -119,7 +144,7 @@
             if (user.bio) completenessScore += 20;
             if (completenessScore > 100) completenessScore = 100;
           }
-          const completenessText = completenessScore >= 80 ? 'Profil Anda hampir sempurna!' : completenessScore >= 50 ? 'Tambahkan keahlian dan pengalaman kerja.' : 'Lengkapi foto, bio, keahlian, dan pengalaman.';
+          var completenessText = completenessScore >= 80 ? 'Profil Anda hampir sempurna!' : completenessScore >= 50 ? 'Tambahkan keahlian dan pengalaman kerja.' : 'Lengkapi foto, bio, keahlian, dan pengalaman.';
         %>
         
         <div class="progress-label">

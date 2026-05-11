@@ -4,6 +4,22 @@
  */
 const { query } = require('../config/db');
 
+const STATUS_ALIASES = {
+  pending: 'applied',
+  review: 'applied',
+  interview: 'interviewing',
+  offering: 'offered',
+  diterima: 'accepted',
+  ditolak: 'rejected',
+  declined: 'rejected'
+};
+
+const VALID_STATUSES = ['applied', 'interviewing', 'offered', 'accepted', 'declined', 'rejected', 'expired', 'withdrawn'];
+
+function normalizeStatus(status) {
+  return STATUS_ALIASES[status] || status;
+}
+
 const Application = {
   /**
    * Membuat lamaran baru
@@ -20,8 +36,8 @@ const Application = {
     }
 
     const sql = `
-      INSERT INTO applications (user_id, job_id, status, cv_image) 
-      VALUES (?, ?, 'pending', ?)
+      INSERT INTO applications (user_id, job_id, status, cv_image)
+      VALUES (?, ?, 'applied', ?)
     `;
     
     const result = await query(sql, [user_id, job_id, cv_image || null]);
@@ -97,8 +113,8 @@ const Application = {
    * @returns {Promise} - Hasil update
    */
   updateStatus: async (id, status) => {
-    const validStatuses = ['pending', 'review', 'interview', 'diterima', 'ditolak'];
-    if (!validStatuses.includes(status)) {
+    const normalizedStatus = normalizeStatus(status);
+    if (!VALID_STATUSES.includes(normalizedStatus)) {
       throw new Error('Status tidak valid');
     }
 
@@ -109,13 +125,45 @@ const Application = {
     }
 
     // Jika aplikasi sudah ditolak, tidak bisa diubah
-    if (currentApp.status === 'ditolak') {
+    if (currentApp.status === 'declined' || currentApp.status === 'rejected') {
       throw new Error('Tidak dapat mengubah status pelamar yang sudah ditolak');
     }
 
     const sql = 'UPDATE applications SET status = ? WHERE id = ?';
-    await query(sql, [status, id]);
+    await query(sql, [normalizedStatus, id]);
     return true;
+  },
+
+  scheduleInterview: async (id, hrId, interviewData) => {
+    const { interviewDate, interviewTime, interviewMethod, interviewLocation } = interviewData;
+    const sql = `
+      UPDATE applications a
+      JOIN jobs j ON a.job_id = j.id
+      SET
+        a.status = 'interviewing',
+        a.interview_date = ?,
+        a.interview_time = ?,
+        a.interview_method = ?,
+        a.interview_location = ?
+      WHERE a.id = ? AND j.hr_id = ?
+    `;
+    const result = await query(sql, [interviewDate, interviewTime, interviewMethod, interviewLocation, id, hrId]);
+    return result.affectedRows > 0;
+  },
+
+  rejectByHR: async (id, hrId, reason) => {
+    const sql = `
+      UPDATE applications a
+      JOIN jobs j ON a.job_id = j.id
+      SET
+        a.status = 'rejected',
+        a.rejection_reason = ?
+      WHERE a.id = ?
+        AND j.hr_id = ?
+        AND a.status NOT IN ('accepted', 'rejected', 'declined', 'expired', 'withdrawn')
+    `;
+    const result = await query(sql, [reason, id, hrId]);
+    return result.affectedRows > 0;
   },
 
   /**
@@ -129,6 +177,19 @@ const Application = {
     return true;
   },
 
+  markProfileViewedByHR: async (userId, hrId) => {
+    const sql = `
+      UPDATE applications a
+      JOIN jobs j ON a.job_id = j.id
+      SET a.cv_is_viewed = 1
+      WHERE a.user_id = ?
+        AND j.hr_id = ?
+        AND a.cv_is_viewed = 0
+    `;
+    const result = await query(sql, [userId, hrId]);
+    return result.affectedRows || 0;
+  },
+
   /**
    * Mendapatkan detail lamaran berdasarkan ID
    * @param {number} id - ID lamaran
@@ -136,7 +197,18 @@ const Application = {
    */
   findById: async (id) => {
     const sql = `
-      SELECT a.*, j.title as job_title, j.company, u.name as applicant_name, u.email as applicant_email
+      SELECT
+        a.*,
+        j.title as job_title,
+        j.company,
+        j.location as job_location,
+        j.work_address as job_work_address,
+        j.salary_min,
+        j.salary_max,
+        j.hr_id,
+        u.name as applicant_name,
+        u.email as applicant_email,
+        u.address as applicant_address
       FROM applications a
       JOIN jobs j ON a.job_id = j.id
       JOIN users u ON a.user_id = u.id
@@ -167,10 +239,11 @@ const Application = {
     const sql = `
       SELECT
         COUNT(*) as total,
-        SUM(CASE WHEN status = 'interview' THEN 1 ELSE 0 END) as interview,
-        SUM(CASE WHEN status = 'diterima' THEN 1 ELSE 0 END) as accepted,
-        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-        SUM(CASE WHEN status = 'ditolak' THEN 1 ELSE 0 END) as rejected
+        COALESCE(SUM(CASE WHEN status = 'interviewing' OR interview_date IS NOT NULL THEN 1 ELSE 0 END), 0) as interview,
+        COALESCE(SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END), 0) as accepted,
+        COALESCE(SUM(CASE WHEN status = 'applied' THEN 1 ELSE 0 END), 0) as pending,
+        COALESCE(SUM(CASE WHEN status IN ('declined', 'rejected') THEN 1 ELSE 0 END), 0) as rejected,
+        COALESCE(SUM(CASE WHEN cv_is_viewed = 1 THEN 1 ELSE 0 END), 0) as profile_views
       FROM applications
       WHERE user_id = ?
     `;
@@ -180,7 +253,8 @@ const Application = {
       interview: 0,
       accepted: 0,
       pending: 0,
-      rejected: 0
+      rejected: 0,
+      profile_views: 0
     };
   },
 
@@ -204,7 +278,7 @@ const Application = {
       FROM applications a
       JOIN users u ON a.user_id = u.id
       JOIN jobs j ON a.job_id = j.id
-      WHERE j.hr_id = ? AND a.status = 'interview'
+      WHERE j.hr_id = ? AND a.status = 'interviewing'
       ORDER BY a.updated_at DESC
     `;
     return await query(sql, [hrId]);
@@ -216,10 +290,36 @@ const Application = {
    * @param {string} offeringDocument - Nama file offering
    * @returns {Promise}
    */
-  sendOffering: async (id, offeringDocument) => {
-    const sql = 'UPDATE applications SET status = ?, offering_document = ? WHERE id = ?';
-    const result = await query(sql, ['offering', offeringDocument, id]);
+  sendOffering: async (id, documentPath, expiredAt) => {
+    const sql = 'UPDATE applications SET status = ?, document_path = ?, expired_at = ? WHERE id = ?';
+    const result = await query(sql, ['offered', documentPath, expiredAt, id]);
     return result.affectedRows > 0;
+  },
+
+  respondOffering: async (id, userId, action) => {
+    const nextStatus = action === 'accept' ? 'accepted' : 'declined';
+    const sql = `
+      UPDATE applications
+      SET status = ?
+      WHERE id = ?
+        AND user_id = ?
+        AND status = 'offered'
+        AND (expired_at IS NULL OR expired_at >= NOW())
+    `;
+    const result = await query(sql, [nextStatus, id, userId]);
+    return result.affectedRows > 0;
+  },
+
+  expireOldOfferings: async () => {
+    const sql = `
+      UPDATE applications
+      SET status = 'expired'
+      WHERE status = 'offered'
+        AND expired_at IS NOT NULL
+        AND expired_at < NOW()
+    `;
+    const result = await query(sql);
+    return result.affectedRows || 0;
   }
 };
 

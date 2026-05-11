@@ -1,0 +1,56 @@
+<div id="imageLightbox" class="fixed inset-0 z-[130] hidden items-center justify-center bg-slate-950/90 p-4 backdrop-blur-sm">
+  <button
+    type="button"
+    id="imageLightboxClose"
+    class="absolute right-5 top-5 rounded-full bg-white/10 p-3 text-white transition hover:bg-white/20"
+    aria-label="Tutup gambar fullscreen"
+  >
+    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+  </button>
+  <img id="imageLightboxImg" src="" alt="" class="max-h-[88vh] max-w-[92vw] rounded-xl object-contain shadow-2xl">
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const lightbox = document.getElementById('imageLightbox');
+    const image = document.getElementById('imageLightboxImg');
+    const closeButton = document.getElementById('imageLightboxClose');
+
+    function closeImageLightbox() {
+      lightbox.classList.add('hidden');
+      lightbox.classList.remove('flex');
+      image.src = '';
+      image.alt = '';
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('[data-fullscreen-image], [data-fullscreen-image-src]').forEach(function(trigger) {
+      trigger.style.cursor = 'zoom-in';
+      trigger.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const imageSrc = trigger.dataset.fullscreenImageSrc || trigger.getAttribute('src');
+        if (!imageSrc) return;
+
+        image.src = imageSrc;
+        image.alt = trigger.getAttribute('alt') || 'Foto lowongan';
+        lightbox.classList.remove('hidden');
+        lightbox.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    closeButton.addEventListener('click', closeImageLightbox);
+    lightbox.addEventListener('click', function(event) {
+      if (event.target === lightbox) closeImageLightbox();
+    });
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && !lightbox.classList.contains('hidden')) {
+        closeImageLightbox();
+      }
+    });
+  });
+</script>

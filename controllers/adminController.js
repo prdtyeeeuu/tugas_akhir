@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const Report = require('../models/Report');
 
 const adminController = {
   // Tampilkan dashboard admin
@@ -8,11 +9,13 @@ const adminController = {
       const userCountRows = await db.query('SELECT COUNT(*) as count FROM users');
       const jobCountRows = await db.query('SELECT COUNT(*) as count FROM jobs');
       const applicationCountRows = await db.query('SELECT COUNT(*) as count FROM applications');
+      const pendingReports = await Report.getPendingCount();
       
       const stats = {
         users: userCountRows[0].count,
         jobs: jobCountRows[0].count,
-        applications: applicationCountRows[0].count
+        applications: applicationCountRows[0].count,
+        pendingReports
       };
 
       // Get recent jobs
@@ -36,7 +39,7 @@ const adminController = {
   // Tampilkan daftar users
   showUsers: async (req, res, next) => {
     try {
-      const page = parseInt(req.query.page) || 1;
+      const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
       const limit = 10;
       const offset = (page - 1) * limit;
 
@@ -44,8 +47,8 @@ const adminController = {
       const totalUsers = countResult[0].count;
       const totalPages = Math.ceil(totalUsers / limit);
 
-      const users = await db.query(
-        'SELECT id, name, email, role, created_at, status FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?',
+      const users = await db.rawQuery(
+        'SELECT id, name, email, role, profile_image, created_at, status FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?',
         [limit, offset]
       );
 
@@ -181,7 +184,7 @@ const adminController = {
   // Tampilkan daftar jobs
   showJobs: async (req, res, next) => {
     try {
-      const page = parseInt(req.query.page) || 1;
+      const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
       const limit = 10;
       const offset = (page - 1) * limit;
 
@@ -189,8 +192,8 @@ const adminController = {
       const totalJobs = countResult[0].count;
       const totalPages = Math.ceil(totalJobs / limit);
 
-      const jobs = await db.query(`
-        SELECT j.id, j.title, j.company, j.location, j.type, j.status, j.created_at, u.name as hr_name
+      const jobs = await db.rawQuery(`
+        SELECT j.id, j.title, j.company, j.company_logo, j.location, j.type, j.status, j.created_at, u.name as hr_name
         FROM jobs j
         LEFT JOIN users u ON j.hr_id = u.id
         ORDER BY j.created_at DESC
@@ -229,10 +232,12 @@ const adminController = {
   // Proses tambah job
   createJob: async (req, res, next) => {
     try {
-      const { title, company, location, type, category, status, hr_id, description, salary_min, salary_max, deadline } = req.body;
+      const { title, company, location, work_address, type, category, status, hr_id, description, salary_min, salary_max, deadline } = req.body;
+      const companyLogo = req.file ? req.file.filename : null;
+
       await db.query(
-        'INSERT INTO jobs (title, company, location, type, category, status, hr_id, description, salary_min, salary_max, deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [title, company, location, type, category, status || 'active', hr_id || null, description, salary_min || null, salary_max || null, deadline || null]
+        'INSERT INTO jobs (title, company, location, work_address, type, category, status, hr_id, description, salary_min, salary_max, deadline, company_logo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [title, company, location, work_address || null, type, category || null, status || 'active', hr_id || null, description, salary_min || null, salary_max || null, deadline || null, companyLogo]
       );
       res.redirect('/admin/jobs');
     } catch (error) {
@@ -263,12 +268,33 @@ const adminController = {
   updateJob: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { title, company, location, type, category, status, hr_id, description, salary_min, salary_max, deadline } = req.body;
-      
-      await db.query(
-        'UPDATE jobs SET title=?, company=?, location=?, type=?, category=?, status=?, hr_id=?, description=?, salary_min=?, salary_max=?, deadline=? WHERE id=?',
-        [title, company, location, type, category, status, hr_id || null, description, salary_min || null, salary_max || null, deadline || null, id]
-      );
+      const { title, company, location, work_address, type, category, status, hr_id, description, salary_min, salary_max, deadline } = req.body;
+      const params = [
+        title,
+        company,
+        location,
+        work_address || null,
+        type,
+        category || null,
+        status,
+        hr_id || null,
+        description,
+        salary_min || null,
+        salary_max || null,
+        deadline || null
+      ];
+
+      let sql = 'UPDATE jobs SET title=?, company=?, location=?, work_address=?, type=?, category=?, status=?, hr_id=?, description=?, salary_min=?, salary_max=?, deadline=?';
+
+      if (req.file) {
+        sql += ', company_logo=?';
+        params.push(req.file.filename);
+      }
+
+      sql += ' WHERE id=?';
+      params.push(id);
+
+      await db.query(sql, params);
       res.redirect('/admin/jobs');
     } catch (error) {
       next(error);
@@ -372,6 +398,89 @@ const adminController = {
         fs.unlinkSync(filepath);
       }
       res.redirect('/admin/images');
+    } catch (error) {
+      next(error);
+    }
+  }
+  ,
+
+  showReports: async (req, res, next) => {
+    try {
+      const status = req.query.status || 'pending';
+      const page = req.query.page || 1;
+      const { reports, pagination } = await Report.findAll({ status, page, limit: 10 });
+
+      res.render('pages/admin/reports', {
+        title: 'Reports | Lokerin',
+        reports,
+        pagination,
+        selectedStatus: status,
+        success: req.query.success || null,
+        error: req.query.error || null,
+        active: 'admin-reports'
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  updateReportStatus: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { status, admin_note } = req.body;
+      const allowed = ['pending', 'reviewed', 'resolved', 'dismissed'];
+
+      if (!allowed.includes(status)) {
+        return res.redirect('/admin/reports?error=Status+laporan+tidak+valid');
+      }
+
+      await Report.updateStatus(id, status, req.user.id, admin_note || null);
+      res.redirect('/admin/reports?success=' + encodeURIComponent('Status laporan berhasil diperbarui.'));
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  actionReport: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { action, admin_note } = req.body;
+      const report = await Report.findById(id);
+
+      if (!report) {
+        return res.redirect('/admin/reports?error=Laporan+tidak+ditemukan');
+      }
+
+      if (action === 'suspend_user') {
+        let userId = null;
+        if (report.target_type === 'user') {
+          userId = report.target_id;
+        } else if (report.target_type === 'job') {
+          const rows = await db.query('SELECT hr_id FROM jobs WHERE id = ?', [report.target_id]);
+          userId = rows[0]?.hr_id || null;
+        }
+
+        if (!userId || Number(userId) === Number(req.user.id)) {
+          return res.redirect('/admin/reports?error=Akun+target+tidak+valid');
+        }
+
+        await db.query("UPDATE users SET status = 'suspended' WHERE id = ?", [userId]);
+        await Report.updateStatus(id, 'resolved', req.user.id, admin_note || 'Akun target ditangguhkan oleh admin.');
+        return res.redirect('/admin/reports?success=' + encodeURIComponent('Akun target berhasil disuspend dan laporan ditandai selesai.'));
+      } else if (action === 'suspend_job') {
+        if (report.target_type !== 'job') {
+          return res.redirect('/admin/reports?error=Laporan+ini+bukan+laporan+lowongan');
+        }
+
+        await db.query("UPDATE jobs SET status = 'suspended' WHERE id = ?", [report.target_id]);
+        await Report.updateStatus(id, 'resolved', req.user.id, admin_note || 'Lowongan ditangguhkan oleh admin.');
+        return res.redirect('/admin/reports?success=' + encodeURIComponent('Lowongan berhasil disuspend dan laporan ditandai selesai.'));
+      } else if (action === 'dismiss') {
+        await Report.updateStatus(id, 'dismissed', req.user.id, admin_note || 'Laporan ditolak oleh admin.');
+        return res.redirect('/admin/reports?success=' + encodeURIComponent('Laporan berhasil ditolak.'));
+      } else {
+        return res.redirect('/admin/reports?error=Aksi+tidak+valid');
+      }
     } catch (error) {
       next(error);
     }

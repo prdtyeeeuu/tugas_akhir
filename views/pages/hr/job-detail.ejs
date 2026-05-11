@@ -277,11 +277,11 @@
 
   <!-- Main Content -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <a href="/hr/jobs" class="btn-back">
+    <a href="<%= typeof returnUrl !== 'undefined' ? returnUrl : '/hr/jobs' %>" class="btn-back">
       <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
       </svg>
-      Kembali ke Kelola Lowongan
+      Kembali
     </a>
 
     <!-- Job Header -->
@@ -369,15 +369,15 @@
           <!-- Stats Summary -->
           <div class="stats-summary">
             <div class="stat-box">
-              <h4 class="text-yellow-600"><%= applicants.filter(a => a.status === 'pending').length %></h4>
+              <h4 class="text-yellow-600"><%= applicants.filter(a => a.status === 'applied').length %></h4>
               <p>Pending</p>
             </div>
             <div class="stat-box">
-              <h4 class="text-green-600"><%= applicants.filter(a => a.status === 'diterima').length %></h4>
+              <h4 class="text-green-600"><%= applicants.filter(a => a.status === 'accepted').length %></h4>
               <p>Diterima</p>
             </div>
             <div class="stat-box">
-              <h4 class="text-red-600"><%= applicants.filter(a => a.status === 'ditolak').length %></h4>
+              <h4 class="text-red-600"><%= applicants.filter(a => a.status === 'declined' || a.status === 'rejected').length %></h4>
               <p>Ditolak</p>
             </div>
           </div>
@@ -409,23 +409,24 @@
                   </div>
                 </div>
                 <div class="action-buttons">
-                  <% if (app.status === 'pending') { %>
-                    <form action="/hr/applications/<%= app.id %>" method="POST" style="display: inline;">
+                  <% if (app.status === 'applied') { %>
+                    <button type="button" class="btn-sm btn-accept" onclick="openInterviewModal('<%= app.id %>')">Panggil Wawancara</button>
+                    <form id="reject-form-<%= app.id %>" action="/applications/<%= app.id %>/reject" method="POST" style="display: inline;">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                      <input type="hidden" name="status" value="interview">
+                      <input type="hidden" name="reason" value="">
                       <input type="hidden" name="returnUrl" value="/hr/jobs/<%= job.id %>">
-                      <button type="submit" class="btn-sm btn-accept">Panggil Wawancara</button>
+                      <button type="button" class="btn-sm btn-reject" onclick="submitRejection('reject-form-<%= app.id %>')">Tolak</button>
                     </form>
-                    <form action="/hr/applications/<%= app.id %>" method="POST" style="display: inline;">
-                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                      <input type="hidden" name="status" value="ditolak">
-                      <input type="hidden" name="returnUrl" value="/hr/jobs/<%= job.id %>">
-                      <button type="submit" class="btn-sm btn-reject">Tolak</button>
-                    </form>
-                  <% } else if (app.status === 'ditolak') { %>
+                  <% } else if (app.status === 'declined' || app.status === 'rejected') { %>
                     <span class="btn-sm btn-reject opacity-60 cursor-not-allowed" title="Pelamar sudah ditolak" style="background: #ef4444; color: white; border: none;">Ditolak</span>
-                  <% } else if (app.status === 'interview') { %>
+                  <% } else if (app.status === 'interviewing') { %>
                     <span class="btn-sm btn-accept opacity-60 cursor-not-allowed" title="Pelamar sudah dipanggil untuk wawancara" style="background: #10b981; color: white; border: none;">Panggilan Wawancara</span>
+                  <% } else if (app.status === 'offered') { %>
+                    <span class="btn-sm btn-accept opacity-60 cursor-not-allowed" style="background: #2563eb; color: white; border: none;">Offering Terkirim</span>
+                  <% } else if (app.status === 'accepted') { %>
+                    <span class="btn-sm btn-accept opacity-60 cursor-not-allowed" style="background: #16a34a; color: white; border: none;">Diterima</span>
+                  <% } else if (app.status === 'expired') { %>
+                    <span class="btn-sm btn-reject opacity-60 cursor-not-allowed" style="background: #6b7280; color: white; border: none;">Expired</span>
                   <% } %>
                   <% if (app.cv_image) { %>
                     <button type="button" class="btn-sm bg-purple-600 hover:bg-purple-700 text-white border-0 transition-colors" 
@@ -453,6 +454,51 @@
   </div>
 </div>
 
+<!-- Modal Jadwal Wawancara -->
+<div id="interviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-60 px-4">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b">
+      <h3 class="text-lg font-bold text-gray-900">Jadwalkan Wawancara</h3>
+      <button type="button" onclick="closeInterviewModal()" class="text-gray-400 hover:text-gray-600">
+        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <form id="interviewForm" method="POST" class="p-6 space-y-4">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="returnUrl" value="/hr/jobs/<%= job.id %>">
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Wawancara</label>
+        <input type="date" name="interviewDate" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Waktu Wawancara</label>
+        <input type="time" name="interviewTime" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Metode</label>
+        <select name="interviewMethod" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none">
+          <option value="">Pilih metode</option>
+          <option value="Online">Online</option>
+          <option value="Tatap Muka">Tatap Muka</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi / Link</label>
+        <input type="text" name="interviewLocation" required placeholder="Contoh: https://meet.google.com/... atau alamat kantor" class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none">
+      </div>
+
+      <div class="flex justify-end gap-3 pt-3 border-t">
+        <button type="button" onclick="closeInterviewModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Kirim Undangan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal View CV -->
 <div id="cvModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-75 transition-opacity">
   <div class="bg-white rounded-xl shadow-2xl p-4 w-full max-w-4xl mx-4 transform scale-95 transition-transform" style="font-family: 'Inter', sans-serif; height: 90vh; display: flex; flex-direction: column;">
@@ -473,7 +519,25 @@
   </div>
 </div>
 
+<%- include('../../partials/rejection-modal') %>
+
 <script>
+  function openInterviewModal(applicationId) {
+    const modal = document.getElementById('interviewModal');
+    const form = document.getElementById('interviewForm');
+
+    form.action = `/applications/${applicationId}/invite`;
+    form.reset();
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeInterviewModal() {
+    const modal = document.getElementById('interviewModal');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+  }
+
   // Fitur View CV
   async function viewCv(appId, cvImage) {
     const modal = document.getElementById('cvModal');

@@ -47,7 +47,7 @@ const User = {
     try {
       const sql = `SELECT id, name, email, role, profile_image, banner_image, banner_color, bio, about_me,
                    phone, address, expected_salary_min, expected_salary_max, open_to_work,
-                   work_preferences, created_at, status FROM users WHERE id = ?`;
+                   work_preferences, instagram_url, github_url, twitter_url, created_at, status FROM users WHERE id = ?`;
       const results = await query(sql, [id]);
       return results[0] || null;
     } catch(e) {
@@ -71,7 +71,7 @@ const User = {
     // Build dynamic query berdasarkan field yang ada
     for (const [key, value] of Object.entries(updateData)) {
       // Allow null values for nullable fields (profile_image, banner_image, banner_color)
-      const nullableFields = ['profile_image', 'banner_image', 'banner_color', 'bio', 'about_me'];
+      const nullableFields = ['profile_image', 'banner_image', 'banner_color', 'bio', 'about_me', 'instagram_url', 'github_url', 'twitter_url'];
       
       // Skip only if value is undefined
       // Allow null for nullable fields, skip null for non-nullable fields

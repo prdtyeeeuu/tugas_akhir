@@ -11,14 +11,14 @@ const Job = {
    * @returns {Promise} - ID job yang baru dibuat
    */
   create: async (jobData) => {
-    const { title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline, requirements } = jobData;
+    const { title, company, location, work_address, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline, requirements } = jobData;
 
     const sql = `
-      INSERT INTO jobs (title, company, location, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline, requirements)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO jobs (title, company, location, work_address, category, type, description, salary_min, salary_max, hr_id, company_logo, deadline, requirements)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const result = await query(sql, [title, company, location, category, type, description, salary_min || null, salary_max || null, hr_id, company_logo || null, deadline || null, requirements || null]);
+    const result = await query(sql, [title, company, location, work_address || null, category, type, description, salary_min || null, salary_max || null, hr_id, company_logo || null, deadline || null, requirements || null]);
     return result.insertId;
   },
 
@@ -29,7 +29,7 @@ const Job = {
    * @returns {Promise} - Array of jobs + total count
    */
   findAll: async (filters = {}, pagination = {}) => {
-    let whereClause = ' AND (j.deadline IS NULL OR j.deadline > CURDATE())';
+    let whereClause = " AND (j.status IS NULL OR j.status = 'active') AND (j.deadline IS NULL OR j.deadline > CURDATE())";
     const params = [];
     const countParams = [];
 
@@ -106,7 +106,8 @@ const Job = {
       SELECT j.*, u.name as hr_name, u.profile_image as hr_image 
       FROM jobs j 
       LEFT JOIN users u ON j.hr_id = u.id 
-      WHERE j.deadline IS NULL OR j.deadline > CURDATE()
+      WHERE (j.status IS NULL OR j.status = 'active')
+        AND (j.deadline IS NULL OR j.deadline > CURDATE())
       ORDER BY j.created_at DESC 
       LIMIT ?
     `;
@@ -119,13 +120,30 @@ const Job = {
    */
   findCategories: async () => {
     const sql = `
-      SELECT category as name, COUNT(*) as count 
-      FROM jobs 
-      WHERE category IS NOT NULL 
-      GROUP BY category 
-      ORDER BY count DESC
+      SELECT category
+      FROM jobs
+      WHERE category IS NOT NULL
+        AND category <> ''
+        AND (status IS NULL OR status = 'active')
+        AND (deadline IS NULL OR deadline > CURDATE())
     `;
-    return await query(sql);
+    const rows = await query(sql);
+    const categoryCounts = new Map();
+
+    rows.forEach((row) => {
+      String(row.category || '')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .forEach((name) => {
+          categoryCounts.set(name, (categoryCounts.get(name) || 0) + 1);
+        });
+    });
+
+    return Array.from(categoryCounts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+      .slice(0, 4);
   },
 
   /**
@@ -174,9 +192,9 @@ const Job = {
     const sql = `
       SELECT j.*, 
              COUNT(a.id) as applicant_count,
-             SUM(CASE WHEN a.status = 'pending' THEN 1 ELSE 0 END) as pending_count,
-             SUM(CASE WHEN a.status = 'diterima' THEN 1 ELSE 0 END) as accepted_count,
-             SUM(CASE WHEN a.status = 'ditolak' THEN 1 ELSE 0 END) as rejected_count
+             SUM(CASE WHEN a.status = 'applied' THEN 1 ELSE 0 END) as pending_count,
+             SUM(CASE WHEN a.status = 'accepted' THEN 1 ELSE 0 END) as accepted_count,
+             SUM(CASE WHEN a.status IN ('declined', 'rejected') THEN 1 ELSE 0 END) as rejected_count
       FROM jobs j
       LEFT JOIN applications a ON j.id = a.job_id
       WHERE j.hr_id = ?
@@ -197,10 +215,11 @@ const Job = {
         COUNT(DISTINCT j.id) as total_jobs,
         COUNT(DISTINCT CASE WHEN j.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN j.id END) as jobs_this_month,
         COUNT(DISTINCT a.id) as total_applicants,
+        COUNT(DISTINCT CASE WHEN DATE(a.created_at) = CURDATE() THEN a.id END) as total_candidates,
         COUNT(DISTINCT CASE WHEN a.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN a.id END) as applicants_this_week,
-        COUNT(DISTINCT CASE WHEN a.status = 'pending' THEN a.id END) as pending_applications,
-        COUNT(DISTINCT CASE WHEN a.status = 'diterima' THEN a.id END) as accepted_applications,
-        COUNT(DISTINCT CASE WHEN a.status = 'ditolak' THEN a.id END) as rejected_applications
+        COUNT(DISTINCT CASE WHEN a.status = 'applied' THEN a.id END) as pending_applications,
+        COUNT(DISTINCT CASE WHEN a.status = 'accepted' THEN a.id END) as accepted_applications,
+        COUNT(DISTINCT CASE WHEN a.status IN ('declined', 'rejected') THEN a.id END) as rejected_applications
       FROM jobs j
       LEFT JOIN applications a ON j.id = a.job_id
       WHERE j.hr_id = ?
@@ -231,10 +250,19 @@ const Job = {
         j.title as job_title,
         u.name as applicant_name,
         u.email as applicant_email,
-        u.profile_image as applicant_image
+        u.profile_image as applicant_image,
+        exp.total_experience_months
       FROM applications a
       JOIN jobs j ON a.job_id = j.id
       JOIN users u ON a.user_id = u.id
+      LEFT JOIN (
+        SELECT
+          user_id,
+          SUM(GREATEST(TIMESTAMPDIFF(MONTH, start_date, COALESCE(end_date, CURDATE())), 0)) as total_experience_months
+        FROM experiences
+        WHERE start_date IS NOT NULL
+        GROUP BY user_id
+      ) exp ON exp.user_id = u.id
       WHERE j.hr_id = ?
       ORDER BY a.created_at DESC
       LIMIT ?
@@ -286,44 +314,54 @@ const Job = {
   getGlobalStats: async () => {
     try {
       const jobsSql = 'SELECT COUNT(*) as total FROM jobs';
-      // Menghitung perusahaan berdasarkan jumlah HR unik yang memposting lowongan
-      const companiesSql = 'SELECT COUNT(DISTINCT hr_id) as total FROM jobs';
+      const newJobsThisWeekSql = 'SELECT COUNT(*) as total FROM jobs WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)';
+      // Menghitung perusahaan dari nama perusahaan unik yang ada di lowongan.
+      const companiesSql = 'SELECT COUNT(DISTINCT company) as total FROM jobs WHERE company IS NOT NULL AND company <> ""';
       // Menghitung pekerja yang sudah diterima
-      const workersSql = "SELECT COUNT(DISTINCT user_id) as total FROM applications WHERE status = 'diterima'";
+      const workersSql = "SELECT COUNT(DISTINCT user_id) as total FROM applications WHERE status = 'accepted'";
 
       const [jobsRes] = await query(jobsSql);
+      const [newJobsThisWeekRes] = await query(newJobsThisWeekSql);
       const [compRes] = await query(companiesSql);
       const [workRes] = await query(workersSql);
 
       return {
         jobs: jobsRes?.total || 0,
+        newJobsThisWeek: newJobsThisWeekRes?.total || 0,
         companies: compRes?.total || 0,
         workers: workRes?.total || 0
       };
     } catch (error) {
       console.error('Error fetching global stats:', error);
-      return { jobs: 0, companies: 0, workers: 0 };
+      return { jobs: 0, newJobsThisWeek: 0, companies: 0, workers: 0 };
     }
   },
 
   /**
-   * Mengambil jadwal interview hari ini (dari applications dengan status tertentu)
+   * Mengambil jadwal interview terdekat dari data applications.
    * @param {number} hrId - ID HR
-   * @returns {Promise} - Jadwal hari ini
+   * @returns {Promise} - Jadwal interview
    */
   getTodaySchedule: async (hrId) => {
-    // Karena belum ada model Interview, kita ambil applications yang baru di-update hari ini
     const sql = `
       SELECT 
-        a.*,
+        a.id,
+        a.job_id,
+        a.interview_method,
+        a.interview_location,
+        DATE_FORMAT(a.interview_date, '%Y-%m-%d') as interview_date,
+        TIME_FORMAT(a.interview_time, '%H:%i') as interview_time,
         j.title as job_title,
         u.name as applicant_name
       FROM applications a
       JOIN jobs j ON a.job_id = j.id
       JOIN users u ON a.user_id = u.id
       WHERE j.hr_id = ? 
-        AND DATE(a.updated_at) = CURDATE()
-      ORDER BY a.updated_at DESC
+        AND a.status = 'interviewing'
+        AND a.interview_date IS NOT NULL
+        AND a.interview_time IS NOT NULL
+        AND a.interview_date >= CURDATE()
+      ORDER BY a.interview_date ASC, a.interview_time ASC
       LIMIT 5
     `;
     return await rawQuery(sql, [parseInt(hrId)]);

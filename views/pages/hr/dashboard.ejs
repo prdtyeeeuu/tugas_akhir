@@ -547,39 +547,32 @@
                   </div>
                 </a>
                 <div class="flex gap-2 flex-wrap">
-                  <% if (applicant.status === 'pending') { %>
-                    <form action="/hr/applications/<%= applicant.id %>" method="POST" style="display: inline;">
+                  <% if (applicant.status === 'applied') { %>
+                    <button type="button" class="btn-sm bg-blue-100 text-blue-700 hover:bg-blue-200" onclick="openInterviewModal('<%= applicant.id %>')">
+                      <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display: inline; margin-right: 4px;">
+                        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8l-4 4V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v7.337L0 15V2z"/>
+                      </svg>
+                      Panggil Wawancara
+                    </button>
+                    <form id="reject-form-<%= applicant.id %>" action="/applications/<%= applicant.id %>/reject" method="POST" style="display: inline;">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                      <input type="hidden" name="_method" value="PUT">
-                      <input type="hidden" name="status" value="interview">
+                      <input type="hidden" name="reason" value="">
                       <input type="hidden" name="returnUrl" value="/hr/dashboard">
-                      <button type="submit" class="btn-sm bg-blue-100 text-blue-700 hover:bg-blue-200">
-                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display: inline; margin-right: 4px;">
-                          <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8l-4 4V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v7.337L0 15V2z"/>
-                        </svg>
-                        Panggil Wawancara
-                      </button>
-                    </form>
-                    <form action="/hr/applications/<%= applicant.id %>" method="POST" style="display: inline;">
-                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                      <input type="hidden" name="_method" value="PUT">
-                      <input type="hidden" name="status" value="ditolak">
-                      <input type="hidden" name="returnUrl" value="/hr/dashboard">
-                      <button type="submit" class="btn-sm border border-gray-300 text-gray-600 hover:bg-gray-50">
+                      <button type="button" class="btn-sm border border-gray-300 text-gray-600 hover:bg-gray-50" onclick="submitRejection('reject-form-<%= applicant.id %>')">
                         <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display: inline;">
                           <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                         </svg>
                         Tolak
                       </button>
                     </form>
-                  <% } else if (applicant.status === 'ditolak') { %>
+                  <% } else if (applicant.status === 'declined' || applicant.status === 'rejected') { %>
                     <span class="btn-sm bg-red-100 text-red-700 cursor-not-allowed opacity-60" title="Pelamar sudah ditolak">
                       <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display: inline; margin-right: 4px;">
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                       </svg>
                       Ditolak
                     </span>
-                  <% } else if (applicant.status === 'interview') { %>
+                  <% } else if (applicant.status === 'interviewing') { %>
                     <span class="btn-sm bg-green-100 text-green-700 cursor-not-allowed opacity-60" title="Pelamar sudah dipanggil untuk wawancara">
                       <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display: inline; margin-right: 4px;">
                         <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8l-4 4V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v7.337L0 15V2z"/>
@@ -632,10 +625,10 @@
             <% } %>
           </div>
 
-          <!-- Jadwal Hari Ini -->
+          <!-- Jadwal Wawancara -->
           <div class="dashboard-card fade-in-up delay-300">
             <div class="card-header">
-              <h2>Jadwal Hari Ini</h2>
+              <h2>Jadwal Wawancara</h2>
               <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="text-blue-600">
                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM9.954 5.204a.5.5 0 0 0-.708-.708L7 6.742 5.254 4.996a.5.5 0 0 0-.708.708l2.5 2.5a.5.5 0 0 0 .708 0l2.2-2.2z"/>
               </svg>
@@ -643,19 +636,24 @@
 
             <% if (todaySchedule && todaySchedule.length > 0) { %>
               <% todaySchedule.slice(0, 5).forEach((item, index) => { %>
+                <%
+                  const scheduleDate = item.interview_date
+                    ? new Date(`${item.interview_date}T00:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                    : '-';
+                %>
                 <div class="schedule-item">
                   <div class="schedule-time">
-                    <%= 10 + index %>:<%= index % 2 === 0 ? '00' : '30' %>
+                    <%= item.interview_time || '-' %>
                   </div>
                   <div class="schedule-info">
-                    <h4>Wawancara Tahap <%= index + 1 %></h4>
-                    <p><%= item.applicant_name %> (<%= item.job_title %>)</p>
+                    <h4><%= item.applicant_name %></h4>
+                    <p><%= scheduleDate %> · <%= item.job_title %><% if (item.interview_method) { %> · <%= item.interview_method %><% } %></p>
                   </div>
                 </div>
               <% }); %>
             <% } else { %>
               <div class="text-center py-4 text-gray-500">
-                <p>Tidak ada jadwal hari ini</p>
+                <p>Belum ada jadwal wawancara</p>
               </div>
             <% } %>
           </div>
@@ -665,8 +663,71 @@
   </div>
 </div>
 
+<!-- Modal Jadwal Wawancara -->
+<div id="interviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-60 px-4">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b">
+      <h3 class="text-lg font-bold text-gray-900">Jadwalkan Wawancara</h3>
+      <button type="button" onclick="closeInterviewModal()" class="text-gray-400 hover:text-gray-600">
+        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <form id="interviewForm" method="POST" class="p-6 space-y-4">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="returnUrl" value="/hr/dashboard">
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Wawancara</label>
+        <input type="date" name="interviewDate" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Waktu Wawancara</label>
+        <input type="time" name="interviewTime" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Metode</label>
+        <select name="interviewMethod" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none">
+          <option value="">Pilih metode</option>
+          <option value="Online">Online</option>
+          <option value="Tatap Muka">Tatap Muka</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi / Link</label>
+        <input type="text" name="interviewLocation" required placeholder="Contoh: https://meet.google.com/... atau alamat kantor" class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none">
+      </div>
+
+      <div class="flex justify-end gap-3 pt-3 border-t">
+        <button type="button" onclick="closeInterviewModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Kirim Undangan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../../partials/rejection-modal') %>
+
 <!-- Global Scroll Animation Script -->
 <script>
+  function openInterviewModal(applicationId) {
+    const modal = document.getElementById('interviewModal');
+    const form = document.getElementById('interviewForm');
+
+    form.action = `/applications/${applicationId}/invite`;
+    form.reset();
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeInterviewModal() {
+    const modal = document.getElementById('interviewModal');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+  }
+
   // Intersection Observer for scroll animations
   document.addEventListener('DOMContentLoaded', function() {
     const observerOptions = {

@@ -74,18 +74,18 @@
       <button class="tab-btn active" onclick="filterApps('all', this)">Semua</button>
       <button class="tab-btn" onclick="filterApps('terkirim', this)">Terkirim</button>
       <button class="tab-btn" onclick="filterApps('review', this)">Sedang Di Review</button>
-      <button class="tab-btn" onclick="filterApps('interview', this)">Panggilan Wawancara</button>
-      <button class="tab-btn" onclick="filterApps('ditolak', this)">Ditolak</button>
+      <button class="tab-btn" onclick="filterApps('interviewing', this)">Panggilan Wawancara</button>
+      <button class="tab-btn" onclick="filterApps('rejected', this)">Ditolak</button>
     </div>
 
     <!-- Applications List -->
     <% if (typeof applications !== 'undefined' && applications && applications.length > 0) { %>
       <div class="applications-list">
         <% applications.forEach(function(app) { %>
-        <div class="app-card" data-status="<%= app.status %>" data-subtype="<%= (app.status === 'pending' && !app.cv_is_viewed) ? 'terkirim' : (app.status === 'pending' && app.cv_is_viewed) ? 'review' : app.status %>">
+        <div class="app-card" data-status="<%= app.status %>" data-subtype="<%= (app.status === 'applied' && !app.cv_is_viewed) ? 'terkirim' : (app.status === 'applied' && app.cv_is_viewed) ? 'review' : (app.status === 'declined' ? 'rejected' : app.status) %>">
           
           <!-- Logo with Link to Job/Company -->
-          <a href="/user/<%= app.hr_id || app.job_id %>" class="app-logo company-logo-img" data-logo="<%= app.company_logo || '' %>">
+          <a href="/user/<%= app.hr_id || app.job_id %>" class="app-logo company-logo-img" data-logo="<%= app.company_logo || '' %>" <%- app.company_logo ? 'data-fullscreen-image-src="/images/companies/' + app.company_logo + '" title="Klik untuk lihat fullscreen"' : '' %>>
             <% if (!app.company_logo) {
               var initials = (app.company || 'XX').substring(0, 2).toUpperCase();
             %>
@@ -121,37 +121,37 @@
 
             <!-- Actions -->
             <div class="app-actions">
-              <a href="/jobs/<%= app.job_id %>" class="action-link">Lihat Detail</a>
+              <a href="/jobs/<%= app.job_id %>?returnUrl=<%= encodeURIComponent('/applications') %>" class="action-link">Lihat Detail</a>
               <button onclick="startChat('<%= app.job_id %>')" class="action-link chat-btn">
                 <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                   <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2zm5 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
                 </svg>
                 Chat HR
               </button>
-              <% if (app.status === 'pending' && !app.cv_is_viewed) { %>
+              <% if (app.status === 'applied' && !app.cv_is_viewed) { %>
                 <button type="button" class="action-link danger"
                   onclick="tarikLamaran('<%= app.id %>')">Tarik Lamaran</button>
                 <form id="form-cancel-<%= app.id %>" action="/applications/cancel/<%= app.id %>" method="POST" style="display:none">
                   <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                 </form>
               <% } %>
-              <% if (app.status === 'rejected') { %>
-                <a href="#" class="action-link">Lihat Alasan</a>
+              <% if ((app.status === 'declined' || app.status === 'rejected') && app.rejection_reason) { %>
+                <button type="button" class="action-link" onclick='lihatAlasan(<%- JSON.stringify(app.rejection_reason) %>)'>Lihat Alasan</button>
               <% } %>
-              <% if (app.status === 'offering' && app.offering_document) { %>
-                <a href="/documents/offerings/<%= app.offering_document %>" target="_blank" class="action-link primary" title="Unduh dan tinjau dokumen offering">
+              <% if (app.status === 'offered' && app.document_path) { %>
+                <a href="<%= app.document_path %>" target="_blank" class="action-link primary" title="Unduh dan tinjau dokumen offering">
                   <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display:inline-block;">
                     <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
                     <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
                   </svg>
                   Lihat Offering
                 </a>
-                <form action="/applications/<%= app.id %>/offering-response" method="POST" style="display:inline;" id="form-accept-<%= app.id %>">
+                <form action="/applications/<%= app.id %>/respond" method="POST" style="display:inline;" id="form-accept-<%= app.id %>">
                   <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                   <input type="hidden" name="action" value="accept">
                   <button type="button" class="action-link success" onclick="terimaOffering('<%= app.id %>')">Terima</button>
                 </form>
-                <form action="/applications/<%= app.id %>/offering-response" method="POST" style="display:inline;" id="form-reject-<%= app.id %>">
+                <form action="/applications/<%= app.id %>/respond" method="POST" style="display:inline;" id="form-reject-<%= app.id %>">
                   <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                   <input type="hidden" name="action" value="reject">
                   <button type="button" class="action-link danger" onclick="tolakOffering('<%= app.id %>')">Tolak</button>
@@ -167,25 +167,29 @@
               let statusLabel = 'Terkirim';
               let statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/></svg>';
 
-              if (app.status === 'pending' && app.cv_is_viewed) {
+              if (app.status === 'applied' && app.cv_is_viewed) {
                 statusClass = 'review';
                 statusLabel = 'Sedang Di Review';
                 statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>';
-              } else if (app.status === 'diterima') {
+              } else if (app.status === 'accepted') {
                 statusClass = 'accepted';
                 statusLabel = 'Diterima';
                 statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05Z"/></svg>';
-              } else if (app.status === 'ditolak') {
+              } else if (app.status === 'declined' || app.status === 'rejected') {
                 statusClass = 'rejected';
                 statusLabel = 'Ditolak';
                 statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0ZM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646Z"/></svg>';
-              } else if (app.status === 'interview') {
+              } else if (app.status === 'interviewing') {
                 statusClass = 'interview';
                 statusLabel = 'Panggilan Wawancara';
                 statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M10.748 11.007a.5.5 0 0 1-.748.446l-2.5-1.5a.5.5 0 0 1 0-.854l2.5-1.5a.5.5 0 0 1 .748.446v2.962Z"/></svg>';
-              } else if (app.status === 'offering') {
+              } else if (app.status === 'offered') {
                 statusClass = 'interview';
-                statusLabel = 'Offering Diterima';
+                statusLabel = 'Offering Terkirim';
+                statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>';
+              } else if (app.status === 'expired') {
+                statusClass = 'rejected';
+                statusLabel = 'Expired';
                 statusIcon = '<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>';
               }
             %>
@@ -243,10 +247,16 @@
       } else if (status === 'terkirim' || status === 'review') {
         // Sub-status dari pending berdasarkan cv_is_viewed
         card.style.display = (cardSubtype === status) ? 'flex' : 'none';
+      } else if (status === 'rejected') {
+        card.style.display = (cardStatus === 'rejected' || cardStatus === 'declined' || cardSubtype === 'rejected') ? 'flex' : 'none';
       } else {
         card.style.display = (cardStatus === status) ? 'flex' : 'none';
       }
     });
+  }
+
+  function lihatAlasan(reason) {
+    lokerinAlert(reason || 'Tidak ada alasan penolakan yang dicatat.', 'info', 'Alasan Penolakan');
   }
 
   // Start chat with HR

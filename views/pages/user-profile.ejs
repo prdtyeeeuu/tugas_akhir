@@ -104,6 +104,12 @@
               </a>
               <% } %>
             <% } %>
+            <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.id !== profileUser.id) { %>
+              <button type="button" onclick="openReportUserModal()" class="inline-flex items-center gap-2 px-5 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold rounded-lg transition-all border border-red-100">
+                <span class="iconify" data-icon="lucide:flag"></span>
+                Report User
+              </button>
+            <% } %>
           </div>
         </div>
       </div>
@@ -261,6 +267,54 @@
     </div>
   </div>
 </div>
+
+<% if (typeof currentUser !== 'undefined' && currentUser && currentUser.id !== profileUser.id) { %>
+<div id="reportUserModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-slate-900">Report User</h3>
+      <button type="button" onclick="closeReportUserModal()" class="text-slate-400 hover:text-slate-600">
+        <span class="iconify text-xl" data-icon="lucide:x"></span>
+      </button>
+    </div>
+    <form action="/reports/users/<%= profileUser.id %>" method="POST" class="space-y-4">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <input type="hidden" name="returnUrl" value="/user/<%= profileUser.id %>">
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Alasan</label>
+        <select name="reason" required class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+          <option value="">Pilih alasan</option>
+          <option value="Indikasi scam / penipuan">Indikasi scam / penipuan</option>
+          <option value="Akun palsu">Akun palsu</option>
+          <option value="Spam / mengganggu">Spam / mengganggu</option>
+          <option value="Informasi profil palsu">Informasi profil palsu</option>
+          <option value="Perilaku tidak pantas">Perilaku tidak pantas</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Detail laporan</label>
+        <textarea name="details" rows="4" placeholder="Jelaskan bukti atau kronologi singkat..." class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y"></textarea>
+      </div>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="closeReportUserModal()" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700">Kirim Report</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openReportUserModal() {
+    document.getElementById('reportUserModal').classList.remove('hidden');
+    document.getElementById('reportUserModal').classList.add('flex');
+  }
+
+  function closeReportUserModal() {
+    document.getElementById('reportUserModal').classList.remove('flex');
+    document.getElementById('reportUserModal').classList.add('hidden');
+  }
+</script>
+<% } %>
 
 <!-- JavaScript for Profile Banner -->
 <script>

@@ -18,6 +18,7 @@ const helmet = require('helmet');
 const path = require('path');
 const config = require('./config/config');
 const logger = require('./utils/logger');
+const { startApplicationExpiryJob } = require('./jobs/applicationExpiryJob');
 
 // Import middleware
 const { setLocalUser, requireAuth } = require('./middleware/auth');
@@ -37,6 +38,11 @@ const profileRoutes = require('./routes/profileRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const profileStructuredRoutes = require('./routes/profileStructuredRoutes');
 const hrRoutes = require('./routes/hrRoutes');
+const apiRoutes = require('./routes/apiRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const warningRoutes = require('./routes/warningRoutes');
 
 // Inisialisasi Express app
 const app = express();
@@ -135,6 +141,9 @@ app.get('/', jobController.showHome);
 app.get('/dashboard', requireAuth, jobController.showDashboard);
 
 // Job routes (find jobs, apply)
+app.use(applicationRoutes);
+app.use(reportRoutes);
+app.use(warningRoutes);
 app.use(jobRoutes);
 
 // API routes
@@ -202,6 +211,8 @@ app.use((err, req, res, next) => {
 // ======================================
 // START SERVER
 // ======================================
+
+startApplicationExpiryJob();
 
 app.listen(PORT, () => {
   logger.info(`Lokerin server started`, { port: PORT, env: config.NODE_ENV });

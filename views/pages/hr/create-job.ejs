@@ -356,6 +356,20 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label class="form-label">
+              Alamat Lengkap Tempat Kerja <span class="required">*</span>
+            </label>
+            <textarea
+              name="work_address"
+              class="form-textarea"
+              style="min-height: 110px;"
+              placeholder="Contoh: Jl. Sudirman No. 10, Lantai 5, Karet Tengsin, Tanah Abang, Jakarta Pusat, DKI Jakarta 10220"
+              required
+            ><%= formData.work_address || '' %></textarea>
+            <p class="form-hint">Alamat ini akan dipakai pada dokumen offering letter bagian Lokasi Kerja.</p>
+          </div>
+
           <!-- Kategori -->
           <div class="form-group">
             <label class="form-label">

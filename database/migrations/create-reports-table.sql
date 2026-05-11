@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  reporter_id INT NOT NULL,
+  target_type ENUM('job', 'user') NOT NULL,
+  target_id INT NOT NULL,
+  reason VARCHAR(100) NOT NULL,
+  details TEXT DEFAULT NULL,
+  status ENUM('pending', 'reviewed', 'resolved', 'dismissed') DEFAULT 'pending',
+  admin_id INT DEFAULT NULL,
+  admin_note TEXT DEFAULT NULL,
+  reviewed_at DATETIME DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_target (target_type, target_id),
+  INDEX idx_status (status),
+  INDEX idx_reporter (reporter_id),
+  INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

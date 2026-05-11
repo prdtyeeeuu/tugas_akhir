@@ -58,7 +58,7 @@
           <!-- Card Header -->
           <div class="job-card-header">
             <% if (job.company_logo) { %>
-              <img src="/images/companies/<%= job.company_logo %>" alt="Logo <%= job.company %>" class="company-logo">
+              <img src="/images/companies/<%= job.company_logo %>" alt="Logo <%= job.company %>" class="company-logo" data-fullscreen-image title="Klik untuk lihat fullscreen">
             <% } else { %>
               <div class="company-logo flex items-center justify-center text-blue-600 font-bold text-xl bg-blue-50 border border-blue-100" style="display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 600; color: white; border: none;">
                 <%= job.company ? job.company.charAt(0).toUpperCase() : '?' %>
@@ -69,7 +69,7 @@
 
           <!-- Job Info -->
           <div class="job-info">
-            <h3 class="job-title"><a href="/jobs/<%= job.id %>" style="text-decoration:none; color:inherit; display:block; cursor:pointer;" class="hover-text-blue"><%= job.title %></a></h3>
+            <h3 class="job-title"><a href="/jobs/<%= job.id %>?returnUrl=<%= encodeURIComponent('/jobs') %>" style="text-decoration:none; color:inherit; display:block; cursor:pointer;" class="hover-text-blue"><%= job.title %></a></h3>
             <style>.hover-text-blue:hover { color: #2563eb !important; transition: color 0.2s; }</style>
 
             <div class="company-info">
@@ -146,7 +146,7 @@
               <% } else if (deadlinePassed) { %>
                 <button type="button" class="btn-apply" style="background-color: #ef4444; color: white; cursor: not-allowed; border:none;" disabled title="Lowongan sudah ditutup">Ditutup</button>
               <% } else { %>
-                <button type="button" class="btn-apply" onclick="window.location.href='/jobs/<%= job.id %>'">Lamar</button>
+                <button type="button" class="btn-apply" onclick="window.location.href='/jobs/<%= job.id %>?returnUrl=<%= encodeURIComponent('/jobs') %>'">Lamar</button>
               <% } %>
             <% } else { %>
               <% 

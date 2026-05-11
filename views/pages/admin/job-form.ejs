@@ -6,7 +6,9 @@
       </div>
       
       <div class="p-6">
-        <form action="<%= job ? `/admin/jobs/${job.id}/edit` : '/admin/jobs' %>" method="POST" class="space-y-6">
+        <form action="<%= job ? `/admin/jobs/${job.id}/edit` : '/admin/jobs' %>" method="POST" enctype="multipart/form-data" class="space-y-6">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Judul Pekerjaan</label>
@@ -20,10 +22,33 @@
                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition">
             </div>
 
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Gambar / Logo Lowongan</label>
+              <% if (job && job.company_logo) { %>
+                <div class="flex items-center gap-3 mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <img src="/images/companies/<%= job.company_logo %>" alt="<%= job.company %>" class="h-16 w-16 rounded-lg object-cover border border-gray-200 bg-white">
+                  <div>
+                    <p class="text-sm font-medium text-gray-800">Gambar saat ini</p>
+                    <p class="text-xs text-gray-500"><%= job.company_logo %></p>
+                  </div>
+                </div>
+              <% } %>
+              <input type="file" name="company_logo" accept="image/jpeg,image/png,image/webp,image/gif"
+                     class="block w-full text-sm text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100">
+              <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ingin mengganti gambar.</p>
+            </div>
+
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
               <input type="text" name="location" value="<%= job ? job.location : '' %>" required
                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition">
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap Tempat Kerja</label>
+              <textarea name="work_address" rows="3" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"><%= job ? (job.work_address || '') : '' %></textarea>
+              <p class="mt-1 text-xs text-gray-500">Alamat ini dipakai sebagai lokasi kerja lengkap di dokumen offering.</p>
             </div>
 
             <div>
@@ -89,7 +114,7 @@
           </div>
 
           <div class="pt-4 border-t border-gray-100 flex justify-end">
-            <button type="submit" class="bg-primary hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition shadow-sm">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition shadow-sm">
               <%= job ? 'Simpan Perubahan' : 'Buat Lowongan' %>
             </button>
           </div>

@@ -1,0 +1,4 @@
+ALTER TABLE users
+  ADD COLUMN instagram_url VARCHAR(500) DEFAULT NULL AFTER address,
+  ADD COLUMN github_url VARCHAR(500) DEFAULT NULL AFTER instagram_url,
+  ADD COLUMN twitter_url VARCHAR(500) DEFAULT NULL AFTER github_url;

@@ -29,4 +29,7 @@ router.post('/applications/cancel/:id', requireAuth, jobController.cancelApplica
 // POST /applications/:id/offering-response - Respon offering (require auth)
 router.post('/applications/:id/offering-response', requireAuth, jobController.respondOffering);
 
+// POST /applications/:id/respond - Respon offering letter (require auth)
+router.post('/applications/:id/respond', requireAuth, jobController.respondOffering);
+
 module.exports = router;

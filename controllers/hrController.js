@@ -5,6 +5,9 @@
 const Job = require('../models/Job');
 const Application = require('../models/Application');
 const User = require('../models/User');
+const { validateReturnUrl } = require('../utils/helpers');
+const { generateOfferingLetterPdf } = require('../services/pdfService');
+const { sendOfferingLetterEmail } = require('../services/emailService');
 
 /**
  * Menampilkan homepage untuk HR
@@ -167,15 +170,15 @@ const showCreateJob = async (req, res) => {
  */
 const createJob = async (req, res) => {
   try {
-    const { title, company, location, category, type, description, salary_min, salary_max, deadline, requirements } = req.body;
+    const { title, company, location, work_address, category, type, description, salary_min, salary_max, deadline, requirements } = req.body;
 
     // Validasi input
-    if (!title || !company || !location || !description) {
+    if (!title || !company || !location || !work_address || !description) {
       return res.render('pages/hr/create-job', {
         title: 'Pasang Lowongan Baru - Lokerin',
         user: req.user,
         formData: req.body,
-        error: 'Judul, perusahaan, lokasi, dan deskripsi wajib diisi'
+        error: 'Judul, perusahaan, lokasi, alamat lengkap, dan deskripsi wajib diisi'
       });
     }
 
@@ -206,6 +209,7 @@ const createJob = async (req, res) => {
       title,
       company,
       location,
+      work_address,
       category: categoryString,
       type: type || 'Full-time',
       description,
@@ -242,6 +246,11 @@ const showJobDetail = async (req, res) => {
   try {
     const jobId = req.params.id;
     const hrId = req.user.id;
+    let returnUrl = validateReturnUrl(req.query.returnUrl) || '/hr/jobs';
+
+    if (!returnUrl.startsWith('/hr/')) {
+      returnUrl = '/hr/jobs';
+    }
 
     // Ambil detail lowongan
     const job = await Job.findById(jobId);
@@ -268,7 +277,8 @@ const showJobDetail = async (req, res) => {
       title: `${job.title} - Detail Lowongan`,
       user: req.user,
       job,
-      applicants: applicants
+      applicants: applicants,
+      returnUrl
     });
   } catch (error) {
     console.error('Job Detail error:', error);
@@ -287,8 +297,16 @@ const updateApplicationStatus = async (req, res) => {
     const applicationId = req.params.id;
     const { status } = req.body;
 
-    const validStatuses = ['pending', 'interview', 'ditolak'];
-    if (!validStatuses.includes(status)) {
+    const statusAliases = {
+      pending: 'applied',
+      interview: 'interviewing',
+      ditolak: 'rejected',
+      declined: 'rejected'
+    };
+    const nextStatus = statusAliases[status] || status;
+
+    const validStatuses = ['applied', 'interviewing', 'declined', 'rejected'];
+    if (!validStatuses.includes(nextStatus)) {
       const returnUrl = req.body.returnUrl || '/hr/jobs';
       return res.redirect(`${returnUrl}?error=Status+tidak+valid`);
     }
@@ -302,18 +320,23 @@ const updateApplicationStatus = async (req, res) => {
     }
 
     // Jika aplikasi sudah ditolak, tidak bisa mengubah status ke apapun
-    if (currentApplication.status === 'ditolak') {
+    if (currentApplication.status === 'declined' || currentApplication.status === 'rejected') {
       const returnUrl = req.body.returnUrl || '/hr/jobs';
       return res.redirect(`${returnUrl}?error=Tidak+bisa+mengubah+status+pelamar+yang+sudah+ditolak`);
     }
 
     // Jika user mencoba mengubah ke interview dari status yang bukan pending, cegah
-    if (status === 'interview' && currentApplication.status !== 'pending') {
+    if (nextStatus === 'interviewing' && currentApplication.status !== 'applied') {
       const returnUrl = req.body.returnUrl || '/hr/jobs';
       return res.redirect(`${returnUrl}?error=Hanya+pelamar+dengan+status+pending+yang+bisa+dipanggil+untuk+wawancara`);
     }
 
-    await Application.updateStatus(applicationId, status);
+    if (nextStatus === 'interviewing') {
+      const returnUrl = req.body.returnUrl || '/hr/jobs';
+      return res.redirect(`${returnUrl}?error=Isi+jadwal+waktu+metode+dan+lokasi+wawancara+terlebih+dahulu`);
+    }
+
+    await Application.updateStatus(applicationId, nextStatus);
 
     const returnUrl = req.body.returnUrl || '/hr/jobs';
     res.redirect(`${returnUrl}?success=status_updated`);
@@ -391,16 +414,44 @@ const markCvViewed = async (req, res) => {
 const sendOffering = async (req, res) => {
   try {
     const applicationId = req.params.id;
-    
-    if (!req.file) {
+
+    const application = await Application.findById(applicationId);
+    if (!application || application.hr_id !== req.user.id) {
       const returnUrl = req.body.returnUrl || '/hr/interviews';
-      return res.redirect(`${returnUrl}?error=Dokumen+offering+wajib+diunggah`);
+      return res.redirect(`${returnUrl}?error=Lamaran+tidak+ditemukan`);
     }
 
-    const offeringDocument = req.file.filename;
-    
-    // Panggil model untuk merubah status dan update file offering
-    await Application.sendOffering(applicationId, offeringDocument);
+    const startDate = req.body.start_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const expiryDate = req.body.expired_at || req.body.expiry_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const salary = req.body.salary || application.salary_max || application.salary_min || 0;
+
+    const pdf = await generateOfferingLetterPdf({
+      applicationId,
+      companyName: application.company,
+      jobSeekerName: application.applicant_name,
+      jobSeekerCity: application.applicant_address || 'Di Tempat',
+      jobPosition: application.job_title,
+      salary,
+      startDate,
+      expiryDate,
+      workLocation: application.job_work_address || application.job_location,
+      currentDate: new Date()
+    });
+
+    await Application.sendOffering(applicationId, pdf.relativePath, new Date(expiryDate));
+
+    try {
+      await sendOfferingLetterEmail({
+        to: application.applicant_email,
+        jobSeekerName: application.applicant_name,
+        companyName: application.company,
+        jobPosition: application.job_title,
+        pdfPath: pdf.absolutePath,
+        applicationId
+      });
+    } catch (emailError) {
+      console.error('Send offering email error:', emailError.message);
+    }
     
     const returnUrl = req.body.returnUrl || '/hr/interviews';
     return res.redirect(`${returnUrl}?success=offering_sent`);

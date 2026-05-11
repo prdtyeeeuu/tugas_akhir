@@ -4,7 +4,7 @@
 <div class="job-detail-page">
   <!-- Back Button -->
   <div class="job-detail-back">
-    <a href="javascript:void(0)" onclick="const params = new URLSearchParams(window.location.search); if(params.get('ref') === 'dashboard') { window.location.href='/dashboard'; } else if(params.get('ref') === 'home') { window.location.href='/'; } else if(document.referrer.includes(window.location.host) && document.referrer !== window.location.href) { window.history.back(); } else { window.location.href='/jobs'; }" class="back-link">
+    <a href="<%= typeof returnUrl !== 'undefined' ? returnUrl : '/jobs' %>" class="back-link">
       <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
       </svg>
@@ -18,7 +18,7 @@
     <div class="job-detail-header">
       <div class="header-top">
         <% if (job.company_logo) { %>
-          <img src="/images/companies/<%= job.company_logo %>" alt="Logo <%= job.company %>" class="company-logo">
+          <img src="/images/companies/<%= job.company_logo %>" alt="Logo <%= job.company %>" class="company-logo" data-fullscreen-image title="Klik untuk lihat fullscreen">
         <% } else { %>
           <div class="company-logo flex items-center justify-center text-blue-600 font-bold text-2xl bg-blue-50 border border-blue-100" style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600; color: white; border: none; width: 64px; height: 64px; border-radius: 12px;">
             <%= job.company ? job.company.charAt(0).toUpperCase() : '?' %>
@@ -110,6 +110,13 @@
           </svg>
           Chat HR
         </button>
+
+        <% if (typeof user !== 'undefined' && user) { %>
+          <button type="button" onclick="openReportJobModal()" style="display:flex; align-items:center; gap:6px; background-color: white; color: #dc2626; border: 2px solid #fecaca; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fef2f2'" onmouseout="this.style.backgroundColor='white'">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+            Report
+          </button>
+        <% } %>
       </div>
     </div>
 
@@ -152,6 +159,41 @@
   </div>
 </div>
 
+<!-- Report Job Modal -->
+<div id="reportJobModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 transition-opacity" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; display: none; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.5);">
+  <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4" style="font-family: 'Inter', sans-serif;">
+    <div class="flex justify-between items-center mb-4" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h3 class="text-lg font-bold text-gray-900" style="margin:0; font-size:18px;">Report Lowongan</h3>
+      <button type="button" onclick="closeReportJobModal()" style="background:none; border:none; cursor:pointer; color:#9ca3af;">
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <form action="/reports/jobs/<%= job.id %>" method="POST">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <input type="hidden" name="returnUrl" value="/jobs/<%= job.id %>">
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:13px; font-weight:700; color:#374151; margin-bottom:6px;">Alasan</label>
+        <select name="reason" required style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px;">
+          <option value="">Pilih alasan</option>
+          <option value="Lowongan palsu / bermain-main">Lowongan palsu / bermain-main</option>
+          <option value="Indikasi scam / penipuan">Indikasi scam / penipuan</option>
+          <option value="Meminta pembayaran">Meminta pembayaran</option>
+          <option value="Informasi menyesatkan">Informasi menyesatkan</option>
+          <option value="Konten tidak pantas">Konten tidak pantas</option>
+        </select>
+      </div>
+      <div style="margin-bottom:18px;">
+        <label style="display:block; font-size:13px; font-weight:700; color:#374151; margin-bottom:6px;">Detail laporan</label>
+        <textarea name="details" rows="4" placeholder="Jelaskan bukti atau kronologi singkat..." style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeReportJobModal()" style="padding:9px 14px; border-radius:8px; border:none; background:#f3f4f6; color:#374151; font-weight:600;">Batal</button>
+        <button type="submit" style="padding:9px 14px; border-radius:8px; border:none; background:#dc2626; color:white; font-weight:600;">Kirim Report</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Upload CV Modal -->
 <div id="lamarModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 transition-opacity" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; display: none; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.5);">
   <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 transform scale-95 transition-transform" style="font-family: 'Inter', sans-serif; background: white; padding: 24px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
@@ -181,6 +223,16 @@
 </div>
 
 <script>
+  function openReportJobModal() {
+    const modal = document.getElementById('reportJobModal');
+    modal.style.display = 'flex';
+  }
+
+  function closeReportJobModal() {
+    const modal = document.getElementById('reportJobModal');
+    modal.style.display = 'none';
+  }
+
   // Modal functions
   function openLamarModal(jobId, jobTitle) {
     const modal = document.getElementById('lamarModal');

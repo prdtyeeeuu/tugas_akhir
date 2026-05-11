@@ -138,6 +138,9 @@ async function createTables(conn) {
       bio TEXT DEFAULT NULL,
       phone VARCHAR(20) DEFAULT NULL,
       address VARCHAR(255) DEFAULT NULL,
+      instagram_url VARCHAR(500) DEFAULT NULL,
+      github_url VARCHAR(500) DEFAULT NULL,
+      twitter_url VARCHAR(500) DEFAULT NULL,
       expected_salary_min INT DEFAULT NULL,
       expected_salary_max INT DEFAULT NULL,
       open_to_work TINYINT(1) DEFAULT 0,
@@ -165,6 +168,7 @@ async function createTables(conn) {
       title VARCHAR(255) NOT NULL,
       company VARCHAR(255) NOT NULL,
       location VARCHAR(255) NOT NULL,
+      work_address TEXT DEFAULT NULL,
       category VARCHAR(100) DEFAULT NULL,
       type ENUM('Full-time', 'Part-time', 'Remote', 'Contract', 'Internship') DEFAULT 'Full-time',
       description TEXT DEFAULT NULL,
@@ -172,6 +176,9 @@ async function createTables(conn) {
       salary_max INT DEFAULT NULL,
       hr_id INT DEFAULT NULL,
       company_logo VARCHAR(255) DEFAULT NULL,
+      deadline DATE DEFAULT NULL,
+      requirements TEXT DEFAULT NULL,
+      status ENUM('active', 'suspended') DEFAULT 'active',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (hr_id) REFERENCES users(id) ON DELETE SET NULL,
@@ -185,9 +192,15 @@ async function createTables(conn) {
       id INT AUTO_INCREMENT PRIMARY KEY,
       user_id INT NOT NULL,
       job_id INT NOT NULL,
-      status ENUM('pending', 'diterima', 'ditolak', 'interview') DEFAULT 'pending',
+      status ENUM('applied', 'interviewing', 'offered', 'accepted', 'declined', 'expired', 'withdrawn') DEFAULT 'applied',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      expired_at DATETIME DEFAULT NULL,
+      document_path VARCHAR(255) DEFAULT NULL,
+      interview_date DATE DEFAULT NULL,
+      interview_time TIME DEFAULT NULL,
+      interview_method VARCHAR(50) DEFAULT NULL,
+      interview_location VARCHAR(255) DEFAULT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
       UNIQUE KEY unique_user_job (user_id, job_id),
@@ -228,6 +241,28 @@ async function createTables(conn) {
       FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
       FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    // Tabel Reports
+    `CREATE TABLE IF NOT EXISTS reports (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      reporter_id INT NOT NULL,
+      target_type ENUM('job', 'user') NOT NULL,
+      target_id INT NOT NULL,
+      reason VARCHAR(100) NOT NULL,
+      details TEXT DEFAULT NULL,
+      status ENUM('pending', 'reviewed', 'resolved', 'dismissed') DEFAULT 'pending',
+      admin_id INT DEFAULT NULL,
+      admin_note TEXT DEFAULT NULL,
+      reviewed_at DATETIME DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL,
+      INDEX idx_target (target_type, target_id),
+      INDEX idx_status (status),
+      INDEX idx_reporter (reporter_id),
+      INDEX idx_created_at (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 
     // Tabel Skills
@@ -329,12 +364,9 @@ async function seedData(conn) {
   console.log('   👤 Membuat HR user...');
   const hrId = await insertUser(conn, ['HR Company', 'hr@test.com', hashedPassword, 'hr']);
 
-<<<<<<< HEAD
   console.log('   👤 Membuat Admin user...');
   await insertUser(conn, ['Admin System', 'admin@test.com', hashedPassword, 'admin']);
 
-  // 2. Buat jobs dummy
-=======
   // 2. Buat kategori pekerjaan
   const categories = [
     ['Administrasi & Operasional', 'file-text', true],
@@ -376,7 +408,6 @@ async function seedData(conn) {
   }
 
   // 3. Buat jobs dummy
->>>>>>> 9319185236a96bcc4c26cdebf90f2079b9b21586
   const jobs = [
     ['Frontend Developer', 'PT Teknologi Maju', 'Jakarta', 'Frontend Developer', 'Full-time', 'Bertanggung jawab untuk mengembangkan frontend aplikasi web.', hrId],
     ['Backend Developer', 'Startup Digital', 'Bandung', 'Backend Developer', 'Remote', 'Mengembangkan dan maintain API dan backend services.', hrId],

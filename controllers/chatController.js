@@ -5,6 +5,7 @@
 const Chat = require('../models/Chat');
 const Job = require('../models/Job');
 const Application = require('../models/Application');
+const Warning = require('../models/Warning');
 const { formatTimeAgo } = require('../utils/helpers');
 
 /**
@@ -52,11 +53,13 @@ const showInbox = async (req, res) => {
 
     // Get unread count
     const unreadCount = await Chat.getUnreadCount(userId);
+    const warnings = isApplicant ? await Warning.findByUserId(userId, 10) : [];
 
     res.render('pages/chat/inbox', {
       title: 'Pesan - Lokerin',
       conversations,
       unreadCount,
+      warnings,
       isApplicant,
       formatTimeAgo,
       hideFooter: true
@@ -67,6 +70,7 @@ const showInbox = async (req, res) => {
       title: 'Pesan - Lokerin',
       conversations: [],
       unreadCount: 0,
+      warnings: [],
       isApplicant: false,
       formatTimeAgo,
       hideFooter: true,

@@ -69,6 +69,8 @@
     if (formElement.dataset.confirmed === "true") {
       return true;
     }
+
+    const submitter = event && event.submitter ? event.submitter : document.activeElement;
     
     // Prevent default form submission
     event.preventDefault();
@@ -81,6 +83,28 @@
     confirmCallback = function() {
       formElement.dataset.confirmed = "true";
       closeCustomConfirm();
+
+      // Programmatic form.submit() does not include the clicked submit button.
+      // Preserve button name/value such as name="action" value="dismiss".
+      if (
+        submitter &&
+        submitter.form === formElement &&
+        submitter.name &&
+        !submitter.disabled
+      ) {
+        const previousSubmitterValue = formElement.querySelector('input[data-confirm-submitter="true"]');
+        if (previousSubmitterValue) {
+          previousSubmitterValue.remove();
+        }
+
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = submitter.name;
+        hiddenInput.value = submitter.value;
+        hiddenInput.setAttribute('data-confirm-submitter', 'true');
+        formElement.appendChild(hiddenInput);
+      }
+
       // Submit form programmatically
       if (typeof formElement.submit === 'function') {
         formElement.submit();
